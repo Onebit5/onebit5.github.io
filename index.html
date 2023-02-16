@@ -6,6 +6,10 @@
     <title>Dev Blog - Onebit</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="icon" type="image/png" href="/res/icon.png" sizes="190x114">
+    <script>
+      const currentYear = new Date().getFullYear();
+      document.getElementById("currentYear").textContent = currentYear;
+    </script>
   </head>
   <body>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" integrity="sha384-HzLeBuhoNPvSl5KYnjx0BT+WB0QEEqLprO+NBkkk5gbc67FTaL7XIGa2w1L0Xbgc" crossorigin="anonymous">
@@ -41,11 +45,12 @@
         <a href="/">
           <img src="res/discord.png" alt="discord">
         </a>
-        <a href="/">
+        <a href="https://twitter.com/4rr07" target="_blank">
           <img src="res/twitter.png" alt="twitter">
         </a>
       </div>
-      <p>&copy; Onebit 2023</p>
+      <p>&copy; Onebit <span id="currentYear"></span></p>
+
     </footer>
 
   </body>
