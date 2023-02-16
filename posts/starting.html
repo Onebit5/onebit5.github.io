@@ -1,0 +1,213 @@
+<html>
+  <head>
+    <style>
+      .post-detail {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 80%;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .post-detail img {
+        width: 100%;
+        max-width: 800px;
+        height: auto;
+        margin-bottom: 20px;
+      }
+
+      .post-detail h2 {
+        font-size: 36px;
+        margin-bottom: 20px;
+      }
+
+      .post-detail .date {
+        font-size: 14px;
+        color: gray;
+        margin-bottom: 40px;
+      }
+
+      .post-detail h3 {
+        font-size: 24px;
+        margin: 40px 0 20px;
+      }
+
+      .section {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 40px;
+      }
+
+      .section img {
+        width: 30%;
+        height: auto;
+        margin-right: 20px;
+      }
+
+      .header {
+        background-color: #333;
+        color: #fff;
+        padding: 20px;
+        text-align: center;
+        border-bottom: 5px solid #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .header a {
+        color: #fff;
+        text-decoration: none;
+        padding: 10px;
+        background-color: #333;
+        border-radius: 5px;
+      }
+
+      .header i {
+        font-size: 24px;
+        margin-right: 10px;
+      }
+
+      .post-description {
+        padding: 30px;
+        margin-top: 30px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      img {
+        float: left;
+        margin-right: 20px;
+      }
+
+      h2 {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      .footer {
+        background-color: #333;
+        color: #fff;
+        padding: 20px;
+        text-align: center;
+        margin-top: 30px;
+        border-top: 5px solid #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        
+      }
+
+      .footer a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-decoration: none;
+        margin: 0 10px;
+      }
+
+      .footer i {
+        font-size: 24px;
+      }
+
+      .subscribe {
+        background-color: #fff;
+        color: #333;
+        padding: 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        margin-left: 10px;
+      }
+
+      .back-link {
+        color: #333;
+        text-decoration: none;
+      }
+
+      .header-container {
+        padding: 10px;
+      }
+
+      .footer_link_boxes {
+	      margin: 5px 0;
+	      text-align: center;
+      }
+
+      .footer_link_boxes a {
+	      display: inline-block;
+	      width: 30px;
+	      height: 30px;
+	      box-sizing: content-box;
+	      padding: 0 4px;
+	      transition: all .2s ease-in-out;
+      }
+
+      .footer_link_boxes a:hover {
+	      transform: scale(1.1);
+      }
+
+      .footer_link_boxes a img {
+	      display: block;
+	      max-width: 100%;
+      }
+      
+    </style>
+  </head>
+  <body>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" integrity="sha384-HzLeBuhoNPvSl5KYnjx0BT+WB0QEEqLprO+NBkkk5gbc67FTaL7XIGa2w1L0Xbgc" crossorigin="anonymous">
+    <header class="header-container">
+      <div class="header">
+        <h3>
+          <a href="../Main.html" class="back-link">
+            <i class="fas fa-arrow-left"></i>Back
+          </a>
+        </h3>
+        <h1>Creating a blog</h1>
+      </div>
+    </header>
+    <div class="post-detail" class="header">
+      <figure>
+        <img src="../res/banner.jpg" style="width: 700px; height: 400px;"  alt="Banner">
+      </figure>
+      <p class="date">Feb 14th, 2023</p>
+      <p></p>
+      <section class="post-description">
+        <div class="section">
+          <div>
+            <h2>Creating a blog</h2>
+            <img src="../res/image.jpg" alt="Image" style="float: left; margin-right: 20px;">
+            <div class="body-text">
+              <p>Maintaining a blog is hard, but it can be helpful. I do this so I can share with you the progress of my projects so you can see how it progresses.</p>
+              <p>If you are interested in the blog, feel free to drop in from time to time until you implement a newsletter. I hope I can share something at least once a month.</p>
+              <p>Thank you for reading <3</p>
+            </div>
+          </div>
+        </div> 
+      </section>   
+      </div>
+    </div>
+    <footer class="footer">
+      <p>Suscribe to the newsletter</p>
+      <form>
+        <input type="email" placeholder="Email">
+        <button type="submit">Suscribe</button>
+      </form>
+      <div class="footer_link_boxes">
+        <a href="../Main.html">
+          <img src="../res/discord.png" alt="discord">
+        </a>
+        <a href="../Main.html">
+          <img src="../res/twitter.png" alt="twitter">
+        </a>
+      </div>
+      <p>&copy; Onebit 2023</p>
+    </footer>
+  </body>
+</html>
