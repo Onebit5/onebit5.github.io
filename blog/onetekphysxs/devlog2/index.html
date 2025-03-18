@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devlog: Building a Physics Engine from Scratch</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Highlight.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" rel="stylesheet" />
+    <!-- MathJax for rendering formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="header-overlay">
+            <div class="container">
+                <nav class="header-buttons">
+                    <a href="/" class="menu-button">Home</a>
+                    <a href="/blog" class="menu-button">Blog/Devlog</a>
+                </nav>
+                <h1 id="typewriter"></h1>
+                <p class="fade-in">Building a Physics Engine from Scratch</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="devlog-page">
+        <div class="container">
+            <article class="devlog-entry">
+                <p class="date">Published on: <strong>2025-03-16</strong></p>
+
+                <section class="devlog-content">
+                    <h2>🔧 Adding Quaternion Support for 3D Rotations</h2>
+                    <p>
+                        Quaternions are used to represent 3D rotations efficiently and avoid gimbal lock. They are defined as:
+                        \[
+                        q = w + xi + yj + zk
+                        \]
+                        Where \( w \) is the scalar part, and \( (x, y, z) \) is the vector part.
+                    </p>
+
+                    <h3>Math: Quaternion Operations</h3>
+                    <ul>
+                        <li>
+                            <strong>Multiplication:</strong> 
+                            \[
+                            q_1 \times q_2 = (w_1w_2 - \mathbf{v}_1 \cdot \mathbf{v}_2, w_1\mathbf{v}_2 + w_2\mathbf{v}_1 + \mathbf{v}_1 \times \mathbf{v}_2)
+                            \]
+                            <pre><code class="language-cpp">
+Quaternion Quaternion::operator*(const Quaternion& other) const {
+    return Quaternion(
+        w * other.w - x * other.x - y * other.y - z * other.z,
+        w * other.x + x * other.w + y * other.z - z * other.y,
+        w * other.y - x * other.z + y * other.w + z * other.x,
+        w * other.z + x * other.y - y * other.x + z * other.w
+    );
+}
+                            </code></pre>
+                        </li>
+
+                        <li>
+                            <strong>Normalization:</strong> 
+                            \[
+                            \hat{q} = \frac{q}{|q|}
+                            \]
+                            <pre><code class="language-cpp">
+Quaternion Quaternion::normalize() const {
+    float mag = std::sqrt(w * w + x * x + y * y + z * z);
+    return Quaternion(w / mag, x / mag, y / mag, z / mag);
+}
+                            </code></pre>
+                        </li>
+
+                        <li>
+                            <strong>Conjugate:</strong> 
+                            \[
+                            q^* = (w, -\mathbf{v})
+                            \]
+                            <pre><code class="language-cpp">
+Quaternion Quaternion::conjugate() const {
+    return Quaternion(w, -x, -y, -z);
+}
+                            </code></pre>
+                        </li>
+
+                        <li>
+                            <strong>Rotation Matrix:</strong> 
+                            \[
+                            R = \begin{pmatrix}
+                            1 - 2(y^2 + z^2) & 2(xy - zw) & 2(xz + yw) \\
+                            2(xy + zw) & 1 - 2(x^2 + z^2) & 2(yz - xw) \\
+                            2(xz - yw) & 2(yz + xw) & 1 - 2(x^2 + y^2)
+                            \end{pmatrix}
+                            \]
+                            <pre><code class="language-cpp">
+Matrix4 Quaternion::toMatrix() const {
+    Matrix4 mat;
+
+    float xx = x * x;
+    float xy = x * y;
+    float xz = x * z;
+    float xw = x * w;
+
+    float yy = y * y;
+    float yz = y * z;
+    float yw = y * w;
+
+    float zz = z * z;
+    float zw = z * w;
+
+    mat.data[0][0] = 1 - 2 * (yy + zz);
+    mat.data[0][1] = 2 * (xy - zw);
+    mat.data[0][2] = 2 * (xz + yw);
+    mat.data[0][3] = 0.0f;
+
+    mat.data[1][0] = 2 * (xy + zw);
+    mat.data[1][1] = 1 - 2 * (xx + zz);
+    mat.data[1][2] = 2 * (yz - xw);
+    mat.data[1][3] = 0.0f;
+
+    mat.data[2][0] = 2 * (xz - yw);
+    mat.data[2][1] = 2 * (yz + xw);
+    mat.data[2][2] = 1 - 2 * (xx + yy);
+    mat.data[2][3] = 0.0f;
+
+    mat.data[3][0] = 0.0f;
+    mat.data[3][1] = 0.0f;
+    mat.data[3][2] = 0.0f;
+    mat.data[3][3] = 1.0f;
+
+    return mat;
+}
+                            </code></pre>
+                        </li>
+
+                        <li>
+                            <strong>Axis-Angle to Quaternion:</strong> 
+                            \[
+                            q = (\cos(\theta/2), \mathbf{a} \sin(\theta/2))
+                            \]
+                            <pre><code class="language-cpp">
+Quaternion Quaternion::fromAxisAngle(const Vector3& axis, float angle) {
+    float halfAngle = angle * 0.5f;
+    float sinHalfAngle = std::sin(halfAngle);
+    return Quaternion(
+        std::cos(halfAngle),
+        axis.x * sinHalfAngle,
+        axis.y * sinHalfAngle,
+        axis.z * sinHalfAngle
+    ).normalize();
+}
+                            </code></pre>
+                        </li>
+
+                        <li>
+                            <strong>Euler Angles to Quaternion:</strong> 
+                            \[
+                            q = \begin{pmatrix}
+                            \cos(\phi/2)\cos(\theta/2)\cos(\psi/2) + \sin(\phi/2)\sin(\theta/2)\sin(\psi/2) \\
+                            \sin(\phi/2)\cos(\theta/2)\cos(\psi/2) - \cos(\phi/2)\sin(\theta/2)\sin(\psi/2) \\
+                            \cos(\phi/2)\sin(\theta/2)\cos(\psi/2) + \sin(\phi/2)\cos(\theta/2)\sin(\psi/2) \\
+                            \cos(\phi/2)\cos(\theta/2)\sin(\psi/2) - \sin(\phi/2)\sin(\theta/2)\cos(\psi/2)
+                            \end{pmatrix}
+                            \]
+                            <pre><code class="language-cpp">
+Quaternion Quaternion::fromEulerAngles(float pitch, float yaw, float roll) {
+    float cy = std::cos(yaw * 0.5f);
+    float sy = std::sin(yaw * 0.5f);
+    float cp = std::cos(pitch * 0.5f);
+    float sp = std::sin(pitch * 0.5f);
+    float cr = std::cos(roll * 0.5f);
+    float sr = std::sin(roll * 0.5f);
+
+    return Quaternion(
+        cr * cp * cy + sr * sp * sy,
+        sr * cp * cy - cr * sp * sy,
+        cr * sp * cy + sr * cp * sy,
+        cr * cp * sy - sr * sp * cy
+    ).normalize();
+}
+                            </code></pre>
+                        </li>
+
+                        <li>
+                            <strong>Quaternion to Euler Angles:</strong> 
+                            \[
+                            \phi = \arcsin(2(wy - xz))
+                            \]
+                            \[
+                            \theta = \arctan2(2(wx + yz), 1 - 2(x^2 + y^2))
+                            \]
+                            \[
+                            \psi = \arctan2(2(wz + xy), 1 - 2(y^2 + z^2))
+                            \]
+                            <pre><code class="language-cpp">
+Vector3 Quaternion::toEulerAngles() const {
+    Vector3 euler;
+
+    // Roll (x-axis rotation)
+    float sinr_cosp = 2 * (w * x + y * z);
+    float cosr_cosp = 1 - 2 * (x * x + y * y);
+    euler.z = std::atan2(sinr_cosp, cosr_cosp);
+
+    // Pitch (y-axis rotation)
+    float sinp = 2 * (w * y - z * x);
+    if (std::abs(sinp) >= 1)
+        euler.x = std::copysign(M_PI / 2, sinp); // Use 90 degrees if out of range
+    else
+        euler.x = std::asin(sinp);
+
+    // Yaw (z-axis rotation)
+    float siny_cosp = 2 * (w * z + x * y);
+    float cosy_cosp = 1 - 2 * (y * y + z * z);
+    euler.y = std::atan2(siny_cosp, cosy_cosp);
+
+    return euler;
+}
+                            </code></pre>
+                        </li>
+                    </ul>
+                </section>
+            </article>
+
+            <a href="/blog" class="back-button">⬅ Back to Devlogs</a>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Jose Antonio. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Highlight.js JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <!-- Highlight.js C++ Language Support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/cpp.min.js"></script>
+    <script>
+        // Initialize Highlight.js
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll("pre code").forEach((block) => {
+                hljs.highlightBlock(block);
+            });
+        });
+
+        // Typewriter Effect for Header
+        const text = "Devlog: Physics Engine";
+        let i = 0;
+        const speed = 140; // Typing speed (milliseconds)
+        const target = document.getElementById("typewriter");
+
+        if (target) {
+            function typeWriter() {
+                if (i < text.length) {
+                    target.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, speed);
+                }
+            }
+            typeWriter(); // Start typing animation
+        }
+    </script>
+</body>
+</html>

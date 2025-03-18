@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devlog #X - Project Name</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="header-overlay">
+            <div class="container">
+                <nav class="header-buttons">
+                    <a href="/" class="menu-button">Home</a>
+                    <a href="/blog" class="menu-button">Blog/Devlog</a>
+                </nav>
+                <h1 id="typewriter"></h1>
+                <p class="fade-in">Project Name</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="devlog-page">
+        <div class="container">
+            <article class="devlog-entry">
+                <p class="date">Published on: <strong>YYYY-MM-DD</strong></p>
+
+                <section class="devlog-content">
+                    <h2>🛠️ What Was Done</h2>
+                    <p>
+                        Describe the new features, bug fixes, or changes made in this update.
+                    </p>
+
+                    <h2>📸 Screenshots / Media</h2>
+                    <div class="media-container">
+                        <img src="example-image.png" alt="Screenshot" class="devlog-image">
+                    </div>
+
+                    <h2>🚀 Challenges & Next Steps</h2>
+                    <p>
+                        Explain what challenges you faced and what's coming next.
+                    </p>
+                </section>
+            </article>
+
+            <a href="/blog" class="back-button">⬅ Back to Devlogs</a>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Jose Antonio. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Typewriter Effect for Header
+        document.addEventListener("DOMContentLoaded", function () {
+            const text = "Devlog #X";
+            let i = 0;
+            const speed = 140; // Typing speed (milliseconds)
+            const target = document.getElementById("typewriter");
+
+            if (!target) return; // Prevent errors if the element is not found
+
+            function typeWriter() {
+                if (i < text.length) {
+                    target.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, speed);
+                }
+            }
+
+            typeWriter(); // Start typing animation
+        });
+    </script>
+</body>
+</html>

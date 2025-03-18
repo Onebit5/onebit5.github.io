@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jose Antonio - Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="header-overlay">
+            <div class="container">
+                <nav class="header-buttons">
+                    <a href="/" class="menu-button">Home</a>
+                    <a href="/blog" class="menu-button">Blog/Devlog</a>
+                </nav>
+                
+                <div class="header-profile">
+                    <div class="profile-photo">
+                        <img src="images/image.png" alt="Jose Antonio">
+                    </div>
+                    <h1 id="typewriter"></h1>
+                    <p class="fade-in">Game Engine Developer / Gameplay Programmer</p>
+                    
+                    <div class="header-social">
+                        <a href="mailto:sronebitco@gmail.com" class="social-icon" aria-label="Email">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                        <a href="https://github.com/Onebit5" target="_blank" class="social-icon" aria-label="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <!-- <a href="https://linkedin.com/in/" target="_blank" class="social-icon" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a> -->
+                        <a href="https://twitter.com/4rr07" target="_blank" class="social-icon" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://mronebit.itch.io/" target="_blank" class="social-icon" aria-label="Itch.io">
+                            <i class="fab fa-itch-io"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- About Section -->
+        <section id="about" class="glassmorphism">
+            <div class="container">
+                <h2>About Me</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p>Hello! I'm <strong>Jose Antonio</strong>, a passionate Game Engine Developer and Gameplay Programmer with a deep understanding of game architecture and systems programming.</p>
+                
+                        <p>With expertise in low-level graphics programming and game physics, I specialize in creating robust game mechanics, intelligent AI systems, and optimized rendering pipelines. My technical background allows me to bridge the gap between creative vision and technical implementation.</p>
+                
+                        <p>I have extensive experience working with multiple programming languages and technologies, including:</p>
+                
+                        <ul class="about-skills">
+                            <li><span class="skill-highlight">C/C++</span> for performance-critical systems and engine development</li>
+                            <li><span class="skill-highlight">C#</span> for rapid prototyping and Unity development</li>
+                            <li><span class="skill-highlight">Lua</span> for game scripting and extensibility</li>
+                            <li><span class="skill-highlight">Graphics APIs</span> including OpenGL and Vulkan</li>
+                            <li><span class="skill-highlight">Game Engines</span> like Unity and Godot</li>
+                        </ul>
+                
+                        <p>My passion lies in crafting elegant solutions to complex problems and creating immersive interactive experiences. I'm constantly exploring new technologies and techniques to push the boundaries of what's possible in game development.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        
+        <!-- Projects Section -->
+        <section id="projects">
+            <div class="container">
+                <h2>Projects</h2>
+                <div class="project-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="engine">Engine Dev</button>
+                    <button class="filter-btn" data-filter="game">Games</button>
+                    <button class="filter-btn" data-filter="tool">Tools</button>
+                </div>
+                <div class="project-grid">
+                    <!-- Cosmic Chaos -->
+                    <div class="project-card" data-category="game">
+                        <img src="images/projectImages/cosmicchaos.bmp" alt="Cosmic Chaos" class="project-image">
+                        <h3>Cosmic Chaos</h3>
+                        <p>That's bullet hell game to make you stressed.
+                            Have 2 levels, the 1st level is to enjoy the game and is not really difficult, but the 2nd level is for people who want a challenge.</p>
+                            <p class="project-tech">Technologies: Unity, C#</p>
+                            <div class="github-buttons-container">
+                                <a href="https://mronebit.itch.io/cosmic-chaos" target="_blank" class="github-button">Itch.io</a>
+                            </div>
+                    </div>
+
+                    <!-- OneTech Engine Project -->
+                    <div class="project-card" data-category="engine">
+                        <img src="images/projectImages/onetech-engine.bmp" alt="OneTek Engine Project" class="project-image">
+                        <h3>OneTek Engine</h3>
+                        <p>A custom game engine built using C, with plans to expand into OneTech Engine 2 for 2D FPS games.</p>
+                        <p class="project-tech">Technologies: C, OpenGL, CMake</p>
+                        <div class="github-buttons-container">
+                            <a href="https://github.com/Onebit5/OneTech-Engine" target="_blank" class="github-button">GitHub</a>
+                        </div>
+                    </div>
+                    
+                        <!-- Unity Prototypes Project -->
+                    <div class="project-card" data-category="game">
+                        <img src="images/projectImages/prototype.bmp" alt="Prototype" class="project-image">
+                        <h3>Unity Prototypes</h3>
+                        <p>Various prototypes including gravity manipulation, object manipulation, and zombie AI in Unity using C#.</p>
+                        <p class="project-tech">Technologies: Unity, C#</p>
+                        <div class="github-buttons-container">
+                            <a href="https://github.com/Onebit5/Prototypes" target="_blank" class="github-button">GitHub</a>
+                        </div>
+                    </div>
+
+                    <!-- STEAMCMD Project -->
+                    <div class="project-card" data-category="tool">
+                        <img src="images/projectImages/steamcmd.bmp" alt="STEAMCMD Project" class="project-image">
+                        <h3>STEAMCMD</h3>
+                        <p>A CLI-based Steam clone using C++ that simulates the Steam environment with basic functionalities.</p>
+                        <p class="project-tech">Technologies: C++</p>
+                        <div class="github-buttons-container">
+                            <a href="https://github.com/Onebit5/SteamCMD" target="_blank" class="github-button">GitHub</a>
+                        </div>
+                    </div>
+
+                    <!-- For The Queen! Project -->
+                    <div class="project-card" data-category="game">
+                        <img src="images/projectImages/forthequeen.bmp" alt="For The Queen! Project" class="project-image">
+                        <h3>For The Queen!</h3>
+                        <p>A platformer game developed using Lua, Java, and C++.</p>
+                        <p class="project-tech">Technologies: Java, Lua, C++</p>
+                        <div class="github-buttons-container">
+                            <a href="https://github.com/Onebit5/ForTheQueen" target="_blank" class="github-button">GitHub</a>
+                        </div>
+                    </div>
+
+                    <!-- SPEditor Project -->
+                    <div class="project-card" data-category="tool">
+                        <img src="images/projectImages/speditor.bmp" alt="SPEditor Project" class="project-image">
+                        <h3>SPEditor</h3>
+                        <p>A lightweight sprite editor developed using Lua.</p>
+                        <p class="project-tech">Technologies: Love, Lua</p>
+                        <div class="github-buttons-container">
+                            <a href="https://github.com/Onebit5/SPEditor" target="_blank" class="github-button">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience Section-->
+        <!-- <section id="experience" class="glassmorphism">
+            <div class="container">
+                <h2>Experience</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>Game Engine Developer</h3>
+                            <h4>Game Studio Name</h4>
+                            <p class="timeline-date">2023 - Present</p>
+                            <p>Developed core engine components for multiple game projects. Implemented rendering pipelines and physics systems.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>Gameplay Programmer</h3>
+                            <h4>Another Studio</h4>
+                            <p class="timeline-date">2021 - 2023</p>
+                            <p>Created game mechanics and AI systems for action-adventure titles.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section> -->
+
+        <!-- Skills Section -->
+        <section id="skills">
+            <div class="container">
+                <h2>Programming Languagues</h2>
+                <ul>
+                    <img src="images/logos/c.svg" alt="C" class="skill-image">
+                    <img src="images/logos/cpp.svg" alt="C++" class="skill-image">
+                    <img src="images/logos/csharp.svg" alt="C#" class="skill-image">
+                    <img src="images/logos/lua.svg" alt="Lua" class="skill-image">
+                    <img src="images/logos/java.svg" alt="Java" class="skill-image">
+                </ul>
+            </div>
+        </section>
+
+        <!-- Skills Progress Bars -->
+        <section id="skills">
+            <div class="container">
+                <h2>Programming Skills</h2>
+                <div class="skill-bar">
+                    <p>C/C++</p>
+                    <div class="progress"><div class="progress-fill" style="width: 88%"></div></div>
+                </div>
+                <div class="skill-bar">
+                    <p>C#</p>
+                    <div class="progress"><div class="progress-fill" style="width: 91%"></div></div>
+                </div>
+                <div class="skill-bar">
+                    <p>Java</p>
+                    <div class="progress"><div class="progress-fill" style="width: 20%"></div></div>
+                </div>
+                <div class="skill-bar">
+                    <p>Lua</p>
+                    <div class="progress"><div class="progress-fill" style="width: 25%"></div></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills">
+            <div class="container">
+                <h2>Development Environments</h2>
+                <ul>
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visualstudio/visualstudio-plain.svg" alt="Visual Studio" class="skill-image">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" alt="Visual Studio Code" class="skill-image">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/intellij/intellij-original.svg" alt="IntelliJ" class="skill-image">
+                </ul>
+            </div>
+        </section>
+
+        <section id="skills">
+            <div class="container">
+                <h2>Operating Systems</h2>
+                <ul>
+                    <img src="images/logos/windows.svg" alt="Windows" class="skill-image">
+                    <img src="images/logos/ubuntu.svg" alt="Ubuntu" class="skill-image">
+                    <img src="images/logos/debian.svg" alt="Debian" class="skill-image">
+                    <img src="images/logos/kali.svg" alt="Kali Linux" class="skill-image">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/archlinux/archlinux-original.svg" alt="Arch Linux" class="skill-image">
+                </ul>
+            </div>
+        </section>
+
+        <section id="skills">
+            <div class="container">
+                <h2>Version Control</h2>
+                <ul>
+                    <img src="images/logos/git.svg" alt="Git" class="skill-image">
+                    <img src="images/logos/github.svg" alt="GitHub" class="skill-image">
+                </ul>
+            </div>
+        </section>
+
+        <section id="skills">
+            <div class="container">
+                <h2>Video Game Engines</h2>
+                <ul>
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/unity/unity-original.svg" alt="Unity" class="skill-image">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/godot/godot-original.svg" alt="Godot" class="skill-image">
+                </ul>
+            </div>
+        </section>
+
+        <section id="skills">
+            <div class="container">
+                <h2>Other Technologies</h2>
+                <ul>
+                    <img src="images/logos/opengl.svg" alt="OpenGL" class="skill-image">
+                    <img src="images/logos/cmake.svg" alt="CMake" class="skill-image">
+                    <img src="images/logos/vulkan.svg" alt="Vulkan" class="skill-image">
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Jose Antonio. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+
+        function changeSlide(n) {
+            slides[currentSlide].style.display = 'none';
+            currentSlide = (currentSlide + n + slides.length) % slides.length;
+            slides[currentSlide].style.display = 'block';
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const text = "Jose Antonio";
+            let i = 0;
+            const speed = 140; // Typing speed (milliseconds)
+            const target = document.getElementById("typewriter");
+
+            if (!target) return; // Prevent errors if the element is not found
+
+            function typeWriter() {
+                if (i < text.length) {
+                target.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, speed);
+                }
+            }
+
+            typeWriter(); // Start typing animation
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sections = document.querySelectorAll("section, .project-card");
+
+            const revealOnScroll = () => {
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                    if (sectionTop < windowHeight - 50) {
+                        section.style.opacity = "1";
+                    }
+                });
+            };
+
+            window.addEventListener("scroll", revealOnScroll);
+            revealOnScroll();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const projectCards = document.querySelectorAll('.project-card');
+    const projectGrid = document.querySelector('.project-grid');
+    
+    // Initialize GSAP
+    gsap.config({
+        nullTargetWarn: false
+    });
+    
+    // Store original positions for animation reference
+    let cardPositions = [];
+    
+    // Function to get current positions
+    function getPositions() {
+        cardPositions = [];
+        projectCards.forEach(card => {
+            const rect = card.getBoundingClientRect();
+            cardPositions.push({
+                left: rect.left,
+                top: rect.top
+            });
+        });
+    }
+    
+    // Get initial positions
+    setTimeout(getPositions, 100);
+    
+    // Filter function with smooth animations
+    function filterProjects(filter) {
+        // Get current positions before layout changes
+        getPositions();
+        
+        // Create a timeline for animations
+        const tl = gsap.timeline();
+        
+        // First, animate out cards that will be hidden
+        projectCards.forEach((card, index) => {
+            const isVisible = filter === 'all' || card.getAttribute('data-category') === filter;
+            
+            if (!isVisible && card.style.opacity !== '0') {
+                tl.to(card, {
+                    opacity: 0,
+                    y: 20,
+                    scale: 0.95,
+                    duration: 0.3,
+                    ease: "power2.out",
+                    onComplete: () => {
+                        card.style.display = 'none';
+                        card.classList.add('card-hidden');
+                    }
+                }, 0);
+            }
+        });
+        
+        // Then, show and position cards that should be visible
+        tl.add(() => {
+            projectCards.forEach((card) => {
+                const isVisible = filter === 'all' || card.getAttribute('data-category') === filter;
+                
+                if (isVisible) {
+                    card.style.display = 'flex';
+                    card.classList.remove('card-hidden');
+                }
+            });
+        });
+        
+        // Finally, animate in the visible cards with a stagger effect
+        projectCards.forEach((card, index) => {
+            const isVisible = filter === 'all' || card.getAttribute('data-category') === filter;
+            
+            if (isVisible) {
+                tl.to(card, {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.4,
+                    delay: index * 0.05, // Stagger effect
+                    ease: "power2.out"
+                }, 0.3);
+            }
+        });
+    }
+    
+    // Add click event listeners to filter buttons
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Update active button
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Apply filter
+            const filter = this.getAttribute('data-filter');
+            filterProjects(filter);
+        });
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', getPositions);
+});
+
+
+
+    </script>
+</body>
+</html>

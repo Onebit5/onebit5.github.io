@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jose Antonio - Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="header-overlay">
+            <div class="container">
+                <nav class="header-buttons">
+                    <a href="/" class="menu-button">Home</a>
+                    <a href="/blog" class="menu-button">Blog/Devlog</a>
+                </nav>
+                <h1 id="typewriter"></h1>
+                <p class="fade-in">.</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <section class="devlog-container">
+            <h1 class="section-title">Project Devlogs</h1>
+    
+            <!-- Project Tale -->
+            <div class="project">
+                <h2 class="project-title">Project Tale</h2>
+                <div class="devlog-list">
+                    <div class="devlog-card">
+                        <h3>Devlog #0</h3>
+                        <p>Brief description of this devlog...</p>
+                        <a href="#">Read More</a>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- OneTek Physxs -->
+            <div class="project">
+                <h2 class="project-title">OneTek Physxs</h2>
+                <div class="devlog-list">
+                    <div class="devlog-card">
+                        <h3>Devlog #1: Adding Quaternion Support for 3D Rotations</h3>
+                        <p>In this devlog, I added quaternions for 3D rotations.</p>
+                        <a href="/blog/onetekphysxs/devlog2/">Read More</a>
+                    </div>
+                    <div class="devlog-card">
+                        <h3>Devlog #0: Building a Physics Engine from Scratch</h3>
+                        <p>In this devlog, we explore the development of a physics engine from scratch, focusing on the implementation of core mathematical components.</p>
+                        <a href="/blog/onetekphysxs/devlog1/">Read More</a>
+                    </div>
+                </div>
+            </div>
+    
+        </section>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Jose Antonio. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+
+        function changeSlide(n) {
+            slides[currentSlide].style.display = 'none';
+            currentSlide = (currentSlide + n + slides.length) % slides.length;
+            slides[currentSlide].style.display = 'block';
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const text = "Blog / Devlog";
+            let i = 0;
+            const speed = 140; // Typing speed (milliseconds)
+            const target = document.getElementById("typewriter");
+
+            if (!target) return; // Prevent errors if the element is not found
+
+            function typeWriter() {
+                if (i < text.length) {
+                target.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, speed);
+                }
+            }
+
+            typeWriter(); // Start typing animation
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sections = document.querySelectorAll("section, .project-card");
+
+            const revealOnScroll = () => {
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                    if (sectionTop < windowHeight - 50) {
+                        section.style.opacity = "1";
+                    }
+                });
+            };
+
+            window.addEventListener("scroll", revealOnScroll);
+            revealOnScroll();
+        });
+    </script>
+</body>
+</html>
