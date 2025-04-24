@@ -10,6 +10,43 @@
     <!-- MathJax for rendering formulas -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* Explanation box styling */
+        .explanation {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4285f4;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .explanation h4 {
+            color: #4285f4;
+            margin-top: 0;
+        }
+        .explanation-tip {
+            background-color: #e8f4f8;
+            border-left: 4px solid #34a853;
+        }
+        .explanation-warning {
+            background-color: #fef7e0;
+            border-left: 4px solid #fbbc05;
+        }
+        .operation-group {
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1rem 0 0.5rem 0;
+        }
+        .code-header h4 {
+            margin: 0;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
     <!-- Header Section -->
@@ -33,16 +70,37 @@
                 <p class="date">Published on: <strong>2025-02-21</strong></p>
 
                 <section class="devlog-content">
-                    <h2>🛠️ Setting Up the Project</h2>
-                    <p>
-                        The goal of this project is to create a physics engine in C++ that supports vectors, matrices, and transformations. The tools used include:
-                    </p>
-                    <ul>
-                        <li><strong>C++</strong> (with CMake for build management)</li>
-                        <li><strong>Linear algebra</strong> for mathematical operations</li>
-                    </ul>
-                    <p>Here’s the file structure:</p>
-                    <pre><code class="language-bash">
+                    <!-- Project Setup Section -->
+                    <div class="operation-group">
+                        <h2>🛠️ Setting Up the Project</h2>
+                        <p>
+                            The goal of this project is to create a physics engine in C++ that supports vectors, matrices, and transformations. The tools used include:
+                        </p>
+                        <ul>
+                            <li><strong>C++</strong> (with CMake for build management)</li>
+                            <li><strong>Linear algebra</strong> for mathematical operations</li>
+                        </ul>
+                        
+                        <div class="explanation">
+                            <h4>Project Structure Rationale</h4>
+                            <p>The chosen file organization separates interface from implementation:</p>
+                            <ul>
+                                <li><strong>include/</strong>: Header files (.h) containing class declarations</li>
+                                <li><strong>src/</strong>: Implementation files (.cpp) with method definitions</li>
+                                <li><strong>main.cpp</strong>: Entry point for testing and demonstration</li>
+                            </ul>
+                            <p>This structure enables:</p>
+                            <ul>
+                                <li>Clean separation of interface and implementation</li>
+                                <li>Better compilation times through separate compilation</li>
+                                <li>Easier maintenance and testing</li>
+                            </ul>
+                        </div>
+
+                        <div class="code-header">
+                            <h4>File Structure</h4>
+                        </div>
+                        <pre><code class="language-bash">
 PhysicsEngine/
 ├── CMakeLists.txt
 ├── include/
@@ -58,229 +116,276 @@ PhysicsEngine/
 │   ├── Matrix4.cpp
 │   └── Transform.cpp
 └── main.cpp
-                    </code></pre>
+                        </code></pre>
+                    </div>
 
-                    <h2>🔧 Implementing Vectors</h2>
-                    <p>
-                        Vectors are fundamental to physics engines. They represent quantities with magnitude and direction, such as position, velocity, and force.
-                    </p>
-                    <h3>Math: Vector Operations</h3>
-                    <ul>
-                        <li><strong>Addition:</strong> \[ v_1 + v_2 = (x_1 + x_2, y_1 + y_2, z_1 + z_2) \]</li>
-                        <li><strong>Subtraction:</strong> \[ v_1 - v_2 = (x_1 - x_2, y_1 - y_2, z_1 - z_2) \]</li>
-                        <li><strong>Dot Product:</strong> \[ v_1 \cdot v_2 = x_1x_2 + y_1y_2 + z_1z_2 \]</li>
-                        <li><strong>Cross Product:</strong> \[ v_1 \times v_2 = (y_1z_2 - z_1y_2, z_1x_2 - x_1z_2, x_1y_2 - y_1x_2) \]</li>
-                        <li><strong>Magnitude:</strong> \[ |v| = \sqrt{x^2 + y^2 + z^2} \]</li>
-                        <li><strong>Normalization:</strong> \[ \hat{v} = \frac{v}{|v|} \]</li>
-                    </ul>
-                    <h3>C++ Implementation</h3>
-                    <pre><code class="language-cpp">// vector.h
+                    <!-- Vector Implementation Section -->
+                    <div class="operation-group">
+                        <h2>🔧 Implementing Vectors</h2>
+                        <p>
+                            Vectors are fundamental to physics engines. They represent quantities with magnitude and direction, such as position, velocity, and force.
+                        </p>
+
+                        <div class="explanation">
+                            <h4>Why Vectors Matter</h4>
+                            <p>Vectors are the "atoms" of physics simulation. In game engines and physics systems, nearly every physical quantity is vector-valued:</p>
+                            <ul>
+                                <li><strong>Position:</strong> Where an object is located in space</li>
+                                <li><strong>Velocity:</strong> Speed and direction of movement</li>
+                                <li><strong>Force:</strong> Push/pull interactions between objects</li>
+                            </ul>
+                            <p>The operations we implement form the foundation for all physical interactions in the engine.</p>
+                        </div>
+
+                        <h3>Math: Vector Operations</h3>
+                        <ul>
+                            <li><strong>Addition:</strong> \[ v_1 + v_2 = (x_1 + x_2, y_1 + y_2, z_1 + z_2) \]</li>
+                            <li><strong>Subtraction:</strong> \[ v_1 - v_2 = (x_1 - x_2, y_1 - y_2, z_1 - z_2) \]</li>
+                            <li><strong>Dot Product:</strong> \[ v_1 \cdot v_2 = x_1x_2 + y_1y_2 + z_1z_2 \]</li>
+                            <li><strong>Cross Product:</strong> \[ v_1 \times v_2 = (y_1z_2 - z_1y_2, z_1x_2 - x_1z_2, x_1y_2 - y_1x_2) \]</li>
+                            <li><strong>Magnitude:</strong> \[ |v| = \sqrt{x^2 + y^2 + z^2} \]</li>
+                            <li><strong>Normalization:</strong> \[ \hat{v} = \frac{v}{|v|} \]</li>
+                        </ul>
+
+                        <div class="code-header">
+                            <h4>Vector3 Class Implementation</h4>
+                        </div>
+                        <pre><code class="language-cpp">// vector.h
 class Vector3 {
-    public:
-        float x, y, z; // Public member variables to store the x, y and z coordinates of the vector
+public:
+    float x, y, z; // Public member variables to store the x, y and z coordinates
     
-        // Constructors
-        Vector3(float x = 0, float y = 0, float z = 0);
+    // Constructors
+    Vector3(float x = 0, float y = 0, float z = 0);
     
-        // Vector operations
-        Vector3 operator+(const Vector3& other) const;
-        Vector3 operator-(const Vector3& other) const;
-        Vector3 operator*(float scalar) const;
-        float dot(const Vector3& other) const;
-        Vector3 cross(const Vector3& other) const;
-        float magnitude() const;
-        Vector3 normalize() const;
+    // Vector operations
+    Vector3 operator+(const Vector3& other) const;
+    Vector3 operator-(const Vector3& other) const;
+    Vector3 operator*(float scalar) const;
+    float dot(const Vector3& other) const;
+    Vector3 cross(const Vector3& other) const;
+    float magnitude() const;
+    Vector3 normalize() const;
     
-        // Utility
-        void print() const;
-    
-    };
+    // Utility
+    void print() const;
+};
 
 // vector.cpp
-// Constructor
 Vector3::Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
 
-// Vector operations
 Vector3 Vector3::operator+(const Vector3& other) const {
-	return Vector3(x + other.x, y + other.y, z + other.z);
+    return Vector3(x + other.x, y + other.y, z + other.z);
 }
 
 Vector3 Vector3::operator-(const Vector3& other) const {
-	return Vector3(x - other.x, y - other.y, z - other.z);
+    return Vector3(x - other.x, y - other.y, z - other.z);
 }
 
 Vector3 Vector3::operator*(float scalar) const {
-	return Vector3(x * scalar, y * scalar, z * scalar);
+    return Vector3(x * scalar, y * scalar, z * scalar);
 }
 
-// Dot product
 float Vector3::dot(const Vector3& other) const {
-	return x * other.x + y * other.y + z * other.z;
+    return x * other.x + y * other.y + z * other.z;
 }
 
-// Cross product
 Vector3 Vector3::cross(const Vector3& other) const {
-	return Vector3(
-		y * other.z - z * other.y,
-		z * other.x - x * other.z,
-		x * other.y - y * other.x
-	);
+    return Vector3(
+        y * other.z - z * other.y,
+        z * other.x - x * other.z,
+        x * other.y - y * other.x
+    );
 }
 
-// Magnitude (length) of the vector
 float Vector3::magnitude() const {
-	return std::sqrt(x * x + y * y + z * z);
+    return std::sqrt(x * x + y * y + z * z);
 }
 
-// Normalize the vector
 Vector3 Vector3::normalize() const {
-	float mag = magnitude();
-	if (mag == 0) {
-		throw std::runtime_error("Cannot normalize a zero-length vector");
-	}
-	return Vector3(x / mag, y / mag, z / mag);
+    float mag = magnitude();
+    if (mag == 0) {
+        throw std::runtime_error("Cannot normalize a zero-length vector");
+    }
+    return Vector3(x / mag, y / mag, z / mag);
 }
 
-// Print the vector
 void Vector3::print() const {
-	std::cout << "(" << x << ", " << y << ", " << z << ")" << std::endl;
-}
-                    </code></pre>
+    std::cout << "(" << x << ", " << y << ", " << z << ")" << std::endl;
+}</code></pre>
 
-                    <h2>🔧 Implementing Matrices</h2>
-                    <p>
-                        Matrices are used for transformations like rotation, scaling, and translation.
-                    </p>
-                    <h3>Math: Matrix Operations</h3>
-                    <ul>
-                        <li><strong>Matrix Multiplication:</strong> \[ C = A \times B, C_{ij} = \sum_{k=1}^{n} A_{ik} B_{kj} \]</li>
-                        <li><strong>Determinant (for 3x3 matrices):</strong> \[ \text{det}(A) = A_{11}(A_{22}A_{33} - A_{23}A_{32}) - A_{12}(A_{21}A_{33} - A_{23}A_{31}) + A_{13}(A_{21}A_{32} - A_{22}A_{31}) \]</li>
-                        <li><strong>Inverse (for 3x3 matrices):</strong> \[ A^{-1} = \frac{1}{\text{det}(A)} \cdot \text{adj}(A) \]</li>
-                    </ul>
-                    <h3>C++ Implementation</h3>
-                    <pre><code class="language-cpp">// matrix3.h
-class Matrix3
-{
+                        <div class="explanation explanation-tip">
+                            <h4>Implementation Insights</h4>
+                            <p><strong>Operator Overloading:</strong> By defining <code>operator+</code>, <code>operator-</code>, etc., we enable natural mathematical syntax like <code>v1 + v2</code> instead of <code>v1.add(v2)</code>.</p>
+                            <p><strong>Normalization Safety:</strong> The <code>if (mag == 0)</code> check prevents division by zero when attempting to normalize a zero-length vector (which has no direction).</p>
+                        </div>
+                    
+                        <div class="explanation explanation-warning">
+                            <h4>Performance Consideration</h4>
+                            <p>The <code>magnitude()</code> function uses <code>std::sqrt()</code> which is computationally expensive. In performance-critical code, we often compare squared magnitudes instead (<code>x*x + y*y + z*z</code>) to avoid the square root operation.</p>
+                        </div>
+                    </div>
+
+                    <!-- Matrix Implementation Section -->
+                    <div class="operation-group">
+                        <h2>🔧 Implementing Matrices</h2>
+                        <p>
+                            Matrices are used for transformations like rotation, scaling, and translation.
+                        </p>
+
+                        <div class="explanation">
+                            <h4>The Power of Matrices</h4>
+                            <p>Matrices encode linear transformations in a way that can be efficiently composed and applied. Key properties:</p>
+                            <ul>
+                                <li><strong>Composition:</strong> Multiple transformations can be combined through matrix multiplication</li>
+                                <li><strong>Efficiency:</strong> GPUs are optimized for matrix operations</li>
+                                <li><strong>Generality:</strong> All basic transformations (rotate, scale, shear) can be represented</li>
+                            </ul>
+                        </div>
+
+                        <h3>Math: Matrix Operations</h3>
+                        <ul>
+                            <li><strong>Matrix Multiplication:</strong> \[ C = A \times B, C_{ij} = \sum_{k=1}^{n} A_{ik} B_{kj} \]</li>
+                            <li><strong>Determinant (3x3):</strong> \[ \text{det}(A) = A_{11}(A_{22}A_{33} - A_{23}A_{32}) - A_{12}(A_{21}A_{33} - A_{23}A_{31}) + A_{13}(A_{21}A_{32} - A_{22}A_{31}) \]</li>
+                            <li><strong>Inverse (3x3):</strong> \[ A^{-1} = \frac{1}{\text{det}(A)} \cdot \text{adj}(A) \]</li>
+                        </ul>
+
+                        <div class="code-header">
+                            <h4>Matrix3 Class Implementation</h4>
+                        </div>
+                        <pre><code class="language-cpp">// matrix3.h
+class Matrix3 {
 public:
-	float data[3][3]; // 2D array to hold the elements of a 3x3 matrix
+    float data[3][3]; // 2D array to hold matrix elements
 
-	// Constructor (identity matrix by default)
-	Matrix3();
-
-	// Matrix multiplication
-	Matrix3 operator*(const Matrix3& other) const;
-
-	// Determinant
-	float determinant() const;
-
-	// Inverse
-	Matrix3 inverse() const;
-
-	// Utility
-	void print() const;
-
+    Matrix3();
+    Matrix3 operator*(const Matrix3& other) const;
+    float determinant() const;
+    Matrix3 inverse() const;
+    void print() const;
 };
 
 // matrix3.cpp
-// Constructor (identity matrix by default)
 Matrix3::Matrix3() {
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			// Set the diagonal elements to 1 and others to 0
-			data[i][j] = (i == j) ? 1.0f : 0.0f;
-		}
-	}
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            data[i][j] = (i == j) ? 1.0f : 0.0f;
+        }
+    }
 }
 
-// Matrix multiplication
 Matrix3 Matrix3::operator*(const Matrix3& other) const {
-	Matrix3 result;
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			// Initialize the result matrix element to 0
-			result.data[i][j] = 0.0f;
-			for (int k = 0; k < 3; k++) {
-				// Accumulate the product of the corresponding elements
-				result.data[i][j] += data[i][k] * other.data[k][j];
-			}
-		}
-	}
-	return result; // Return the resulting matrix
+    Matrix3 result;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            result.data[i][j] = 0.0f;
+            for (int k = 0; k < 3; k++) {
+                result.data[i][j] += data[i][k] * other.data[k][j];
+            }
+        }
+    }
+    return result;
 }
 
-// Determinant
 float Matrix3::determinant() const {
-	// Calculate the determinant using the formula for a 3x3 matrix
-	return data[0][0] * (data[1][1] * data[2][2] - data[1][2] * data[2][1])
-		- data[0][1] * (data[1][0] * data[2][2] - data[1][2] * data[2][0])
-		+ data[0][2] * (data[1][0] * data[2][1] - data[1][1] * data[2][0]);
+    return data[0][0] * (data[1][1] * data[2][2] - data[1][2] * data[2][1])
+        - data[0][1] * (data[1][0] * data[2][2] - data[1][2] * data[2][0])
+        + data[0][2] * (data[1][0] * data[2][1] - data[1][1] * data[2][0]);
 }
 
-// Inverse
 Matrix3 Matrix3::inverse() const {
-	float det = determinant();
-	if (det == 0) {
-		// Throw an error if the matrix is not invertible
-		throw std::runtime_error("Matrix is not invertible!");
-	}
+    float det = determinant();
+    if (det == 0) {
+        throw std::runtime_error("Matrix is not invertible!");
+    }
 
-	Matrix3 result;
-	// Calculate the inverse matrix elements using the determinant
-	result.data[0][0] = (data[1][1] * data[2][2] - data[1][2] * data[2][1]) / det;
-	result.data[0][1] = -(data[0][1] * data[2][2] - data[0][2] * data[2][1]) / det;
-	result.data[0][2] = (data[0][1] * data[1][2] - data[0][2] * data[1][1]) / det;
-	result.data[1][0] = -(data[1][0] * data[2][2] - data[1][2] * data[2][0]) / det;
-	result.data[1][1] = (data[0][0] * data[2][2] - data[0][2] * data[2][0]) / det;
-	result.data[1][2] = -(data[0][0] * data[1][2] - data[0][2] * data[1][0]) / det;
-	result.data[2][0] = (data[1][0] * data[2][1] - data[1][1] * data[2][0]) / det;
-	result.data[2][1] = -(data[0][0] * data[2][1] - data[0][1] * data[2][0]) / det;
-	result.data[2][2] = (data[0][0] * data[1][1] - data[0][1] * data[1][0]) / det;
+    Matrix3 result;
+    result.data[0][0] = (data[1][1] * data[2][2] - data[1][2] * data[2][1]) / det;
+    result.data[0][1] = -(data[0][1] * data[2][2] - data[0][2] * data[2][1]) / det;
+    result.data[0][2] = (data[0][1] * data[1][2] - data[0][2] * data[1][1]) / det;
+    result.data[1][0] = -(data[1][0] * data[2][2] - data[1][2] * data[2][0]) / det;
+    result.data[1][1] = (data[0][0] * data[2][2] - data[0][2] * data[2][0]) / det;
+    result.data[1][2] = -(data[0][0] * data[1][2] - data[0][2] * data[1][0]) / det;
+    result.data[2][0] = (data[1][0] * data[2][1] - data[1][1] * data[2][0]) / det;
+    result.data[2][1] = -(data[0][0] * data[2][1] - data[0][1] * data[2][0]) / det;
+    result.data[2][2] = (data[0][0] * data[1][1] - data[0][1] * data[1][0]) / det;
 
-	return result; // Return the inverse matrix
+    return result;
 }
 
-// Print the matrix
 void Matrix3::print() const {
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			// Output each element of the matrix
-			std::cout << data[i][j] << " ";
-		}
-		std::cout << std::endl;
-	}
-}
-                    </code></pre>
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            std::cout << data[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+}</code></pre>
 
-                    <h2>🔧 Implementing Determinant and Inverse for Matrix4</h2>
-                    <p>
-                        To support advanced transformations and linear algebra operations, we implemented the determinant and inverse operations for the <code>Matrix4</code> class.
-                    </p>
-                    <h3>Math Background</h3>
-                    <p>
-                        The determinant of a 4x4 matrix \( A \) is computed using Laplace expansion (cofactor expansion). For a matrix:
-                        \[
-                        A = \begin{bmatrix}
-                        a_{11} & a_{12} & a_{13} & a_{14} \\
-                        a_{21} & a_{22} & a_{23} & a_{24} \\
-                        a_{31} & a_{32} & a_{33} & a_{34} \\
-                        a_{41} & a_{42} & a_{43} & a_{44}
-                        \end{bmatrix}
-                        \]
-                        The determinant is:
-                        \[
-                        \text{det}(A) = a_{11} \cdot \text{det}(A_{11}) - a_{12} \cdot \text{det}(A_{12}) + a_{13} \cdot \text{det}(A_{13}) - a_{14} \cdot \text{det}(A_{14})
-                        \]
-                        Where \( A_{ij} \) is the 3x3 submatrix obtained by removing the \( i \)-th row and \( j \)-th column.
-                    </p>
-                    <p>
-                        The inverse of a 4x4 matrix \( A \) is given by:
-                        \[
-                        A^{-1} = \frac{1}{\text{det}(A)} \cdot \text{adj}(A)
-                        \]
-                        Where \( \text{adj}(A) \) is the adjugate matrix, which is the transpose of the cofactor matrix.
-                    </p>
-                    <h3>C++ Implementation</h3>
-                    <pre><code class="language-cpp">// matrix4.h
+                        <div class="explanation">
+                            <h4>Matrix Storage Layout</h4>
+                            <p>The <code>float data[3][3]</code> uses <strong>row-major</strong> ordering, which is standard in C/C++. This means:</p>
+                            <pre>data[row][column]  // Access pattern
+[0][0] [0][1] [0][2]  // Row 0
+[1][0] [1][1] [1][2]  // Row 1
+[2][0] [2][1] [2][2]  // Row 2</pre>
+                            <p>This differs from some math libraries that use column-major order. Consistency in ordering is crucial to avoid transformation errors.</p>
+                        </div>
+                    </div>
+
+                    <!-- Matrix4 Implementation Section -->
+                    <div class="operation-group">
+                        <h2>🔧 Implementing 4x4 Matrices</h2>
+                        <p>
+                            To support advanced transformations and linear algebra operations, we implemented the determinant and inverse operations for the <code>Matrix4</code> class.
+                        </p>
+
+                        <div class="explanation">
+                            <h4>Why 4x4 Matrices?</h4>
+                            <p>While 3x3 matrices handle linear transformations, 4x4 matrices enable <strong>affine transformations</strong> through homogeneous coordinates:</p>
+                            <ul>
+                                <li>Allows translation (shift in position) to be represented as matrix multiplication</li>
+                                <li>Essential for 3D graphics (projection matrices are 4x4)</li>
+                                <li>The fourth component (w) enables perspective division</li>
+                            </ul>
+                            <p>A typical transformation matrix looks like:</p>
+                            <pre>[
+ [R R R T]  // R = rotation/scale, T = translation
+ [R R R T]
+ [R R R T]
+ [0 0 0 1]  // Bottom row maintains affine properties
+]</pre>
+                        </div>
+
+                        <h3>Math Background</h3>
+                        <p>
+                            The determinant of a 4x4 matrix \( A \) is computed using Laplace expansion (cofactor expansion). For a matrix:
+                            \[
+                            A = \begin{bmatrix}
+                            a_{11} & a_{12} & a_{13} & a_{14} \\
+                            a_{21} & a_{22} & a_{23} & a_{24} \\
+                            a_{31} & a_{32} & a_{33} & a_{34} \\
+                            a_{41} & a_{42} & a_{43} & a_{44}
+                            \end{bmatrix}
+                            \]
+                            The determinant is:
+                            \[
+                            \text{det}(A) = a_{11} \cdot \text{det}(A_{11}) - a_{12} \cdot \text{det}(A_{12}) + a_{13} \cdot \text{det}(A_{13}) - a_{14} \cdot \text{det}(A_{14})
+                            \]
+                            Where \( A_{ij} \) is the 3x3 submatrix obtained by removing the \( i \)-th row and \( j \)-th column.
+                        </p>
+                        <p>
+                            The inverse of a 4x4 matrix \( A \) is given by:
+                            \[
+                            A^{-1} = \frac{1}{\text{det}(A)} \cdot \text{adj}(A)
+                            \]
+                            Where \( \text{adj}(A) \) is the adjugate matrix, which is the transpose of the cofactor matrix.
+                        </p>
+
+                        <div class="code-header">
+                            <h4>Matrix4 Class Implementation</h4>
+                        </div>
+                        <pre><code class="language-cpp">// matrix4.h
 class Matrix4 {
 public:
     float data[4][4];
@@ -291,7 +396,6 @@ public:
     Matrix4 inverse() const;
     void print() const;
 
-    // Helper function to compute the determinant of a 3x3 submatrix
     static float determinant3x3(
         float a, float b, float c,
         float d, float e, float f,
@@ -300,10 +404,6 @@ public:
 };
 
 // matrix4.cpp
-#include "Matrix4.h"
-#include <stdexcept>
-
-// Constructor (identity matrix by default)
 Matrix4::Matrix4() {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
@@ -312,7 +412,6 @@ Matrix4::Matrix4() {
     }
 }
 
-// Matrix multiplication
 Matrix4 Matrix4::operator*(const Matrix4& other) const {
     Matrix4 result;
     for (int i = 0; i < 4; i++) {
@@ -326,7 +425,6 @@ Matrix4 Matrix4::operator*(const Matrix4& other) const {
     return result;
 }
 
-// Helper function to compute the determinant of a 3x3 submatrix
 float Matrix4::determinant3x3(
     float a, float b, float c,
     float d, float e, float f,
@@ -335,7 +433,6 @@ float Matrix4::determinant3x3(
     return a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
 }
 
-// Compute the determinant of the 4x4 matrix
 float Matrix4::determinant() const {
     float det = 0.0f;
     for (int col = 0; col < 4; col++) {
@@ -360,7 +457,6 @@ float Matrix4::determinant() const {
     return det;
 }
 
-// Compute the inverse of the 4x4 matrix
 Matrix4 Matrix4::inverse() const {
     float det = determinant();
     if (det == 0.0f) {
@@ -393,7 +489,6 @@ Matrix4 Matrix4::inverse() const {
     return inv;
 }
 
-// Print the matrix
 void Matrix4::print() const {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
@@ -401,11 +496,39 @@ void Matrix4::print() const {
         }
         std::cout << std::endl;
     }
-}
-                    </code></pre>
+}</code></pre>
 
-                    <h3>Testing the Implementation</h3>
-                    <pre><code class="language-cpp">// main.cpp
+                        <div class="explanation explanation-warning">
+                            <h4>Numerical Stability Warning</h4>
+                            <p>Matrix inversion is numerically unstable for:</p>
+                            <ul>
+                                <li>Near-singular matrices (determinant ≈ 0)</li>
+                                <li>Matrices with large condition numbers</li>
+                            </ul>
+                            <p>In production engines, we often:</p>
+                            <ol>
+                                <li>Check if determinant is below a threshold (e.g., 1e-6)</li>
+                                <li>Use specialized inversion for common matrix types (orthogonal, symmetric)</li>
+                                <li>Implement fallback behaviors when inversion fails</li>
+                            </ol>
+                        </div>
+                    
+                        <div class="explanation explanation-tip">
+                            <h4>Optimization Opportunity</h4>
+                            <p>The current implementation computes 16 3x3 determinants for a 4x4 inverse. This can be optimized by:</p>
+                            <ul>
+                                <li>Using LU decomposition</li>
+                                <li>SIMD instructions (SSE/AVX)</li>
+                                <li>Exploiting matrix structure (e.g., if upper triangular)</li>
+                            </ul>
+                            <p>For a physics engine, profile before optimizing - the current clear implementation is often preferable initially.</p>
+                        </div>
+
+                        <h3>Testing the Implementation</h3>
+                        <div class="code-header">
+                            <h4>Test Code</h4>
+                        </div>
+                        <pre><code class="language-cpp">// main.cpp
 #include "include/Matrix4.h"
 #include <iostream>
 
@@ -435,23 +558,39 @@ int main() {
     identity.print();
 
     return 0;
-}
-                    </code></pre>
+}</code></pre>
 
-                    <h3>Results</h3>
-                    <p>
-                        For the test matrix:
-                        \[
-                        A = \begin{bmatrix}
-                        2 & 0 & 0 & 1 \\
-                        0 & 2 & 0 & 2 \\
-                        0 & 0 & 2 & 3 \\
-                        0 & 0 & 0 & 1
-                        \end{bmatrix}
-                        \]
-                        The output is:
-                    </p>
-                    <pre><code class="language-bash">
+                        <div class="explanation">
+                            <h4>Verification Strategy</h4>
+                            <p>The test follows a critical verification pattern:</p>
+                            <ol>
+                                <li>Create a non-trivial but invertible matrix</li>
+                                <li>Compute its inverse</li>
+                                <li>Multiply original by inverse</li>
+                                <li>Verify result is identity matrix</li>
+                            </ol>
+                            <p>This catches common errors like:</p>
+                            <ul>
+                                <li>Sign errors in cofactors</li>
+                                <li>Incorrect determinant calculation</li>
+                                <li>Transposition mistakes</li>
+                            </ul>
+                        </div>
+
+                        <h3>Results</h3>
+                        <p>
+                            For the test matrix:
+                            \[
+                            A = \begin{bmatrix}
+                            2 & 0 & 0 & 1 \\
+                            0 & 2 & 0 & 2 \\
+                            0 & 0 & 2 & 3 \\
+                            0 & 0 & 0 & 1
+                            \end{bmatrix}
+                            \]
+                            The output is:
+                        </p>
+                        <pre><code class="language-bash">
 Original Matrix:
 2 0 0 1
 0 2 0 2
@@ -468,7 +607,8 @@ Original * Inverse (should be identity):
 0 1 0 0
 0 0 1 0
 0 0 0 1
-                    </code></pre>
+                        </code></pre>
+                    </div>
                 </section>
             </article>
 

@@ -10,6 +10,33 @@
     <!-- MathJax for rendering formulas -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* Explanation box styling */
+        .explanation {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4285f4;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .explanation h4 {
+            color: #4285f4;
+            margin-top: 0;
+        }
+        .explanation-tip {
+            background-color: #e8f4f8;
+            border-left: 4px solid #34a853;
+        }
+        .explanation-warning {
+            background-color: #fef7e0;
+            border-left: 4px solid #fbbc05;
+        }
+        .operation-group {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+    </style>
 </head>
 <body>
     <!-- Header Section -->
@@ -42,14 +69,30 @@
                         Where \( w \) is the scalar part, and \( (x, y, z) \) is the vector part.
                     </p>
 
+                    <div class="explanation">
+                        <h4>Why Quaternions?</h4>
+                        <p>Quaternions solve critical problems in 3D rotation representation:</p>
+                        <ul>
+                            <li><strong>Gimbal Lock Avoidance:</strong> Unlike Euler angles, quaternions don't suffer from loss of a degree of freedom</li>
+                            <li><strong>Smooth Interpolation:</strong> SLERP (Spherical Linear Interpolation) provides optimal rotation paths</li>
+                            <li><strong>Computational Efficiency:</strong> Fewer operations than rotation matrices for composition</li>
+                            <li><strong>Numerical Stability:</strong> No singularities or angle wrapping issues</li>
+                        </ul>
+                        <p>They're used everywhere from spacecraft attitude control to character animation in games.</p>
+                    </div>
+
                     <h3>Math: Quaternion Operations</h3>
-                    <ul>
-                        <li>
-                            <strong>Multiplication:</strong> 
+
+                    <div class="operation-group">
+                        <h4>Quaternion Multiplication</h4>
+                        <div class="explanation explanation-tip">
+                            <p>The multiplication rule combines both dot and cross products:</p>
                             \[
                             q_1 \times q_2 = (w_1w_2 - \mathbf{v}_1 \cdot \mathbf{v}_2, w_1\mathbf{v}_2 + w_2\mathbf{v}_1 + \mathbf{v}_1 \times \mathbf{v}_2)
                             \]
-                            <pre><code class="language-cpp">
+                            <p>This operation is <strong>not commutative</strong> (order matters), matching how 3D rotations compose.</p>
+                        </div>
+                        <pre><code class="language-cpp">
 Quaternion Quaternion::operator*(const Quaternion& other) const {
     return Quaternion(
         w * other.w - x * other.x - y * other.y - z * other.z,
@@ -58,44 +101,54 @@ Quaternion Quaternion::operator*(const Quaternion& other) const {
         w * other.z + x * other.y - y * other.x + z * other.w
     );
 }
-                            </code></pre>
-                        </li>
+                        </code></pre>
+                    </div>
 
-                        <li>
-                            <strong>Normalization:</strong> 
+                    <div class="operation-group">
+                        <h4>Normalization</h4>
+                        <div class="explanation">
+                            <p>Unit quaternions (length = 1) represent pure rotations. Normalization ensures:</p>
                             \[
-                            \hat{q} = \frac{q}{|q|}
+                            \hat{q} = \frac{q}{|q|} = \frac{q}{\sqrt{w^2 + x^2 + y^2 + z^2}}
                             \]
-                            <pre><code class="language-cpp">
+                            <p>This maintains the mathematical property that rotation quaternions must satisfy \( qq^* = 1 \).</p>
+                        </div>
+                        <pre><code class="language-cpp">
 Quaternion Quaternion::normalize() const {
     float mag = std::sqrt(w * w + x * x + y * y + z * z);
     return Quaternion(w / mag, x / mag, y / mag, z / mag);
 }
-                            </code></pre>
-                        </li>
+                        </code></pre>
+                    </div>
 
-                        <li>
-                            <strong>Conjugate:</strong> 
+                    <div class="operation-group">
+                        <h4>Conjugate</h4>
+                        <div class="explanation">
+                            <p>The conjugate represents the inverse rotation:</p>
                             \[
                             q^* = (w, -\mathbf{v})
                             \]
-                            <pre><code class="language-cpp">
+                            <p>For unit quaternions, the conjugate is also the inverse. This is used to "undo" rotations efficiently.</p>
+                        </div>
+                        <pre><code class="language-cpp">
 Quaternion Quaternion::conjugate() const {
     return Quaternion(w, -x, -y, -z);
 }
-                            </code></pre>
-                        </li>
+                        </code></pre>
+                    </div>
 
-                        <li>
-                            <strong>Rotation Matrix:</strong> 
-                            \[
-                            R = \begin{pmatrix}
-                            1 - 2(y^2 + z^2) & 2(xy - zw) & 2(xz + yw) \\
-                            2(xy + zw) & 1 - 2(x^2 + z^2) & 2(yz - xw) \\
-                            2(xz - yw) & 2(yz + xw) & 1 - 2(x^2 + y^2)
-                            \end{pmatrix}
-                            \]
-                            <pre><code class="language-cpp">
+                    <div class="operation-group">
+                        <h4>Rotation Matrix Conversion</h4>
+                        <div class="explanation explanation-warning">
+                            <h4>Performance Consideration</h4>
+                            <p>While converting to a matrix enables compatibility with existing rendering systems, it's computationally expensive (16 multiplications). Best used when:</p>
+                            <ul>
+                                <li>Interfacing with matrix-based APIs (OpenGL/DirectX)</li>
+                                <li>Pre-computing static transformations</li>
+                            </ul>
+                            <p>For dynamic rotations, prefer direct quaternion operations.</p>
+                        </div>
+                        <pre><code class="language-cpp">
 Matrix4 Quaternion::toMatrix() const {
     Matrix4 mat;
 
@@ -133,15 +186,24 @@ Matrix4 Quaternion::toMatrix() const {
 
     return mat;
 }
-                            </code></pre>
-                        </li>
+                        </code></pre>
+                    </div>
 
-                        <li>
-                            <strong>Axis-Angle to Quaternion:</strong> 
+                    <div class="operation-group">
+                        <h4>Axis-Angle Conversion</h4>
+                        <div class="explanation">
+                            <p>This is the most intuitive way to create quaternions:</p>
                             \[
                             q = (\cos(\theta/2), \mathbf{a} \sin(\theta/2))
                             \]
-                            <pre><code class="language-cpp">
+                            <p>Where:</p>
+                            <ul>
+                                <li>\(\theta\) is the rotation angle</li>
+                                <li>\(\mathbf{a}\) is the unit axis vector</li>
+                            </ul>
+                            <p>The half-angle ensures proper rotation composition.</p>
+                        </div>
+                        <pre><code class="language-cpp">
 Quaternion Quaternion::fromAxisAngle(const Vector3& axis, float angle) {
     float halfAngle = angle * 0.5f;
     float sinHalfAngle = std::sin(halfAngle);
@@ -152,20 +214,22 @@ Quaternion Quaternion::fromAxisAngle(const Vector3& axis, float angle) {
         axis.z * sinHalfAngle
     ).normalize();
 }
-                            </code></pre>
-                        </li>
+                        </code></pre>
+                    </div>
 
-                        <li>
-                            <strong>Euler Angles to Quaternion:</strong> 
-                            \[
-                            q = \begin{pmatrix}
-                            \cos(\phi/2)\cos(\theta/2)\cos(\psi/2) + \sin(\phi/2)\sin(\theta/2)\sin(\psi/2) \\
-                            \sin(\phi/2)\cos(\theta/2)\cos(\psi/2) - \cos(\phi/2)\sin(\theta/2)\sin(\psi/2) \\
-                            \cos(\phi/2)\sin(\theta/2)\cos(\psi/2) + \sin(\phi/2)\cos(\theta/2)\sin(\psi/2) \\
-                            \cos(\phi/2)\cos(\theta/2)\sin(\psi/2) - \sin(\phi/2)\sin(\theta/2)\cos(\psi/2)
-                            \end{pmatrix}
-                            \]
-                            <pre><code class="language-cpp">
+                    <div class="operation-group">
+                        <h4>Euler Angles Conversion</h4>
+                        <div class="explanation explanation-warning">
+                            <h4>Gimbal Lock Warning</h4>
+                            <p>While convenient for human understanding, Euler angles suffer from:</p>
+                            <ul>
+                                <li>Ambiguity (multiple representations for same rotation)</li>
+                                <li>Gimbal lock (loss of degree of freedom when axes align)</li>
+                                <li>Order-dependence (XYZ vs ZXY etc.)</li>
+                            </ul>
+                            <p>Use primarily for input/output, not internal calculations.</p>
+                        </div>
+                        <pre><code class="language-cpp">
 Quaternion Quaternion::fromEulerAngles(float pitch, float yaw, float roll) {
     float cy = std::cos(yaw * 0.5f);
     float sy = std::sin(yaw * 0.5f);
@@ -181,21 +245,27 @@ Quaternion Quaternion::fromEulerAngles(float pitch, float yaw, float roll) {
         cr * cp * sy - sr * sp * cy
     ).normalize();
 }
-                            </code></pre>
-                        </li>
+                        </code></pre>
+                    </div>
 
-                        <li>
-                            <strong>Quaternion to Euler Angles:</strong> 
+                    <div class="operation-group">
+                        <h4>Quaternion to Euler Angles</h4>
+                        <div class="explanation">
+                            <p>This conversion is inherently unstable due to:</p>
+                            <ul>
+                                <li>Singularities at poles (pitch = ±90°)</li>
+                                <li>Multiple solutions (360° periodicity)</li>
+                            </ul>
+                            <p>The implementation uses atan2 for robust angle calculation:</p>
                             \[
-                            \phi = \arcsin(2(wy - xz))
-                            \]
-                            \[
-                            \theta = \arctan2(2(wx + yz), 1 - 2(x^2 + y^2))
-                            \]
-                            \[
+                            \begin{cases}
+                            \phi = \arcsin(2(wy - xz)) \\
+                            \theta = \arctan2(2(wx + yz), 1 - 2(x^2 + y^2)) \\
                             \psi = \arctan2(2(wz + xy), 1 - 2(y^2 + z^2))
+                            \end{cases}
                             \]
-                            <pre><code class="language-cpp">
+                        </div>
+                        <pre><code class="language-cpp">
 Vector3 Quaternion::toEulerAngles() const {
     Vector3 euler;
 
@@ -218,9 +288,18 @@ Vector3 Quaternion::toEulerAngles() const {
 
     return euler;
 }
-                            </code></pre>
-                        </li>
-                    </ul>
+                        </code></pre>
+                    </div>
+
+                    <div class="explanation explanation-tip">
+                        <h4>Practical Usage Tips</h4>
+                        <ol>
+                            <li><strong>Always normalize</strong> quaternions after operations to prevent numerical drift</li>
+                            <li><strong>Cache conversions</strong> when possible (e.g., store both quaternion and matrix forms if both are needed)</li>
+                            <li><strong>Prefer quaternion slerp</strong> over Euler angle lerp for animations</li>
+                            <li><strong>Use threshold comparisons</strong> (not exact equality) when checking quaternion equivalence</li>
+                        </ol>
+                    </div>
                 </section>
             </article>
 
