@@ -1,0 +1,227 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: visible;
+}
+
+/* Header Styling */
+header {
+    position: relative;
+    background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #4772e9);
+    background-size: 300% 300%;
+    animation: gradientShift 10s infinite alternate ease-in-out;
+    color: #fff;
+    text-align: center;
+    padding: 80px 20px;
+    overflow: hidden;
+}
+
+/* Subtle moving gradient animation */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+/* Typewriter Cursor */
+#typewriter::after {
+    content: "|";
+    display: inline-block;
+    margin-left: 5px;
+    animation: blink 0.7s infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+/* Header Buttons */
+.header-buttons {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 15px;
+    z-index: 100;
+}
+
+.menu-button {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.menu-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Floating Glow Effect */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInMove 1s ease-out forwards, glowPulse 2.5s infinite alternate;
+}
+
+@keyframes fadeInMove {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes glowPulse {
+    from {
+        text-shadow: 0 0 5px rgba(71, 114, 233, 0.5);
+    }
+    to {
+        text-shadow: 0 0 15px rgba(71, 114, 233, 0.8);
+    }
+}
+
+/* Header text styles */
+
+header h1 {
+    font-size: 48px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: text-shadow 0.3s ease-in-out;
+}
+
+/* Hover glow effect */
+header h1:hover {
+    text-shadow: 0 0 15px rgba(71, 114, 233, 0.7);
+}
+
+header p {
+    font-size: 20px;
+    margin-top: 10px;
+    color: #a6c1ff;
+    font-weight: 500;
+}
+
+/* Devlog Page Styling */
+.devlog-page {
+    padding: 40px 0;
+}
+
+.devlog-entry {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.devlog-entry:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.devlog-entry h1 {
+    color: #4772e9;
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.devlog-entry .date {
+    color: #777;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.devlog-entry h2 {
+    color: #4772e9;
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #4772e9;
+    padding-bottom: 5px;
+}
+
+.devlog-entry p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.media-container {
+    margin-bottom: 20px;
+}
+
+.devlog-image {
+    max-width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.devlog-image:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.back-button {
+    display: inline-block;
+    background: #4772e9;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    margin-top: 20px;
+}
+
+.back-button:hover {
+    background: #3558b5;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Glassmorphism Effect */
+.glassmorphism {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Footer Styling */
+footer {
+    background: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px 0;
+    margin-top: 20px;
+}
+
+footer p {
+    font-size: 14px;
+}

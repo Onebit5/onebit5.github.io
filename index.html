@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
 </head>
 <body>
     <!-- Header Section -->
@@ -45,6 +50,9 @@
                 </div>
             </div>
         </div>
+        <a href="path/to/resume.pdf" download class="resume-button">
+            <i class="fas fa-download"></i> Download Resume
+        </a>
     </header>
 
     <!-- Main Content -->
@@ -188,7 +196,7 @@
         <!-- Skills Section -->
         <section id="skills">
             <div class="container">
-                <h2>Programming Languagues</h2>
+                <h2>Programming Languages</h2>
                 <ul>
                     <img src="images/logos/c.svg" alt="C" class="skill-image">
                     <img src="images/logos/cpp.svg" alt="C++" class="skill-image">
@@ -277,6 +285,25 @@
             </div>
         </section>
     </main>
+
+    <!-- Contact Section -->
+<section id="contact" class="glassmorphism">
+    <div class="container">
+        <h2>Contact Me</h2>
+        <div class="contact-content">
+            <p>Interested in collaborating or hiring me? Reach out via email or socials!</p>
+            <div class="contact-links">
+                <a href="mailto:sronebitco@gmail.com" class="contact-button">
+                    <i class="fas fa-envelope"></i> Email Me
+                </a>
+                <a href="https://github.com/Onebit5" target="_blank" class="contact-button">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <!-- Add other social links as needed -->
+            </div>
+        </div>
+    </div>
+</section>
 
     <!-- Footer Section -->
     <footer>
@@ -431,9 +458,6 @@
     // Handle window resize
     window.addEventListener('resize', getPositions);
 });
-
-
-
     </script>
 </body>
 </html>
