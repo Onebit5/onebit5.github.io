@@ -361,31 +361,19 @@ Vector3 Matrix4::operator*(const Vector3& vec) const {
                     </div>
 
                     <div class="operation-group">
-                        <h3>Upcoming Mathematics Improvements</h3>
+                        <h3>Rigid Body System Implementation</h3>
                         
                         <div class="explanation">
-                            <p>Based on profiling data from recent benchmark tests, I'm planning several improvements for my next update:</p>
+                            <p>New rigid body physics system being implemented for advanced physical simulations:</p>
                             
                             <ol>
-                                <li><strong>Add SIMD support for vector/matrix operations</strong></li>
-                                <li><strong>Implement memory alignment for better cache performance</strong></li>
-                                <li><strong>Add matrix transposition and efficient multiplication algorithms</strong></li>
+                                <li><strong>RigidBody class</strong> - Core class with mass and inertia tensor properties</li>
+                                <li><strong>Force and torque accumulators</strong> - For applying multiple physical interactions</li>
+                                <li><strong>Motion integration methods</strong> - Euler, RK4, and Verlet integration schemes</li>
                             </ol>
                             
-                            <p>These core improvements will establish a solid foundation for more complex physics simulations in the future.</p>
+                            <p>This system will enable realistic simulation of solid objects with proper physical interactions.</p>
                         </div>
-                    </div>
-
-                    <div class="explanation explanation-tip">
-                        <h4>What This Means For The Engine</h4>
-                        <p>The implementations described in this devlog provide several key benefits:</p>
-                        <ul>
-                            <li><strong>Robust numerical stability</strong> - Fewer glitches in complex interactions</li>
-                            <li><strong>Efficient operations</strong> - Optimized for the most common use cases</li>
-                            <li><strong>Clean API design</strong> - Intuitive interfaces for higher-level systems</li>
-                            <li><strong>Solid foundation</strong> - Ready for extension with more specialized functions</li>
-                        </ul>
-                        <p>All of this contributes to a reliable math system that can handle diverse simulation scenarios.</p>
                     </div>
 
                 </section>
