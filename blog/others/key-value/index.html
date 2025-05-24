@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devlog: Building a Distributed Key-Value Store</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Highlight.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" rel="stylesheet" />
+    <!-- MathJax for rendering formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="header-overlay">
+            <div class="container">
+                <nav class="header-buttons">
+                    <a href="/" class="menu-button">Home</a>
+                    <a href="/blog" class="menu-button">Devlog</a>
+                </nav>
+                <h1 id="typewriter"></h1>
+                <p class="fade-in">Building a Distributed Key-Value Store from Scratch</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="devlog-page">
+        <div class="container">
+            <article class="devlog-entry">
+                <p class="date">Published on: <strong>2025-05-24</strong></p>
+
+                <section class="devlog-content">
+                    <!-- Introduction Section -->
+                    <div class="operation-group">
+                        <h2>🎯 Project Overview</h2>
+                        <p>
+                            Building a distributed key-value store is one of the most challenging and rewarding projects in systems programming. This implementation demonstrates core distributed systems concepts including consistent hashing, data replication, leader election, and fault tolerance.
+                        </p>
+                        
+                        <div class="explanation">
+                            <h4>Why Distributed Key-Value Stores Matter</h4>
+                            <p>Distributed key-value stores are the backbone of modern internet infrastructure:</p>
+                            <ul>
+                                <li><strong>Amazon DynamoDB:</strong> Powers AWS services and countless applications</li>
+                                <li><strong>Apache Cassandra:</strong> Used by Netflix, Instagram, and Uber</li>
+                                <li><strong>Redis Cluster:</strong> Enables high-performance caching at scale</li>
+                                <li><strong>Etcd:</strong> Critical component of Kubernetes orchestration</li>
+                            </ul>
+                            <p>Understanding how to build one teaches fundamental distributed systems principles that apply across the entire field.</p>
+                        </div>
+
+                        <div class="architecture-diagram">
+                            <h3>System Architecture</h3>
+                            <p>Node Management • Consistent Hashing • Replication • Leader Election • Storage • Client API</p>
+                        </div>
+
+                        <div class="component-list">
+                            <div class="component-item">
+                                <h4>🌐 Node Management</h4>
+                                <p>Cluster membership and gossip protocol for node discovery and failure detection</p>
+                            </div>
+                            <div class="component-item">
+                                <h4>🔄 Consistent Hashing</h4>
+                                <p>Distributes data across nodes with minimal reshuffling during topology changes</p>
+                            </div>
+                            <div class="component-item">
+                                <h4>📊 Data Replication</h4>
+                                <p>Ensures data availability and durability through configurable replication factors</p>
+                            </div>
+                            <div class="component-item">
+                                <h4>👑 Leader Election</h4>
+                                <p>Coordinates cluster operations and handles metadata consistency</p>
+                            </div>
+                            <div class="component-item">
+                                <h4>💾 Storage Engine</h4>
+                                <p>Thread-safe in-memory storage with extensible persistence layer</p>
+                            </div>
+                            <div class="component-item">
+                                <h4>🔌 Client API</h4>
+                                <p>High-level interface for PUT, GET, and DELETE operations</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Node Management Section -->
+                    <div class="operation-group">
+                        <h2>🔧 Node Management & Cluster Communication</h2>
+                        <p>
+                            The foundation of any distributed system is node management - how nodes discover each other, track membership, and detect failures.
+                        </p>
+
+                        <div class="explanation">
+                            <h4>The Gossip Protocol</h4>
+                            <p>My implementation uses a gossip-based protocol for cluster membership:</p>
+                            <ul>
+                                <li><strong>Periodic Communication:</strong> Nodes regularly exchange membership information</li>
+                                <li><strong>Epidemic Spread:</strong> Information propagates quickly through the cluster</li>
+                                <li><strong>Fault Tolerance:</strong> No single point of failure for membership data</li>
+                                <li><strong>Scalability:</strong> Communication overhead grows logarithmically</li>
+                            </ul>
+                        </div>
+
+                        <div class="code-header">
+                            <h4>Node Class Implementation</h4>
+                        </div>
+                        <pre><code class="language-cpp">class Node {
+public:
+    Node(NodeId id, std::string ip, int port)
+        : id_(id), ip_(ip), port_(port), is_alive_(true), 
+          last_heartbeat_(std::chrono::steady_clock::now()) {
+    }
+
+    NodeId getId() const { return id_; }
+    std::string getIp() const { return ip_; }
+    int getPort() const { return port_; }
+    bool isAlive() const { return is_alive_; }
+
+    void markAlive() {
+        is_alive_ = true;
+        last_heartbeat_ = std::chrono::steady_clock::now();
+    }
+
+    void markDead() { is_alive_ = false; }
+
+    std::chrono::steady_clock::time_point getLastHeartbeat() const {
+        return last_heartbeat_;
+    }
+
+private:
+    NodeId id_;
+    std::string ip_;
+    int port_;
+    bool is_alive_;
+    std::chrono::steady_clock::time_point last_heartbeat_;
+    std::weak_ptr<StorageEngine> storage_engine_;
+};</code></pre>
+
+                        <div class="explanation explanation-tip">
+                            <h4>Design Decision: Weak Pointer for Storage</h4>
+                            <p>The <code>std::weak_ptr</code> for the storage engine prevents circular dependencies between Node and StorageEngine objects. This pattern is common in distributed systems where components need to reference each other without creating ownership cycles.</p>
+                        </div>
+
+                        <div class="code-header">
+                            <h4>Cluster Manager - Gossip Implementation</h4>
+                        </div>
+                        <pre><code class="language-cpp">class ClusterManager {
+public:
+    void gossipLoop() {
+        while (running_) {
+            checkNodeHeartbeats();
+            sendGossipMessages();
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    }
+
+private:
+    void checkNodeHeartbeats() {
+        std::lock_guard<std::mutex> lock(nodes_mutex_);
+        auto now = std::chrono::steady_clock::now();
+
+        for (const auto& pair : nodes_) {
+            const auto& node = pair.second;
+            if (node->getId() != local_node_->getId()) {
+                auto time_since_heartbeat = std::chrono::duration_cast<std::chrono::seconds>(
+                    now - node->getLastHeartbeat()).count();
+
+                if (time_since_heartbeat > 10 && node->isAlive()) {
+                    // Node considered dead after 10 seconds without heartbeat
+                    std::cout << "Node " << node->getId() << " is now considered dead" << std::endl;
+                    node->markDead();
+                    // Trigger rebalancing if needed
+                }
+            }
+        }
+    }
+
+    void sendGossipMessages() {
+        // Select random nodes to gossip with
+        std::vector<std::shared_ptr<Node>> target_nodes;
+        {
+            std::lock_guard<std::mutex> lock(nodes_mutex_);
+            for (const auto& pair : nodes_) {
+                const auto& node = pair.second;
+                if (node->getId() != local_node_->getId() && node->isAlive()) {
+                    target_nodes.push_back(node);
+                }
+            }
+        }
+
+        if (target_nodes.empty()) return;
+
+        // Randomly select a subset of nodes
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(target_nodes.begin(), target_nodes.end(), g);
+
+        // Take at most 3 nodes to gossip with
+        int gossip_count = std::min(3, static_cast<int>(target_nodes.size()));
+
+        // Create and send gossip message
+        json gossip_data = createGossipMessage();
+        for (int i = 0; i < gossip_count; ++i) {
+            sendGossipTo(target_nodes[i], gossip_data);
+        }
+    }
+};</code></pre>
+
+                        <div class="explanation explanation-warning">
+                            <h4>Failure Detection Tuning</h4>
+                            <p>The 10-second timeout is a design choice that balances:</p>
+                            <ul>
+                                <li><strong>False Positives:</strong> Too short = healthy nodes marked as failed</li>
+                                <li><strong>Detection Speed:</strong> Too long = slow response to actual failures</li>
+                                <li><strong>Network Conditions:</strong> Must account for typical network latency</li>
+                            </ul>
+                            <p>Production systems often use adaptive timeouts based on historical network performance.</p>
+                        </div>
+                    </div>
+
+                    <!-- Consistent Hashing Section -->
+                    <div class="operation-group">
+                        <h2>🔧 Consistent Hashing Implementation</h2>
+                        <p>
+                            Consistent hashing is the key to distributing data across nodes while minimizing data movement when nodes are added or removed.
+                        </p>
+
+                        <div class="explanation">
+                            <h4>The Magic of Consistent Hashing</h4>
+                            <p>Traditional hashing has a problem: when you add or remove a server, <code>hash(key) % num_servers</code> changes for most keys, requiring massive data redistribution.</p>
+                            <p>Consistent hashing solves this by:</p>
+                            <ul>
+                                <li><strong>Hash Ring:</strong> Arranges nodes and keys on a circular hash space</li>
+                                <li><strong>Virtual Nodes:</strong> Each physical node maps to multiple points on the ring</li>
+                                <li><strong>Minimal Movement:</strong> Only keys near failed nodes need redistribution</li>
+                                <li><strong>Load Balancing:</strong> Virtual nodes ensure even data distribution</li>
+                            </ul>
+                        </div>
+
+                        <h3>Mathematical Foundation</h3>
+                        <p>
+                            For a key \( k \) and hash function \( h \), the responsible node is the first node \( n \) on the ring where:
+                            \[ h(n) \geq h(k) \]
+                            If no such node exists, we wrap around to the smallest hash value.
+                        </p>
+                        <p>
+                            Virtual nodes improve load distribution. For \( V \) virtual nodes per physical node, each physical node \( p \) creates virtual nodes:
+                            \[ v_{p,i} = h(p + ":" + i) \text{ for } i \in [0, V-1] \]
+                        </p>
+
+                        <div class="code-header">
+                            <h4>Consistent Hash Ring Implementation</h4>
+                        </div>
+                        <pre><code class="language-cpp">class ConsistentHash {
+public:
+    ConsistentHash(int num_virtual_nodes = 256)
+        : num_virtual_nodes_(num_virtual_nodes) {}
+
+    void addNode(std::shared_ptr<Node> node) {
+        std::lock_guard<std::mutex> lock(ring_mutex_);
+
+        // Add virtual nodes to the ring
+        for (int i = 0; i < num_virtual_nodes_; ++i) {
+            Hash hash = hashFunction(node->getId() + ":" + std::to_string(i));
+            ring_[hash] = node;
+        }
+
+        node_virtual_nodes_[node->getId()] = num_virtual_nodes_;
+    }
+
+    std::vector<std::shared_ptr<Node>> getNodesForKey(const Key& key, int replica_count) {
+        std::vector<std::shared_ptr<Node>> nodes;
+        if (ring_.empty()) return nodes;
+
+        std::lock_guard<std::mutex> lock(ring_mutex_);
+
+        Hash hash = hashFunction(key);
+        auto it = ring_.lower_bound(hash);
+
+        // If we reached the end, wrap around to the beginning
+        if (it == ring_.end()) {
+            it = ring_.begin();
+        }
+
+        // Keep track of nodes we've already added to avoid duplicates
+        std::map<NodeId, bool> added_nodes;
+
+        // Get the requested number of replicas
+        while (nodes.size() < replica_count && added_nodes.size() < node_virtual_nodes_.size()) {
+            if (added_nodes.find(it->second->getId()) == added_nodes.end()) {
+                nodes.push_back(it->second);
+                added_nodes[it->second->getId()] = true;
+            }
+
+            ++it;
+            if (it == ring_.end()) {
+                it = ring_.begin();
+            }
+        }
+
+        return nodes;
+    }
+
+private:
+    Hash hashFunction(const std::string& str) {
+        // MurmurHash implementation for good distribution
+        const uint64_t m = 0xc6a4a7935bd1e995ULL;
+        const int r = 47;
+        uint64_t h = 0x8445d61a4e774912ULL ^ (str.length() * m);
+
+        const uint64_t* data = (const uint64_t*)str.data();
+        const uint64_t* end = data + (str.length() / 8);
+
+        while (data != end) {
+            uint64_t k = *data++;
+            k *= m; k ^= k >> r; k *= m;
+            h ^= k; h *= m;
+        }
+
+        // Handle remaining bytes
+        const unsigned char* data2 = (const unsigned char*)data;
+        switch (str.length() & 7) {
+            case 7: h ^= uint64_t(data2[6]) << 48;
+            case 6: h ^= uint64_t(data2[5]) << 40;
+            case 5: h ^= uint64_t(data2[4]) << 32;
+            case 4: h ^= uint64_t(data2[3]) << 24;
+            case 3: h ^= uint64_t(data2[2]) << 16;
+            case 2: h ^= uint64_t(data2[1]) << 8;
+            case 1: h ^= uint64_t(data2[0]); h *= m;
+        };
+
+        h ^= h >> r; h *= m; h ^= h >> r;
+        return h;
+    }
+
+    int num_virtual_nodes_;
+    std::map<Hash, std::shared_ptr<Node>> ring_;
+    std::unordered_map<NodeId, int> node_virtual_nodes_;
+    std::mutex ring_mutex_;
+};</code></pre>
+
+                        <div class="explanation explanation-advanced">
+                            <h4>Hash Function Choice: MurmurHash</h4>
+                            <p>I use MurmurHash instead of standard library hash functions because:</p>
+                            <ul>
+                                <li><strong>Distribution Quality:</strong> Excellent avalanche effect and low collision rate</li>
+                                <li><strong>Performance:</strong> Faster than cryptographic hashes for non-security applications</li>
+                                <li><strong>Determinism:</strong> Same input always produces same output across platforms</li>
+                                <li><strong>Bit Mixing:</strong> Small input changes cause large output changes</li>
+                            </ul>
+                            <p>The bit manipulation operations (shifts, XORs, multiplications) ensure uniform distribution across the hash space.</p>
+                        </div>
+
+                        <div class="explanation explanation-tip">
+                            <h4>Virtual Nodes: Why 256?</h4>
+                            <p>The default of 256 virtual nodes per physical node is based on research:</p>
+                            <ul>
+                                <li><strong>Load Balance:</strong> More virtual nodes = better load distribution</li>
+                                <li><strong>Memory Overhead:</strong> Each virtual node requires storage in the ring</li>
+                                <li><strong>Sweet Spot:</strong> 256 provides good balance without excessive overhead</li>
+                            </ul>
+                            <p>Amazon's Dynamo paper suggests 100-200 virtual nodes per physical node as optimal.</p>
+                        </div>
+                    </div>
+
+                    <!-- Data Replication Section -->
+                    <div class="operation-group">
+                        <h2>🔧 Data Replication & Consistency</h2>
+                        <p>
+                            Replication ensures data availability and durability. My implementation supports configurable replication factors and consistency levels.
+                        </p>
+
+                        <div class="explanation">
+                            <h4>CAP Theorem in Practice</h4>
+                            <p>The famous CAP theorem states you can't have all three:</p>
+                            <ul>
+                                <li><strong>Consistency:</strong> All nodes see the same data simultaneously</li>
+                                <li><strong>Availability:</strong> System remains operational during failures</li>
+                                <li><strong>Partition Tolerance:</strong> System continues despite network failures</li>
+                            </ul>
+                            <p>My system chooses <strong>Availability + Partition Tolerance</strong> with tunable consistency (eventual consistency with read repair).</p>
+                        </div>
+
+                        <h3>Replication Strategy</h3>
+                        <p>
+                            For a replication factor \( R \) and \( N \) total nodes, each key is stored on \( R \) consecutive nodes in the consistent hash ring. The consistency level \( C \) determines how many replicas must respond for a successful operation:
+                        </p>
+                        <ul>
+                            <li><strong>Write Quorum:</strong> \( W = \lfloor R/2 \rfloor + 1 \) nodes must acknowledge writes</li>
+                            <li><strong>Read Quorum:</strong> \( R_{read} = C \) nodes must respond to reads</li>
+                            <li><strong>Strong Consistency:</strong> \( W + R_{read} > R \) ensures reads see latest writes</li>
+                        </ul>
+
+                        <div class="code-header">
+                            <h4>Replication Manager Implementation</h4>
+                        </div>
+                        <pre><code class="language-cpp">class ReplicationManager {
+public:
+    ReplicationManager(std::shared_ptr<ConsistentHash> consistent_hash,
+                      std::shared_ptr<ClusterManager> cluster_manager,
+                      std::shared_ptr<Node> local_node,
+                      int replication_factor = 3)
+        : consistent_hash_(consistent_hash),
+          cluster_manager_(cluster_manager),
+          local_node_(local_node),
+          replication_factor_(replication_factor) {}
+
+    bool replicateData(const Key& key, const Value& value) {
+        auto nodes = consistent_hash_->getNodesForKey(key, replication_factor_);
+        bool success = false;
+        int successful_replicas = 0;
+        std::string successful_nodes;
+
+        for (const auto& node : nodes) {
+            if (!node->isAlive()) continue;
+
+            if (sendReplicateRequest(node, key, value)) {
+                successful_replicas++;
+                if (!successful_nodes.empty())
+                    successful_nodes += ", ";
+                successful_nodes += node->getId();
+            }
+        }
+
+        // Quorum-based success criteria (more than half of intended replicas)
+        if (successful_replicas > 0 && 
+            successful_replicas >= std::min(2, (replication_factor_ / 2) + 1)) {
+            success = true;
+
+            // Log the replication status
+            if (successful_replicas < replication_factor_) {
+                printTimestampedMessage("Write succeeded with " + 
+                    std::to_string(successful_replicas) + "/" + 
+                    std::to_string(replication_factor_) +
+                    " replicas (" + successful_nodes + " acknowledged)");
+            }
+        }
+
+        return success;
+    }
+
+    std::optional<Value> readData(const Key& key, int consistency_level = 1) {
+        auto nodes = consistent_hash_->getNodesForKey(key, replication_factor_);
+        std::vector<Value> values;
+
+        for (const auto& node : nodes) {
+            if (!node->isAlive()) continue;
+
+            auto value = requestValueFromNode(node, key);
+            if (value.has_value()) {
+                values.push_back(value.value());
+            }
+
+            if (values.size() >= consistency_level) {
+                break;
+            }
+        }
+
+        if (values.size() < consistency_level) {
+            return std::nullopt;
+        }
+
+        // In a real implementation, we might need to resolve conflicts here
+        return values[0];
+    }
+
+    // Handle read repair - reconcile differences between replicas
+    void performReadRepair(const Key& key, const Value& most_recent_value) {
+        auto nodes = consistent_hash_->getNodesForKey(key, replication_factor_);
+        int repair_count = 0;
+
+        for (const auto& node : nodes) {
+            if (!node->isAlive()) continue;
+
+            auto current_value = requestValueFromNode(node, key);
+
+            // If node doesn't have the value or has a different value
+            if (!current_value.has_value() || 
+                current_value.value() != most_recent_value) {
+                sendReplicateRequest(node, key, most_recent_value);
+                repair_count++;
+            }
+        }
+
+        if (repair_count > 0) {
+            printTimestampedMessage("Read repair: Updated " + 
+                std::to_string(repair_count) + " replicas for key '" + key + "'");
+        }
+    }
+};</code></pre>
+
+                        <div class="explanation explanation-warning">
+                            <h4>Conflict Resolution Challenge</h4>
+                            <p>My current implementation uses "last writer wins" for simplicity, but production systems need sophisticated conflict resolution:</p>
+                            <ul>
+                                <li><strong>Vector Clocks:</strong> Track causality between updates</li>
+                                <li><strong>CRDTs:</strong> Conflict-free replicated data types</li>
+                                <li><strong>Application-Level:</strong> Domain-specific merge strategies</li>
+                                <li><strong>Manual Resolution:</strong> Present conflicts to users</li>
+                            </ul>
+                        </div>
+
+                        <div class="explanation explanation-tip">
+                            <h4>Read Repair: Background Healing</h4>
+                            <p>Read repair is a powerful technique that:</p>
+                            <ul>
+                                <li>Fixes inconsistencies without explicit repair operations</li>
+                                <li>Runs in background threads to avoid blocking client requests</li>
+                                <li>Ensures frequently accessed data converges to consistency</li>
+                                <li>Complements periodic anti-entropy processes</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Leader Election Section -->
+                    <div class="operation-group">
+                        <h2>🔧 Leader Election</h2>
+                        <p>
+                            Leader election ensures coordination for cluster-wide operations like schema changes, membership updates, and administrative tasks.
+                        </p>
+
+                        <div class="explanation">
+                            <h4>Why Do We Need Leaders?</h4>
+                            <p>While key-value operations can be fully distributed, some operations require coordination:</p>
+                            <ul>
+                                <li><strong>Membership Changes:</strong> Adding/removing nodes safely</li>
+                                <li><strong>Schema Evolution:</strong> Coordinated metadata updates</li>
+                                <li><strong>Garbage Collection:</strong> Cluster-wide cleanup operations</li>
+                                <li><strong>Monitoring:</strong> Centralized health reporting</li>
+                            </ul>
+                        </div>
+
+                        <div class="code-header">
+                            <h4>Simple Leader Election Implementation</h4>
+                        </div>
+                        <pre><code class="language-cpp">class LeaderElection {
+public:
+    LeaderElection(NodeId local_node_id, std::shared_ptr<ClusterManager> cluster_manager)
+        : local_node_id_(local_node_id),
+          cluster_manager_(cluster_manager),
+          current_leader_id_(""),
+          running_(false) {}
+
+    void electionLoop() {
+        while (running_) {
+            if (current_leader_id_.empty() ||
+                !cluster_manager_->getNode(current_leader_id_) ||
+                !cluster_manager_->getNode(current_leader_id_)->isAlive()) {
+                // We need to elect a new leader
+                initiateElection();
+            }
+
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        }
+    }
+
+    void initiateElection() {
+        std::cout << "Initiating leader election" << std::endl;
+
+        // Simple election algorithm: highest node ID becomes leader
+        auto alive_nodes = cluster_manager_->getAliveNodes();
+        if (alive_nodes.empty()) {
+            current_leader_id_ = "";
+            return;
+        }
+
+        NodeId highest_id = alive_nodes[0]->getId();
+        for (const auto& node : alive_nodes) {
+            if (node->getId() > highest_id) {
+                highest_id = node->getId();
+            }
+        }
+
+        current_leader_id_ = highest_id;
+        std::cout << "New leader elected: " << current_leader_id_ << std::endl;
+
+        // Broadcast the election result
+        broadcastElectionResult();
+    }
+
+    bool isLeader() const {
+        return current_leader_id_ == local_node_id_;
+    }
+
+    NodeId getCurrentLeader() const {
+        return current_leader_id_;
+    }
+};</code></pre>
+
+                        <div class="explanation explanation-advanced">
+                            <h4>Production Leader Election Algorithms</h4>
+                            <p>My simple "highest ID wins" approach works for demos, but production systems use more sophisticated algorithms:</p>
+                            <ul>
+                                <li><strong>Raft:</strong> Consensus-based election with terms and voting</li>
+                                <li><strong>Bully Algorithm:</strong> Hierarchical election with message passing</li>
+                                <li><strong>Ring Algorithm:</strong> Token-passing approach</li>
+                                <li><strong>External Coordination:</strong> Using ZooKeeper or etcd</li>
+                            </ul>
+                            <p>These handle edge cases like network partitions and ensure strong consistency guarantees.</p>
+                        </div>
+                    </div>
+
+                    <!-- Storage Engine Section -->
+                    <div class="operation-group">
+                        <h2>🔧 Storage Engine</h2>
+                        <p>
+                            The storage engine provides thread-safe data persistence with a clean interface for higher-level components.
+                        </p>
+
+                        <div class="code-header">
+                            <h4>Thread-Safe Storage Implementation</h4>
+                        </div>
+                        <pre><code class="language-cpp">class StorageEngine {
+public:
+    StorageEngine() {}
+
+    void put(const Key& key, const Value& value) {
+        std::lock_guard<std::mutex> lock(data_mutex_);
+        data_[key] = value;
+    }
+
+    std::optional<Value> get(const Key& key) {
+        std::lock_guard<std::mutex> lock(data_mutex_);
+        auto it = data_.find(key);
+        if (it != data_.end()) {
+            return it->second;
+        }
+        return std::nullopt;
+    }
+
+    bool remove(const Key& key) {
+        std::lock_guard<std::mutex> lock(data_mutex_);
+        return data_.erase(key) > 0;
+    }
+
+    size_t size() const {
+        std::lock_guard<std::mutex> lock(data_mutex_);
+        return data_.size();
+    }
+
+private:
+    std::unordered_map<Key, Value> data_;
+    mutable std::mutex data_mutex_;
+};</code></pre>
+
+                        <div class="explanation explanation-tip">
+                            <h4>Thread Safety Strategy</h4>
+                            <p>The storage engine uses a single mutex for simplicity, but production systems often use more sophisticated approaches:</p>
+                            <ul>
+                                <li><strong>Reader-Writer Locks:</strong> Allow concurrent reads but exclusive writes</li>
+                                <li><strong>Lock-Free Data Structures:</strong> Using atomic operations and CAS</li>
+                                <li><strong>Sharded Locking:</strong> Separate locks for different key ranges</li>
+                                <li><strong>Copy-on-Write:</strong> Immutable data structures with atomic swaps</li>
+                            </ul>
+                        </div>
+
+                        <div class="explanation explanation-warning">
+                            <h4>Persistence Layer Missing</h4>
+                            <p>This implementation uses in-memory storage only. Production systems need:</p>
+                            <ul>
+                                <li><strong>Write-Ahead Logging (WAL):</strong> Durability guarantees</li>
+                                <li><strong>Periodic Snapshots:</strong> Faster recovery</li>
+                                <li><strong>Compaction:</strong> Space optimization</li>
+                                <li><strong>Checksums:</strong> Data integrity verification</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Client API Section -->
+                    <div class="operation-group">
+                        <h2>🔧 Client API & Request Routing</h2>
+                        <p>
+                            The client API provides a high-level interface that handles request routing, consistency levels, and error handling.
+                        </p>
+
+                        <div class="explanation">
+                            <h4>Smart Request Routing</h4>
+                            <p>The client handler implements intelligent request routing:</p>
+                            <ul>
+                                <li><strong>Primary Node Detection:</strong> Uses consistent hashing to find the right node</li>
+                                <li><strong>Local Processing:</strong> Handles requests locally when possible</li>
+                                <li><strong>Request Forwarding:</strong> Transparently forwards to appropriate nodes</li>
+                                <li><strong>Replica Coordination:</strong> Manages replication and consistency</li>
+                            </ul>
+                        </div>
+
+                        <div class="code-header">
+                            <h4>Client Handler Implementation</h4>
+                        </div>
+                        <pre><code class="language-cpp">class ClientHandler {
+public:
+    ClientHandler(std::shared_ptr<StorageEngine> storage_engine,
+                  std::shared_ptr<ConsistentHash> consistent_hash,
+                  std::shared_ptr<ReplicationManager> replication_manager,
+                  std::shared_ptr<Node> local_node)
+        : storage_engine_(storage_engine),
+          consistent_hash_(consistent_hash),
+          replication_manager_(replication_manager),
+          local_node_(local_node) {}
+
+    bool put(const Key& key, const Value& value) {
+        // Check if this node is responsible for the key
+        auto primary_node = consistent_hash_->getPrimaryNodeForKey(key);
+
+        if (!primary_node) {
+            return false;
+        }
+
+        if (primary_node->getId() == local_node_->getId()) {
+            // We are the primary node for this key
+            storage_engine_->put(key, value);
+
+            // Replicate to other nodes
+            return replication_manager_->replicateData(key, value);
+        } else {
+            // Forward to primary node
+            return forwardPutRequest(primary_node, key, value);
+        }
+    }
+
+    std::optional<Value> get(const Key& key, int consistency_level = 1) {
+        // Try to get the value from the replication manager with specified consistency
+        auto value = replication_manager_->readData(key, consistency_level);
+
+        if (value.has_value()) {
+            // Perform read repair in the background
+            std::thread([this, key, value = value.value()]() {
+                replication_manager_->performReadRepair(key, value);
+            }).detach();
+        }
+
+        return value;
+    }
+
+    bool remove(const Key& key) {
+        // Check if this node is responsible for the key
+        auto primary_node = consistent_hash_->getPrimaryNodeForKey(key);
+
+        if (!primary_node) {
+            return false;
+        }
+
+        if (primary_node->getId() == local_node_->getId()) {
+            // We are the primary node for this key
+            bool success = storage_engine_->remove(key);
+
+            // Replicate removal to other nodes
+            if (success) {
+                // In a real implementation, we'd send delete requests to replicas
+            }
+
+            return success;
+        } else {
+            // Forward to primary node
+            return forwardRemoveRequest(primary_node, key);
+        }
+    }
+
+private:
+    bool forwardPutRequest(std::shared_ptr<Node> node, const Key& key, const Value& value) {
+        // In a real implementation, this would use asio to send a network request
+        std::cout << "Forwarding PUT request for key " << key << " to node " << node->getId() << std::endl;
+        return true; // Simulated success
+    }
+
+    bool forwardRemoveRequest(std::shared_ptr<Node> node, const Key& key) {
+        // In a real implementation, this would use asio to send a network request
+        std::cout << "Forwarding REMOVE request for key " << key << " to node " << node->getId() << std::endl;
+        return true; // Simulated success
+    }
+};</code></pre>
+
+                        <div class="explanation explanation-tip">
+                            <h4>Background Read Repair</h4>
+                            <p>The <code>std::thread(...).detach()</code> pattern for read repair is important:</p>
+                            <ul>
+                                <li><strong>Non-blocking:</strong> Client requests don't wait for repair</li>
+                                <li><strong>Automatic Healing:</strong> System self-repairs during normal operation</li>
+                                <li><strong>Resource Management:</strong> Detached threads clean up automatically</li>
+                            </ul>
+                            <p>Production systems use thread pools to avoid unlimited thread creation.</p>
+                        </div>
+                    </div>
+
+                    <!-- Main System Integration -->
+                    <div class="operation-group">
+                        <h2>🔧 System Integration & Main Node Class</h2>
+                        <p>
+                            The KeyValueNode class ties all components together into a cohesive distributed system.
+                        </p>
+
+                        <div class="code-header">
+                            <h4>Complete System Integration</h4>
+                        </div>
+                        <pre><code class="language-cpp">class KeyValueNode {
+public:
+    KeyValueNode(const NodeId& id, const std::string& ip, int port, int replication_factor = 3)
+        : running_(false) {
+        // Initialize components
+        local_node_ = std::make_shared<Node>(id, ip, port);
+        cluster_manager_ = std::make_shared<ClusterManager>(local_node_);
+        consistent_hash_ = std::make_shared<ConsistentHash>();
+        storage_engine_ = std::make_shared<StorageEngine>();
+
+        // Create replication manager with all dependencies
+        replication_manager_ = std::make_shared<ReplicationManager>(
+            consistent_hash_, cluster_manager_, local_node_, replication_factor
+        );
+
+        leader_election_ = std::make_shared<LeaderElection>(id, cluster_manager_);
+        client_handler_ = std::make_shared<ClientHandler>(
+            storage_engine_, consistent_hash_, replication_manager_, local_node_
+        );
+
+        // Add ourselves to the cluster
+        cluster_manager_->addNode(local_node_);
+        consistent_hash_->addNode(local_node_);
+    }
+
+    void start() {
+        if (running_) return;
+
+        running_ = true;
+
+        // Start components in proper order
+        cluster_manager_->start();
+        leader_election_->start();
+
+        // Start networking
+        startNetworking();
+    }
+
+    bool joinCluster(const std::string& seed_ip, int seed_port) {
+        std::cout << "Joining cluster via seed node " << seed_ip << ":" << seed_port << std::endl;
+
+        // In a real implementation, this would:
+        // 1. Contact the seed node
+        // 2. Receive cluster membership information
+        // 3. Add discovered nodes to cluster manager
+        // 4. Start participating in gossip protocol
+
+        return true;
+    }
+
+    // Client API methods
+    bool put(const Key& key, const Value& value) {
+        return client_handler_->put(key, value);
+    }
+
+    std::optional<Value> get(const Key& key, int consistency_level = 1) {
+        return client_handler_->get(key, consistency_level);
+    }
+
+    bool remove(const Key& key) {
+        return client_handler_->remove(key);
+    }
+
+private:
+    std::shared_ptr<Node> local_node_;
+    std::shared_ptr<ClusterManager> cluster_manager_;
+    std::shared_ptr<ConsistentHash> consistent_hash_;
+    std::shared_ptr<StorageEngine> storage_engine_;
+    std::shared_ptr<ReplicationManager> replication_manager_;
+    std::shared_ptr<LeaderElection> leader_election_;
+    std::shared_ptr<ClientHandler> client_handler_;
+    std::atomic<bool> running_;
+    std::atomic<int> missed_updates_recovered_{0};
+};</code></pre>
+
+                        <div class="explanation">
+                            <h4>Component Lifecycle Management</h4>
+                            <p>The careful ordering of component startup is crucial:</p>
+                            <ol>
+                                <li><strong>Core Components:</strong> Node, storage, hashing initialized first</li>
+                                <li><strong>Communication:</strong> Cluster manager starts gossip protocol</li>
+                                <li><strong>Coordination:</strong> Leader election begins</li>
+                                <li><strong>Networking:</strong> External API becomes available</li>
+                            </ol>
+                            <p>This ordering prevents race conditions and ensures clean initialization.</p>
+                        </div>
+                    </div>
+
+                    <!-- Demonstration & Testing -->
+                    <div class="operation-group">
+                        <h2>🚀 System Demonstration</h2>
+                        <p>
+                            The main function demonstrates key distributed systems properties: replication, fault tolerance, and recovery.
+                        </p>
+
+                        <div class="code-header">
+                            <h4>Comprehensive Demo Scenario</h4>
+                        </div>
+                        <pre><code class="language-cpp">int main() {
+    std::cout << "\n===== DISTRIBUTED KEY-VALUE STORE DEMO =====\n\n";
+    SystemMetrics metrics;
+
+    // Create multiple nodes
+    printTimestampedMessage("Creating cluster with 3 nodes");
+    dkv::KeyValueNode node1("node1", "127.0.0.1", 6001);
+    dkv::KeyValueNode node2("node2", "127.0.0.1", 6002);
+    dkv::KeyValueNode node3("node3", "127.0.0.1", 6003);
+
+    // Start the nodes
+    node1.start();
+    node2.start();
+    node3.start();
+
+    // Form the cluster
+    node2.joinCluster("127.0.0.1", 6001);
+    node3.joinCluster("127.0.0.1", 6001);
+
+    // Wait for cluster to stabilize
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    // Test data operations
+    std::map<std::string, std::string> test_data;
+    test_data["user:1001"] = "John Doe";
+    test_data["user:1002"] = "Jane Smith";
+    test_data["product:5001"] = "Smartphone";
+    test_data["order:9001"] = "Order #9001: 2 items, $1250.00";
+
+    // Write data to demonstrate replication
+    for (const auto& item : test_data) {
+        const std::string& key = item.first;
+        const std::string& value = item.second;
+        
+        bool success = node1.put(key, value);
+        if (success) {
+            printTimestampedMessage("Successfully wrote: " + key + " = " + value);
+        }
+    }
+
+    // Read from different nodes to show replication
+    for (const auto& item : test_data) {
+        const std::string& key = item.first;
+        
+        auto value1 = node1.get(key);
+        auto value2 = node2.get(key);
+        auto value3 = node3.get(key);
+        
+        printTimestampedMessage("Key " + key + " replicated across nodes:");
+        printTimestampedMessage("  Node1: " + value1.value_or("NOT FOUND"));
+        printTimestampedMessage("  Node2: " + value2.value_or("NOT FOUND"));
+        printTimestampedMessage("  Node3: " + value3.value_or("NOT FOUND"));
+    }
+
+    // Simulate node failure
+    printTimestampedMessage("SIMULATING NODE FAILURE - Stopping node2");
+    node2.stop();
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+    // Test writes during failure
+    std::string emergency_key = "emergency:1001";
+    std::string emergency_value = "Emergency contact: 555-123-4567";
+    
+    bool write_success = node1.put(emergency_key, emergency_value);
+    if (write_success) {
+        printTimestampedMessage("Write succeeded despite node failure!");
+    }
+
+    // Recover the failed node
+    printTimestampedMessage("RECOVERING NODE - Restarting node2");
+    node2.start();
+    node2.joinCluster("127.0.0.1", 6001);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+    // Verify data consistency after recovery
+    auto recovered_value = node2.get(emergency_key);
+    printTimestampedMessage("Emergency data on recovered node: " + 
+                           recovered_value.value_or("NOT FOUND"));
+
+    return 0;
+}</code></pre>
+
+                        <div class="explanation explanation-advanced">
+                            <h4>What This Demo Proves</h4>
+                            <p>This demonstration validates core distributed systems properties:</p>
+                            <ul>
+                                <li><strong>Replication:</strong> Data is automatically copied across nodes</li>
+                                <li><strong>Fault Tolerance:</strong> System continues operating when nodes fail</li>
+                                <li><strong>Recovery:</strong> Failed nodes can rejoin and catch up</li>
+                                <li><strong>Consistency:</strong> Read repair ensures data convergence</li>
+                                <li><strong>Load Distribution:</strong> Consistent hashing spreads data evenly</li>
+                            </ul>
+                        </div>
+
+                        <h3>Expected Output</h3>
+                        <pre><code class="language-bash">
+===== DISTRIBUTED KEY-VALUE STORE DEMO =====
+
+[14:30:15.123] Creating cluster with 3 nodes
+[14:30:15.145] Starting node1 (127.0.0.1:6001)
+[14:30:15.156] Starting node2 (127.0.0.1:6002)
+[14:30:15.167] Starting node3 (127.0.0.1:6003)
+[14:30:15.178] Node2 joining the cluster via node1
+[14:30:15.189] Node3 joining the cluster via node1
+[14:30:17.201] Successfully wrote: user:1001 = John Doe
+[14:30:17.212] Successfully wrote: user:1002 = Jane Smith
+[14:30:17.223] Key user:1001 replicated across nodes:
+[14:30:17.234]   Node1: John Doe
+[14:30:17.245]   Node2: John Doe  
+[14:30:17.256]   Node3: John Doe
+[14:30:20.301] SIMULATING NODE FAILURE - Stopping node2
+[14:30:23.345] Write succeeded despite node failure!
+[14:30:25.367] RECOVERING NODE - Restarting node2
+[14:30:28.412] Emergency data on recovered node: Emergency contact: 555-123-4567
+                        </code></pre>
+                    </div>
+
+                    <!-- Performance Considerations -->
+                    <div class="operation-group">
+                        <h2>⚡ Performance Considerations</h2>
+                        
+                        <div class="explanation explanation-advanced">
+                            <h4>Bottlenecks and Optimizations</h4>
+                            <p>This implementation has several areas for optimization:</p>
+                            
+                            <h5>Network Layer</h5>
+                            <ul>
+                                <li><strong>Current:</strong> Simulated network calls</li>
+                                <li><strong>Production:</strong> Asynchronous I/O with connection pooling</li>
+                                <li><strong>Optimization:</strong> Batching, compression, protocol buffers</li>
+                            </ul>
+
+                            <h5>Storage Layer</h5>
+                            <ul>
+                                <li><strong>Current:</strong> In-memory hash map with single mutex</li>
+                                <li><strong>Production:</strong> LSM-trees, B+ trees, or persistent hash tables</li>
+                                <li><strong>Optimization:</strong> Write-ahead logging, bloom filters, compression</li>
+                            </ul>
+
+                            <h5>Concurrency</h5>
+                            <ul>
+                                <li><strong>Current:</strong> Coarse-grained locking</li>
+                                <li><strong>Production:</strong> Lock-free data structures, actor model</li>
+                                <li><strong>Optimization:</strong> Per-key locking, read-write locks</li>
+                            </ul>
+                        </div>
+
+                        <div class="explanation explanation-tip">
+                            <h4>Scalability Metrics</h4>
+                            <p>Key performance indicators for distributed key-value stores:</p>
+                            <ul>
+                                <li><strong>Throughput:</strong> Operations per second (target: 100K+ ops/sec)</li>
+                                <li><strong>Latency:</strong> P99 response time (target: &lt;10ms for local reads)</li>
+                                <li><strong>Availability:</strong> Uptime percentage (target: 99.99%)</li>
+                                <li><strong>Consistency:</strong> Time to convergence after updates</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Conclusion -->
+                    <div class="operation-group">
+                        <h2>🎯 Key Takeaways</h2>
+                        
+                        <div class="explanation">
+                            <h4>What I Built</h4>
+                            <p>This distributed key-value store demonstrates fundamental distributed systems concepts:</p>
+                            <ul>
+                                <li><strong>Scalability:</strong> Consistent hashing enables horizontal scaling</li>
+                                <li><strong>Reliability:</strong> Replication provides fault tolerance</li>
+                                <li><strong>Consistency:</strong> Tunable consistency levels balance performance and correctness</li>
+                                <li><strong>Availability:</strong> Gossip protocol and leader election maintain service during failures</li>
+                            </ul>
+                        </div>
+
+                        <div class="explanation explanation-tip">
+                            <h4>Skills Developed</h4>
+                            <ul>
+                                <li><strong>Distributed Systems Design:</strong> Understanding trade-offs and design patterns</li>
+                                <li><strong>Concurrency Programming:</strong> Thread-safe data structures and coordination</li>
+                                <li><strong>Network Programming:</strong> Inter-node communication protocols</li>
+                                <li><strong>System Architecture:</strong> Component design and integration</li>
+                                <li><strong>Testing & Validation:</strong> Demonstrating system properties</li>
+                            </ul>
+                        </div>
+
+                        <div class="explanation explanation-advanced">
+                            <h4>Industry Relevance</h4>
+                            <p>The patterns implemented here are used in production systems:</p>
+                            <ul>
+                                <li><strong>Amazon DynamoDB:</strong> Consistent hashing, eventual consistency</li>
+                                <li><strong>Apache Cassandra:</strong> Gossip protocol, configurable consistency</li>
+                                <li><strong>Redis Cluster:</strong> Hash slots, automatic rebalancing</li>
+                                <li><strong>MongoDB:</strong> Replica sets, automatic failover</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </article>
+
+            <a href="/blog" class="back-button">⬅ Back to Devlogs</a>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Jose Antonio. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Highlight.js JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <!-- Highlight.js C++ Language Support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/cpp.min.js"></script>
+    <script>
+        // Initialize Highlight.js
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll("pre code").forEach((block) => {
+                hljs.highlightBlock(block);
+            });
+        });
+
+        // Typewriter Effect for Header
+        const text = "Devlog: Distributed Key-Value Store";
+        let i = 0;
+        const speed = 100; // Typing speed (milliseconds)
+        const target = document.getElementById("typewriter");
+
+        if (target) {
+            function typeWriter() {
+                if (i < text.length) {
+                    target.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, speed);
+                }
+            }
+            typeWriter(); // Start typing animation
+        }
+    </script>
+</body>
+</html>
