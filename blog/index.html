@@ -3,119 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jose Antonio - Portfolio</title>
+    <meta name="description" content="Jose Antonio's Development Blog - Detailed development logs covering game engine development, physics systems, and programming tutorials.">
+    <meta name="keywords" content="game development blog, devlog, physics engine, programming tutorials, C++, game engine">
+    <meta name="author" content="Jose Antonio">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Jose Antonio - Development Blog">
+    <meta property="og:description" content="Development logs covering game engine development, physics systems, and programming tutorials.">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary">
+    <meta property="twitter:title" content="Jose Antonio - Development Blog">
+    <meta property="twitter:description" content="Development logs covering game engine development, physics systems, and programming tutorials.">
+
+    <title>Jose Antonio - Development Blog</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
 </head>
 <body>
     <!-- Header Section -->
-    <header>
+    <header role="banner">
         <div class="header-overlay">
             <div class="container">
-                <nav class="header-buttons">
-                    <a href="/" class="menu-button">Home</a>
-                    <a href="/blog" class="menu-button">Devlog</a>
+                <nav class="header-buttons" role="navigation" aria-label="Main navigation">
+                    <a href="/" class="menu-button" aria-label="Go to homepage">Home</a>
+                    <a href="/blog" class="menu-button" aria-current="page" aria-label="Current page: Development blog">Devlog</a>
                 </nav>
                 <h1 id="typewriter"></h1>
-                <p class="fade-in">.</p>
+                <p class="fade-in visually-hidden">Development blog and project logs</p>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main>
-        <section class="devlog-container">
-            <h1 class="section-title">Project Devlogs</h1>
+    <main role="main">
+        <section class="devlog-container" aria-labelledby="main-heading">
+            <h1 id="main-heading" class="section-title">Project Devlogs</h1>
 
 
 
             <!-- OneTek Physxs -->
-            <div class="project">
+            <article class="project">
                 <h2 class="project-title">OneTek Physxs</h2>
-                <div class="devlog-list">
-                    <div class="devlog-card">
+                <div class="devlog-list" role="list">
+                    <article class="devlog-card" role="listitem">
                         <h3>Devlog #2: Core Mathematical Foundations</h3>
                         <p>Implementing vector projections, matrix inversion, quaternion rotations, and advanced interpolation methods with performance optimizations.</p>
-                        <a href="/blog/onetekphysxs/devlog3/">Read More</a>
-                    </div>
-                    <div class="devlog-card">
+                        <a href="/blog/onetekphysxs/devlog3/" aria-label="Read more about Core Mathematical Foundations">Read More</a>
+                    </article>
+                    <article class="devlog-card" role="listitem">
                         <h3>Devlog #1: Adding Quaternion Support for 3D Rotations</h3>
                         <p>In this devlog, I added quaternions for 3D rotations.</p>
-                        <a href="/blog/onetekphysxs/devlog2/">Read More</a>
-                    </div>
-                    <div class="devlog-card">
+                        <a href="/blog/onetekphysxs/devlog2/" aria-label="Read more about Quaternion Support for 3D Rotations">Read More</a>
+                    </article>
+                    <article class="devlog-card" role="listitem">
                         <h3>Devlog #0: Building a Physics Engine from Scratch</h3>
                         <p>In this devlog, we explore the development of a physics engine from scratch, focusing on the implementation of core mathematical components.</p>
-                        <a href="/blog/onetekphysxs/devlog1/">Read More</a>
-                    </div>
+                        <a href="/blog/onetekphysxs/devlog1/" aria-label="Read more about Building a Physics Engine from Scratch">Read More</a>
+                    </article>
                 </div>
-            </div>
+            </article>
 
-            <div class="project">
+            <article class="project">
                 <h2 class="project-title">Others</h2>
-                <div class="devlog-list">
-                    <div class="devlog-card">
+                <div class="devlog-list" role="list">
+                    <article class="devlog-card" role="listitem">
                         <h3>Devlog: Distributed Key-Value Store</h3>
                         <p>C++ implementation demonstrating distributed systems fundamentals including consistent hashing, replication, failure detection, and cluster management. Built to showcase understanding of distributed computing concepts.</p>
-                        <a href="/blog/others/key-value/">Read More</a>
-                    </div>
+                        <a href="/blog/others/key-value/" aria-label="Read more about Distributed Key-Value Store">Read More</a>
+                    </article>
                 </div>
-            </div>
+            </article>
     
         </section>
     </main>
 
     <!-- Footer Section -->
-    <footer>
+    <footer role="contentinfo">
         <div class="container">
             <p>&copy; 2025 Jose Antonio. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
+        'use strict';
 
-        function changeSlide(n) {
-            slides[currentSlide].style.display = 'none';
-            currentSlide = (currentSlide + n + slides.length) % slides.length;
-            slides[currentSlide].style.display = 'block';
-        }
+        // Blog Application Module
+        const BlogApp = {
+            config: {
+                typewriterSpeed: 140,
+                scrollRevealOffset: 50
+            },
 
-        document.addEventListener("DOMContentLoaded", function () {
-            const text = "Blog / Devlog";
-            let i = 0;
-            const speed = 140; // Typing speed (milliseconds)
-            const target = document.getElementById("typewriter");
+            init() {
+                this.typewriter.init();
+                this.scrollReveal.init();
+                this.cardAnimations.init();
+            },
 
-            if (!target) return; // Prevent errors if the element is not found
+            typewriter: {
+                init() {
+                    const target = document.getElementById('typewriter');
+                    if (!target) return;
 
-            function typeWriter() {
-                if (i < text.length) {
-                target.innerHTML += text.charAt(i);
-                i++;
-                setTimeout(typeWriter, speed);
+                    const text = 'Blog / Devlog';
+                    let i = 0;
+
+                    const typeWriter = () => {
+                        if (i < text.length) {
+                            target.textContent += text.charAt(i);
+                            i++;
+                            setTimeout(typeWriter, BlogApp.config.typewriterSpeed);
+                        }
+                    };
+
+                    typeWriter();
+                }
+            },
+
+            scrollReveal: {
+                init() {
+                    const elements = document.querySelectorAll('section, .devlog-card');
+
+                    const revealOnScroll = () => {
+                        elements.forEach(element => {
+                            const elementTop = element.getBoundingClientRect().top;
+                            const windowHeight = window.innerHeight;
+
+                            if (elementTop < windowHeight - BlogApp.config.scrollRevealOffset) {
+                                element.style.opacity = '1';
+                                element.classList.add('revealed');
+                            }
+                        });
+                    };
+
+                    // Throttled scroll for performance
+                    let ticking = false;
+                    const scrollHandler = () => {
+                        if (!ticking) {
+                            requestAnimationFrame(() => {
+                                revealOnScroll();
+                                ticking = false;
+                            });
+                            ticking = true;
+                        }
+                    };
+
+                    window.addEventListener('scroll', scrollHandler, { passive: true });
+                    revealOnScroll();
+                }
+            },
+
+            cardAnimations: {
+                init() {
+                    // Add staggered animation delay to cards
+                    const cards = document.querySelectorAll('.devlog-card');
+                    cards.forEach((card, index) => {
+                        card.style.animationDelay = `${index * 0.1}s`;
+                    });
                 }
             }
+        };
 
-            typeWriter(); // Start typing animation
-        });
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const sections = document.querySelectorAll("section, .project-card");
-
-            const revealOnScroll = () => {
-            sections.forEach(section => {
-                const sectionTop = section.getBoundingClientRect().top;
-                const windowHeight = window.innerHeight;
-                    if (sectionTop < windowHeight - 50) {
-                        section.style.opacity = "1";
-                    }
-                });
-            };
-
-            window.addEventListener("scroll", revealOnScroll);
-            revealOnScroll();
-        });
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => BlogApp.init());
+        } else {
+            BlogApp.init();
+        }
     </script>
 </body>
 </html>
