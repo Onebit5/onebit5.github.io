@@ -3,15 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jose Antonio - Portfolio</title>
+    <meta name="description" content="Jose Antonio - Game Engine Developer and Gameplay Programmer. Specialized in C/C++, Unity, Unreal Engine, and graphics programming.">
+    <meta name="keywords" content="game engine developer, gameplay programmer, C++, Unity, Unreal Engine, graphics programming, physics engine">
+    <meta name="author" content="Jose Antonio">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Jose Antonio - Portfolio">
+    <meta property="og:description" content="Game Engine Developer and Gameplay Programmer specialized in C/C++, Unity, and graphics programming.">
+    <meta property="og:image" content="images/image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Jose Antonio - Portfolio">
+    <meta property="twitter:description" content="Game Engine Developer and Gameplay Programmer specialized in C/C++, Unity, and graphics programming.">
+    <meta property="twitter:image" content="images/image.png">
+
+    <title>Jose Antonio - Game Engine Developer Portfolio</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <style>
-        html {
-            scroll-behavior: smooth;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
 </head>
 <body>
     <!-- Header Section -->
@@ -25,7 +37,7 @@
                 
                 <div class="header-profile">
                     <div class="profile-photo">
-                        <img src="images/image.png" alt="Jose Antonio">
+                        <img src="images/image.png" alt="Jose Antonio - Game Engine Developer" loading="eager">
                     </div>
                     <h1 id="typewriter"></h1>
                     <p class="fade-in">Game Engine Developer / Gameplay Programmer</p>
@@ -90,7 +102,7 @@
                         </div>
                         <div class="info-details">
                             <h3>Age</h3>
-                            <p>18 Years</p>
+                            <p id="age"></p>
                         </div>
                     </div>
             
@@ -127,7 +139,7 @@
                         <div class="timeline-content">
                             <h3>Vocational Degree in Computer Systems and Networks (SMR)</h3>
                             <h4>Spain</h4>
-                            <p class="timeline-date">2024 - 2026</p>
+                            <p class="timeline-date">SEPT 2024 - 2026</p>
                             <p>Vocational training program focused on computer systems, network administration, and IT support.</p>
                         </div>
                     </div>
@@ -228,9 +240,20 @@
             <div class="container">
                 <h2>Projects</h2>
                 <div class="project-grid">
+                    <!-- OneTek Engine 2 -->
+                    <div class="project-card" data-category="engine">
+                        <img src="images/projectImages/onetek2.bmp" alt="OneTek Engine 2 - Cross-platform 3D game engine" class="project-image" loading="lazy">
+                        <h3>OneTek Engine 2</h3>
+                        <p style="text-align: justify;">A high-performance, cross-platform 3D game engine featuring multi-API rendering (Vulkan/DirectX 12/OpenGL), integrated NVIDIA PhysX physics, AI pathfinding with navigation meshes, and comprehensive asset management. Built with modern C++20 practices, the engine supports PBR rendering, post-processing effects, and includes development tools with Dear ImGui integration.</p>
+                        <p class="project-tech">Technologies: C++20, Vulkan, DirectX 12, PhysX, SDL2, Assimp, ImGui, CMake</p>
+                        <div class="github-buttons-container">
+                            <a href="https://github.com/Onebit5/OneTek-Engine-2" target="_blank" class="github-button">GitHub</a>
+                        </div>
+                    </div>
+
                     <!-- Cosmic Chaos -->
                     <div class="project-card" data-category="game">
-                        <img src="images/projectImages/cosmicchaos.bmp" alt="Cosmic Chaos" class="project-image">
+                        <img src="images/projectImages/cosmicchaos.bmp" alt="Cosmic Chaos - 2D bullet hell game screenshot" class="project-image" loading="lazy">
                         <h3>Cosmic Chaos</h3>
                         <p style="text-align: justify;">A 2D bullet hell game developed in Unity, featuring two distinct difficulty modes. The first level is designed as an accessible introduction to bullet hell mechanics, while the second offers a high-intensity challenge for experienced players. Implemented custom enemy behavior, projectile patterns, and difficulty scaling systems to ensure varied gameplay experiences.</p>
                             <p class="project-tech">Technologies: Unity, C#</p>
@@ -241,7 +264,7 @@
 
                     <!-- OneTech Engine Project -->
                     <div class="project-card" data-category="engine">
-                        <img src="images/projectImages/onetech-engine.bmp" alt="OneTek Engine Project" class="project-image">
+                        <img src="images/projectImages/onetech-engine.bmp" alt="OneTek Engine - Custom 2D game engine screenshot" class="project-image" loading="lazy">
                         <h3>OneTek Engine</h3>
                         <p style="text-align: justify;">A custom 2D game engine developed in C, focused on rendering levels, managing player input, and handling interactive game objects such as walls and doors. The engine supports loading maps from text files, enabling rapid prototyping of simple FPS-style gameplay.</p>
                         <p class="project-tech">Technologies: C, OpenGL, CMake</p>
@@ -252,7 +275,7 @@
                     
                         <!-- Unity Prototypes Project -->
                     <div class="project-card" data-category="game">
-                        <img src="images/projectImages/prototype.bmp" alt="Prototype" class="project-image">
+                        <img src="images/projectImages/prototype.bmp" alt="Unity Prototypes - Collection of gameplay prototypes" class="project-image" loading="lazy">
                         <h3>Unity Prototypes</h3>
                         <p>A collection of gameplay prototypes developed in Unity using C#, exploring core mechanics such as gravity manipulation, interactive object control, and basic AI behavior for enemy characters.</p>
                         <p class="project-tech">Technologies: Unity, C#</p>
@@ -265,70 +288,71 @@
         </section>
 
         <!-- Skills Section -->
-        <section id="skills">
+        <section id="programming-languages" class="glassmorphism">
             <div class="container">
                 <h2>Programming Languages</h2>
                 <ul>
-                    <img src="images/logos/c.svg" alt="C" class="skill-image">
-                    <img src="images/logos/cpp.svg" alt="C++" class="skill-image">
-                    <img src="images/logos/csharp.svg" alt="C#" class="skill-image">
-                    <img src="images/logos/lua.svg" alt="Lua" class="skill-image">
-                    <img src="images/logos/java.svg" alt="Java" class="skill-image">
+                    <li><img src="images/logos/c.svg" alt="C Programming Language" class="skill-image" loading="lazy"></li>
+                    <li><img src="images/logos/cpp.svg" alt="C++ Programming Language" class="skill-image" loading="lazy"></li>
+                    <li><img src="images/logos/csharp.svg" alt="C# Programming Language" class="skill-image" loading="lazy"></li>
+                    <li><img src="images/logos/lua.svg" alt="Lua Programming Language" class="skill-image" loading="lazy"></li>
+                    <li><img src="images/logos/java.svg" alt="Java Programming Language" class="skill-image" loading="lazy"></li>
                 </ul>
             </div>
         </section>
 
-        <section id="skills">
+        <section id="development-environments" class="glassmorphism">
             <div class="container">
                 <h2>Development Environments</h2>
                 <ul>
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visualstudio/visualstudio-plain.svg" alt="Visual Studio" class="skill-image">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" alt="Visual Studio Code" class="skill-image">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/intellij/intellij-original.svg" alt="IntelliJ" class="skill-image">
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visualstudio/visualstudio-plain.svg" alt="Visual Studio IDE" class="skill-image" loading="lazy"></li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" alt="Visual Studio Code" class="skill-image" loading="lazy"></li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/intellij/intellij-original.svg" alt="IntelliJ IDEA" class="skill-image" loading="lazy"></li>
                 </ul>
             </div>
         </section>
 
-        <section id="skills">
+        <section id="operating-systems" class="glassmorphism">
             <div class="container">
                 <h2>Operating Systems</h2>
                 <ul>
-                    <img src="images/logos/windows.svg" alt="Windows" class="skill-image">
-                    <img src="images/logos/ubuntu.svg" alt="Ubuntu" class="skill-image">
-                    <img src="images/logos/debian.svg" alt="Debian" class="skill-image">
-                    <img src="images/logos/kali.svg" alt="Kali Linux" class="skill-image">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/archlinux/archlinux-original.svg" alt="Arch Linux" class="skill-image">
+                    <li><img src="images/logos/windows.svg" alt="Microsoft Windows" class="skill-image" loading="lazy"></li>
+                    <li><img src="images/logos/ubuntu.svg" alt="Ubuntu Linux" class="skill-image" loading="lazy"></li>
+                    <li><img src="images/logos/debian.svg" alt="Debian Linux" class="skill-image" loading="lazy"></li>
+                    <li><img src="images/logos/kali.svg" alt="Kali Linux" class="skill-image" loading="lazy"></li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/archlinux/archlinux-original.svg" alt="Arch Linux" class="skill-image" loading="lazy"></li>
                 </ul>
             </div>
         </section>
 
-        <section id="skills">
+        <section id="version-control" class="glassmorphism">
             <div class="container">
                 <h2>Version Control</h2>
                 <ul>
-                    <img src="images/logos/git.svg" alt="Git" class="skill-image">
-                    <img src="images/logos/Github-desktop-logo-symbol.svg.png" alt="GitHub" class="skill-image">
+                    <li><img src="images/logos/git.svg" alt="Git Version Control" class="skill-image" loading="lazy"></li>
+                    <li><img src="images/logos/Github-desktop-logo-symbol.svg.png" alt="GitHub" class="skill-image" loading="lazy"></li>
                 </ul>
             </div>
         </section>
 
-        <section id="skills">
+        <section id="game-engines" class="glassmorphism">
             <div class="container">
                 <h2>Video Game Engines</h2>
                 <ul>
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/unity/unity-original.svg" alt="Unity" class="skill-image">
-                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/godot/godot-original.svg" alt="Godot" class="skill-image">
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/unity/unity-original.svg" alt="Unity Game Engine" class="skill-image" loading="lazy"></li>
+                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/godot/godot-original.svg" alt="Godot Game Engine" class="skill-image" loading="lazy"></li>
                 </ul>
             </div>
         </section>
 
-        <section id="skills">
+        <section id="other-technologies" class="glassmorphism">
             <div class="container">
                 <h2>Other Technologies</h2>
                 <ul>
-                    <img src="images/logos/opengl.svg" alt="OpenGL" class="skill-image">
-                    <img src="images/logos/cmake.svg" alt="CMake" class="skill-image">
-                    <img src="images/logos/vulkan.svg" alt="Vulkan" class="skill-image">
+                    <li><img src="images/logos/opengl.svg" alt="OpenGL Graphics API" class="skill-image" loading="lazy"></li>
+                    <li><img src="images/logos/cmake.svg" alt="CMake Build System" class="skill-image" loading="lazy"></li>
+                    <li><img src="images/logos/vulkan.svg" alt="Vulkan Graphics API" class="skill-image" loading="lazy"></li>
+                    <li><img src="images/logos/directx.svg" alt="Directx Graphics API" class="skill-image" loading="lazy"></li>
                 </ul>
             </div>
         </section>
@@ -361,283 +385,203 @@
     </footer>
 
     <script>
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
+        'use strict';
 
-        function changeSlide(n) {
-            slides[currentSlide].style.display = 'none';
-            currentSlide = (currentSlide + n + slides.length) % slides.length;
-            slides[currentSlide].style.display = 'block';
-        }
+        // Portfolio Application Main Module
+        const Portfolio = {
+            // Configuration
+            config: {
+                typewriterSpeed: 140,
+                scrollRevealOffset: 50,
+                autoSlideInterval: 5000
+            },
 
-        document.addEventListener("DOMContentLoaded", function () {
-            const text = "Jose Antonio";
-            let i = 0;
-            const speed = 140; // Typing speed (milliseconds)
-            const target = document.getElementById("typewriter");
+            // Initialize all functionality
+            init() {
+                this.typewriter.init();
+                this.scrollReveal.init();
+                this.projectFilter.init();
+                this.themeToggle.init();
+                this.smoothScroll.init();
+                this.accessibility.init();
+            },
 
-            if (!target) return; // Prevent errors if the element is not found
+            // Typewriter effect module
+            typewriter: {
+                init() {
+                    const target = document.getElementById('typewriter');
+                    if (!target) return;
 
-            function typeWriter() {
-                if (i < text.length) {
-                target.innerHTML += text.charAt(i);
-                i++;
-                setTimeout(typeWriter, speed);
+                    const text = 'Jose Antonio';
+                    let i = 0;
+
+                    const typeWriter = () => {
+                        if (i < text.length) {
+                            target.textContent += text.charAt(i);
+                            i++;
+                            setTimeout(typeWriter, Portfolio.config.typewriterSpeed);
+                        }
+                    };
+
+                    typeWriter();
+                }
+            },
+
+            // Scroll reveal animation module
+            scrollReveal: {
+                init() {
+                    const elements = document.querySelectorAll('section, .project-card');
+
+                    const revealOnScroll = () => {
+                        elements.forEach(element => {
+                            const elementTop = element.getBoundingClientRect().top;
+                            const windowHeight = window.innerHeight;
+
+                            if (elementTop < windowHeight - Portfolio.config.scrollRevealOffset) {
+                                element.style.opacity = '1';
+                            }
+                        });
+                    };
+
+                    // Use throttled scroll for better performance
+                    let ticking = false;
+                    const scrollHandler = () => {
+                        if (!ticking) {
+                            requestAnimationFrame(() => {
+                                revealOnScroll();
+                                ticking = false;
+                            });
+                            ticking = true;
+                        }
+                    };
+
+                    window.addEventListener('scroll', scrollHandler, { passive: true });
+                    revealOnScroll(); // Initial call
+                }
+            },
+
+            // Project filtering module (for future use)
+            projectFilter: {
+                init() {
+                    const filterBtns = document.querySelectorAll('.filter-btn');
+                    const projectCards = document.querySelectorAll('.project-card');
+
+                    if (!filterBtns.length || !projectCards.length) return;
+
+                    filterBtns.forEach(btn => {
+                        btn.addEventListener('click', this.handleFilter.bind(this));
+                    });
+                },
+
+                handleFilter(event) {
+                    const btn = event.currentTarget;
+                    const filter = btn.getAttribute('data-filter');
+
+                    // Update active button
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    // Apply filter logic here
+                    this.filterProjects(filter);
+                },
+
+                filterProjects(filter) {
+                    const projectCards = document.querySelectorAll('.project-card');
+
+                    projectCards.forEach(card => {
+                        const isVisible = filter === 'all' || card.getAttribute('data-category') === filter;
+                        card.style.display = isVisible ? 'flex' : 'none';
+                    });
+                }
+            },
+
+            // Theme toggle module
+            themeToggle: {
+                init() {
+                    const themeToggle = document.getElementById('theme-toggle');
+                    if (!themeToggle) return;
+
+                    // Load saved theme
+                    const currentTheme = localStorage.getItem('theme');
+                    if (currentTheme === 'dark') {
+                        document.body.classList.add('dark-mode');
+                    }
+
+                    themeToggle.addEventListener('click', this.toggleTheme.bind(this));
+                },
+
+                toggleTheme() {
+                    document.body.classList.toggle('dark-mode');
+
+                    const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+                    localStorage.setItem('theme', theme);
+                }
+            },
+
+            // Smooth scrolling for anchor links
+            smoothScroll: {
+                init() {
+                    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                        anchor.addEventListener('click', this.handleClick);
+                    });
+                },
+
+                handleClick(event) {
+                    event.preventDefault();
+                    const target = document.querySelector(event.currentTarget.getAttribute('href'));
+
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            },
+
+            // Accessibility enhancements
+            accessibility: {
+                init() {
+                    // Skip to main content link
+                    this.addSkipLink();
+
+                    // Keyboard navigation
+                    this.enhanceKeyboardNav();
+                },
+
+                enhanceKeyboardNav() {
+                    // Ensure all interactive elements are keyboard accessible
+                    const interactiveElements = document.querySelectorAll('a, button, [tabindex]');
+
+                    interactiveElements.forEach(element => {
+                        if (!element.hasAttribute('tabindex') && element.tagName !== 'A' && element.tagName !== 'BUTTON') {
+                            element.setAttribute('tabindex', '0');
+                        }
+                    });
                 }
             }
+        };
 
-            typeWriter(); // Start typing animation
-        });
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const sections = document.querySelectorAll("section, .project-card");
-
-            const revealOnScroll = () => {
-            sections.forEach(section => {
-                const sectionTop = section.getBoundingClientRect().top;
-                const windowHeight = window.innerHeight;
-                    if (sectionTop < windowHeight - 50) {
-                        section.style.opacity = "1";
-                    }
-                });
-            };
-
-            window.addEventListener("scroll", revealOnScroll);
-            revealOnScroll();
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const projectCards = document.querySelectorAll('.project-card');
-    const projectGrid = document.querySelector('.project-grid');
-    
-    // Initialize GSAP
-    gsap.config({
-        nullTargetWarn: false
-    });
-    
-    // Store original positions for animation reference
-    let cardPositions = [];
-    
-    // Function to get current positions
-    function getPositions() {
-        cardPositions = [];
-        projectCards.forEach(card => {
-            const rect = card.getBoundingClientRect();
-            cardPositions.push({
-                left: rect.left,
-                top: rect.top
-            });
-        });
-    }
-    
-    // Get initial positions
-    setTimeout(getPositions, 100);
-    
-    // Filter function with smooth animations
-    function filterProjects(filter) {
-        // Get current positions before layout changes
-        getPositions();
-        
-        // Create a timeline for animations
-        const tl = gsap.timeline();
-        
-        // First, animate out cards that will be hidden
-        projectCards.forEach((card, index) => {
-            const isVisible = filter === 'all' || card.getAttribute('data-category') === filter;
-            
-            if (!isVisible && card.style.opacity !== '0') {
-                tl.to(card, {
-                    opacity: 0,
-                    y: 20,
-                    scale: 0.95,
-                    duration: 0.3,
-                    ease: "power2.out",
-                    onComplete: () => {
-                        card.style.display = 'none';
-                        card.classList.add('card-hidden');
-                    }
-                }, 0);
-            }
-        });
-        
-        // Then, show and position cards that should be visible
-        tl.add(() => {
-            projectCards.forEach((card) => {
-                const isVisible = filter === 'all' || card.getAttribute('data-category') === filter;
-                
-                if (isVisible) {
-                    card.style.display = 'flex';
-                    card.classList.remove('card-hidden');
-                }
-            });
-        });
-        
-        // Finally, animate in the visible cards with a stagger effect
-        projectCards.forEach((card, index) => {
-            const isVisible = filter === 'all' || card.getAttribute('data-category') === filter;
-            
-            if (isVisible) {
-                tl.to(card, {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    duration: 0.4,
-                    delay: index * 0.05, // Stagger effect
-                    ease: "power2.out"
-                }, 0.3);
-            }
-        });
-    }
-    
-    // Add click event listeners to filter buttons
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Update active button
-            filterBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Apply filter
-            const filter = this.getAttribute('data-filter');
-            filterProjects(filter);
-        });
-    });
-    
-    // Handle window resize
-    window.addEventListener('resize', getPositions);
-});
-// Wait for DOM to be fully loaded
-document.addEventListener("DOMContentLoaded", function() {
-    // Dark Mode Toggle Functionality
-    const themeToggle = document.getElementById('theme-toggle');
-    
-    // Check if user has a preference stored in localStorage
-    const currentTheme = localStorage.getItem('theme');
-    if (currentTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-    }
-    
-    // Theme toggle click event
-    if (themeToggle) {
-        themeToggle.addEventListener('click', function() {
-            document.body.classList.toggle('dark-mode');
-            
-            // Update localStorage
-            if (document.body.classList.contains('dark-mode')) {
-                localStorage.setItem('theme', 'dark');
-            } else {
-                localStorage.setItem('theme', 'light');
-            }
-        });
-    }
-    
-    // Project Card Flip Functionality
-    const flipButtons = document.querySelectorAll('.flip-card-btn');
-    
-    flipButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const card = this.closest('.project-card');
-            card.classList.toggle('flipped');
-        });
-    });
-    
-    // Project Slider Functionality
-    initializeProjectSliders();
-    
-    // Make achievement badges appear with animation as they come into view
-    initAchievementAnimations();
-});
-
-// Function to initialize project image sliders
-function initializeProjectSliders() {
-    const sliders = document.querySelectorAll('.project-slider');
-    
-    sliders.forEach(slider => {
-        const sliderWrapper = slider.querySelector('.slider-wrapper');
-        const prevBtn = slider.querySelector('.prev');
-        const nextBtn = slider.querySelector('.next');
-        const slides = slider.querySelectorAll('.slider-img');
-        
-        if (!slides.length) return;
-        
-        let currentSlide = 0;
-        const slideWidth = 100; // 100%
-        
-        // Set initial position
-        updateSliderPosition();
-        
-        // Add event listeners for navigation buttons
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-                updateSliderPosition();
-            });
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => Portfolio.init());
+        } else {
+            Portfolio.init();
         }
-        
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                currentSlide = (currentSlide + 1) % slides.length;
-                updateSliderPosition();
-            });
-        }
-        
-        function updateSliderPosition() {
-            sliderWrapper.style.transform = `translateX(-${currentSlide * slideWidth}%)`;
-        }
-        
-        // Auto slide every 5 seconds
-        let autoSlideInterval = setInterval(() => {
-            currentSlide = (currentSlide + 1) % slides.length;
-            updateSliderPosition();
-        }, 5000);
-        
-        // Pause auto slide when mouse is over the slider
-        slider.addEventListener('mouseenter', () => {
-            clearInterval(autoSlideInterval);
-        });
-        
-        // Resume auto slide when mouse leaves the slider
-        slider.addEventListener('mouseleave', () => {
-            autoSlideInterval = setInterval(() => {
-                currentSlide = (currentSlide + 1) % slides.length;
-                updateSliderPosition();
-            }, 5000);
-        });
-    });
-}
 
-// Function to add animations to achievement badges when they come into view
-function initAchievementAnimations() {
-    const achievementCards = document.querySelectorAll('.achievement-card');
-    
-    // Create a new Intersection Observer
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                // Add animation class when element is visible
-                entry.target.classList.add('achievement-animate');
-                // Stop observing after animation is added
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.1 }); // Trigger when at least 10% of the item is visible
-    
-    // Observe each achievement card
-    achievementCards.forEach(card => {
-        observer.observe(card);
-    });
-}
+        const birthYear = 2007; 
+        const birthMonth = 5;
+        const birthDay = 6;
 
-// Add smooth scrolling for navigation links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        
-        document.querySelector(this.getAttribute('href')).scrollIntoView({
-            behavior: 'smooth'
-        });
-    });
-});
+        const today = new Date();
+        let age = today.getFullYear() - birthYear;
+
+        if (today.getMonth() + 1 < birthMonth || (today.getMonth() + 1 === birthMonth && today.getDate() < birthDay)) {
+            age--;
+        }
+
+        document.getElementById('age').textContent = age + " Years";
+    </script>
     </script>
 </body>
 </html>
