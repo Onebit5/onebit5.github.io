@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Create your MMO game account - Join thousands of players in an epic adventure">
+    <meta name="keywords" content="MMO, game registration, online game, multiplayer">
+    <title>Create Account - MMO Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="form-container">
+        <h2 class="form-title">Create Account</h2>
+        <form id="registerForm">
+            <div class="input-group">
+                <input type="text" name="username" class="form-input" placeholder="Username" required>
+                <span class="input-icon"></span>
+                <div class="error-message"></div>
+            </div>
+
+            <div class="input-group">
+                <input type="password" name="password" class="form-input" placeholder="Password" required>
+                <span class="input-icon"></span>
+                <div class="password-strength">
+                    <div class="strength-text">Password strength</div>
+                    <div class="strength-bar">
+                        <div class="strength-fill"></div>
+                    </div>
+                </div>
+                <div class="error-message"></div>
+            </div>
+
+            <div class="input-group">
+                <input type="password" name="confirmPassword" class="form-input" placeholder="Confirm Password" required>
+                <span class="input-icon"></span>
+                <div class="error-message"></div>
+            </div>
+
+            <div class="terms-checkbox">
+                <input type="checkbox" id="terms" name="terms">
+                <label for="terms">I agree to the <a href="terms.html" target="_blank" class="terms-link">Terms of Service</a> and <a href="privacy.html" target="_blank" class="terms-link">Privacy Policy</a></label>
+            </div>
+
+            <button type="submit" class="submit-btn">Create Account</button>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
