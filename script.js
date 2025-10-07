@@ -187,7 +187,7 @@ const Portfolio = {
             const urlParams = new URLSearchParams(window.location.search);
             const profileParam = urlParams.get('profile');
 
-            let initialProfile = 'default';
+            let initialProfile = 'gameplay';
 
             if (profileParam && ['default', 'gameplay', 'engine'].includes(profileParam)) {
                 initialProfile = profileParam;
@@ -347,3 +347,4 @@ if (document.readyState === 'loading') {
         ageElement.textContent = age + " Years";
     }
 }
+
