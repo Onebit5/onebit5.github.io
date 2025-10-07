@@ -19,11 +19,12 @@
     <meta property="twitter:description" content="Game Engine Developer and Gameplay Programmer specialized in C/C++, Unity, and graphics programming.">
     <meta property="twitter:image" content="images/image.png">
 
-    <title>Jose Antonio - Game Engine Developer Portfolio</title>
+    <title>Jose Antonio - Portfolio</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+    <script src="script.js" defer></script>
 </head>
 <body>
     <!-- Header Section -->
@@ -37,10 +38,17 @@
                 
                 <div class="header-profile">
                     <div class="profile-photo">
-                        <img src="images/image.png" alt="Jose Antonio - Game Engine Developer" loading="eager">
+                        <img src="images/image.png" alt="Me" loading="eager">
                     </div>
                     <h1 id="typewriter"></h1>
-                    <p class="fade-in">Game Engine Developer / Gameplay Programmer</p>
+                    <p class="fade-in header-subtitle">Game Engine Developer / Gameplay Programmer</p>
+
+                    <!-- Profile Tabs -->
+                    <div class="profile-tabs">
+                        <button class="profile-tab active" data-profile="default">All</button>
+                        <button class="profile-tab" data-profile="gameplay">Gameplay Programmer</button>
+                        <button class="profile-tab" data-profile="engine">Engine Programmer</button>
+                    </div>
                     
                     <div class="header-social">
                         <a href="mailto:sronebitco@gmail.com" class="social-icon" aria-label="Email">
@@ -71,21 +79,59 @@
             <div class="container">
                 <h2>About Me</h2>
                 <div class="about-content">
-                    <div class="about-text">
-                        <p>Hello! I'm <strong>Jose Antonio</strong>, a passionate Game Engine Developer and Gameplay Programmer with a strong foundation in game architecture, systems programming, and performance optimization.</p>
-                
-                        <p>I specialize in low-level graphics programming, game physics, and building efficient, scalable systems that bridge creative design with robust technical execution.</p>
-                
-                        <p>My experience spans a wide range of programming languages, tools, and technologies, including:</p>
-                
+                    <!-- Default About -->
+                    <div class="about-text" data-profile-section="default">
+                        <p>Hello! I'm <strong>Jose Antonio</strong>, a game developer specializing in both engine architecture and gameplay programming. Currently contributing to the <strong>Godot Engine</strong> open-source project, I bring hands-on experience building game systems from the ground up.</p>
+
+                        <p>I've developed <strong>OneTek Engine 2</strong>, a cross-platform 3D engine featuring multi-API rendering (Vulkan/DirectX 12/OpenGL), PhysX integration, and AI navigation systems. My work spans from low-level engine architecture to shipping complete games like <strong>Cosmic Chaos</strong> on Itch.io.</p>
+
+                        <p>My technical expertise includes:</p>
+
                         <ul class="about-skills">
-                            <li><span class="skill-highlight">C/C++</span> Engine development, performance-critical systems</li>
-                            <li><span class="skill-highlight">C#</span> Unity development</li>
-                            <li><span class="skill-highlight">Graphics APIs</span> OpenGL, Vulkan</li>
-                            <li><span class="skill-highlight">Game Engines</span> Unity, Unreal Engine, Godot</li>
+                            <li><span class="skill-highlight">Engine Development</span> Multi-API rendering, ECS architecture, physics integration</li>
+                            <li><span class="skill-highlight">Graphics Programming</span> Vulkan, DirectX 12, OpenGL, PBR materials, shader programming</li>
+                            <li><span class="skill-highlight">Gameplay Systems</span> AI behavior, animation systems, multiplayer networking</li>
+                            <li><span class="skill-highlight">Languages & Tools</span> C/C++, C#, Unity, Godot, CMake, Git</li>
                         </ul>
-                
-                        <p>I strive to deliver high-performance, maintainable systems that empower developers and create engaging gameplay experiences.</p>
+
+                        <p>I'm passionate about building efficient, maintainable systems that enable creative expression while maintaining technical excellence.</p>
+                    </div>
+
+                    <!-- Gameplay Programmer About -->
+                    <div class="about-text" data-profile-section="gameplay" style="display: none;">
+                        <p>Hello! I'm <strong>Jose Antonio</strong>, a Gameplay Programmer passionate about crafting engaging, responsive, and immersive player experiences. I specialize in designing and implementing gameplay systems that bring creative ideas to life while maintaining clean, efficient, and maintainable code.</p>
+
+                        <p>From player controls and combat mechanics to AI behaviors and dynamic environments, I focus on building systems that feel intuitive and fun. I enjoy tackling challenges like combat design, AI pathfinding, and gameplay balance to ensure every moment feels satisfying and intentional.</p>
+
+                        <p>My technical expertise includes:</p>
+
+                        <ul class="about-skills">
+                            <li><span class="skill-highlight">C++ & C#</span> Building gameplay systems, tools, and engine-level features.</li>
+                            <li><span class="skill-highlight">AI Programming</span> Enemy logic, state machines, decision trees, and navigation.</li>
+                            <li><span class="skill-highlight">Physics & Collision Systems</span> Implementing responsive and realistic interactions.</li>
+                            <li><span class="skill-highlight">UI/UX & Feedback Systems</span> Creating intuitive interfaces and player responsiveness.</li>
+                            <li><span class="skill-highlight">Multiplayer</span> Networking fundamentals, client-server architecture</li>
+                        </ul>
+
+                        <p>I thrive on transforming creative concepts into polished, high-quality experiences that resonate with players and support the game's vision.</p>
+                    </div>
+
+                    <!-- Engine Programmer About -->
+                    <div class="about-text" data-profile-section="engine" style="display: none;">
+                        <p>Hello! I'm <strong>Jose Antonio</strong>, an Engine Programmer specializing in high-performance systems and modern rendering architectures. I built <strong>OneTek Engine 2</strong>, a cross-platform 3D engine featuring Vulkan/DirectX 12/OpenGL rendering, PhysX integration, and AI navigation with Recast & Detour.</p>
+
+                        <p>Currently contributing to <strong>Godot Engine</strong>, I focus on engine stability, core systems improvements, and developer experience. My work emphasizes data-oriented design, performance optimization, and clean architectural patterns.</p>
+
+                        <p>Technical expertise:</p>
+
+                        <ul class="about-skills">
+                            <li><span class="skill-highlight">Graphics Programming</span> Vulkan, DirectX 12, OpenGL, PBR materials, shader pipelines</li>
+                            <li><span class="skill-highlight">Engine Architecture</span> ECS systems, data-oriented design, multithreading</li>
+                            <li><span class="skill-highlight">Physics & AI</span> PhysX integration, navigation mesh generation, spatial partitioning</li>
+                            <li><span class="skill-highlight">Tools</span> CMake, Dear ImGui, cross-platform builds, profiling tools</li>
+                        </ul>
+
+                        <p>I'm passionate about building robust, efficient foundations that empower developers to create extraordinary games.</p>
                     </div>
                 </div>
             </div>
@@ -122,7 +168,7 @@
                     </div>
                     <div class="info-details">
                         <h3>Languages</h3>
-                        <p>Spanish (Native), English (Fluent), German (Basic)</p>
+                        <p>Spanish (Native), English (C1)</p>
                     </div>
                 </div>
             </div>
@@ -139,7 +185,7 @@
                         <div class="timeline-content">
                             <h3>Vocational Degree in Computer Systems and Networks (SMR)</h3>
                             <h4>Spain</h4>
-                            <p class="timeline-date">SEPT 2024 - 2026</p>
+                            <p class="timeline-date">SEPT 2024 - Present</p>
                             <p>Vocational training program focused on computer systems, network administration, and IT support.</p>
                         </div>
                     </div>
@@ -156,32 +202,42 @@
             </div>
         </section>
 
-    <!-- Experience Section-->
-        <!-- <section id="experience" class="glassmorphism">
-            <div class="container">
-                <h2>Experience</h2>
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-content">
-                            <h3>Game Engine Developer</h3>
-                            <h4>Game Studio Name</h4>
-                            <p class="timeline-date">2023 - Present</p>
-                            <p>Developed core engine components for multiple game projects. Implemented rendering pipelines and physics systems.</p>
-                        </div>
+    <!-- Work Experience Section -->
+    <section id="experience" class="glassmorphism">
+        <div class="container">
+            <h2>Work Experience</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3>Open Source Contributor</h3>
+                        <h4>Godot Engine</h4>
+                        <p class="company-info">Open-source, cross-platform 2D and 3D game engine maintained by a global community of developers.</p>
+                        <p class="timeline-date">10/2025 - Present | Freelancer | Remote</p>
+                        <ul class="experience-list">
+                            <li>Contributing to bug fixes and feature improvements for the upcoming Godot 4.6 release.</li>
+                            <li>Collaborating with maintainers and reviewing pull requests in the engine's core systems.</li>
+                            <li>Implementing and testing fixes to improve engine stability and developer experience.</li>
+                        </ul>
                     </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-content">
-                            <h3>Gameplay Programmer</h3>
-                            <h4>Another Studio</h4>
-                            <p class="timeline-date">2021 - 2023</p>
-                            <p>Created game mechanics and AI systems for action-adventure titles.</p>
-                        </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3>Game Programmer & Designer</h3>
+                        <h4>Self-Employed</h4>
+                        <p class="timeline-date">02/2022 - 08/2023 | Freelancer | Remote</p>
+                        <ul class="experience-list">
+                            <li>Designed and developed <strong>Cosmic Chaos</strong>, a 2D action game built with Unity engine and released publicly on Itch.io.</li>
+                            <li>Implemented all gameplay systems, physics, UI, and rendering features, focusing on performance and stability.</li>
+                            <li>Managed the entire development pipeline from prototyping to release, coordinating external music and art contributions.</li>
+                            <li>Published on <a href="https://mronebit.itch.io/cosmic-chaos" target="_blank" rel="noopener noreferrer">Itch.io</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
-        </section> -->
+        </div>
+    </section>
 
     <!-- Achievements & Certifications Section -->
     <!-- <section id="achievements">
@@ -241,10 +297,21 @@
                 <h2>Projects</h2>
                 <div class="project-grid">
                     <!-- OneTek Engine 2 -->
-                    <div class="project-card" data-category="engine">
+                    <div class="project-card" data-category="engine" data-profiles="default,engine">
                         <img src="images/projectImages/onetek2.bmp" alt="OneTek Engine 2 - Cross-platform 3D game engine" class="project-image" loading="lazy">
                         <h3>OneTek Engine 2</h3>
-                        <p style="text-align: justify;">A high-performance, cross-platform 3D game engine featuring multi-API rendering (Vulkan/DirectX 12/OpenGL), integrated NVIDIA PhysX physics, AI pathfinding with navigation meshes, and comprehensive asset management. Built with modern C++20 practices, the engine supports PBR rendering, post-processing effects, and includes development tools with Dear ImGui integration.</p>
+                        <div class="project-description-short">
+                            <ul class="project-highlights">
+                                <li>Developed multi-API rendering with Vulkan, DirectX 12, and OpenGL.</li>
+                                <li>Integrated ECS architecture, PhysX, and AI navigation using Recast & Detour.</li>
+                                <li>Implemented PBR materials, shadow mapping, and post-processing effects.</li>
+                                <li>Built development tools with Dear ImGui for profiling and debugging.</li>
+                            </ul>
+                        </div>
+                        <div class="project-description-full" style="display: none;">
+                            <p style="text-align: justify;">A high-performance, cross-platform 3D game engine featuring multi-API rendering (Vulkan/DirectX 12/OpenGL), integrated NVIDIA PhysX physics, AI pathfinding with navigation meshes, and comprehensive asset management. Built with modern C++20 practices, the engine supports PBR rendering, post-processing effects, and includes development tools with Dear ImGui integration.</p>
+                        </div>
+                        <a href="#" class="read-more-btn">Read more...</a>
                         <p class="project-tech">Technologies: C++20, Vulkan, DirectX 12, PhysX, SDL2, Assimp, ImGui, CMake</p>
                         <div class="github-buttons-container">
                             <a href="https://github.com/Onebit5/OneTek-Engine-2" target="_blank" class="github-button">GitHub</a>
@@ -252,32 +319,65 @@
                     </div>
 
                     <!-- Cosmic Chaos -->
-                    <div class="project-card" data-category="game">
+                    <div class="project-card" data-category="game" data-profiles="default,gameplay">
                         <img src="images/projectImages/cosmicchaos.bmp" alt="Cosmic Chaos - 2D bullet hell game screenshot" class="project-image" loading="lazy">
                         <h3>Cosmic Chaos</h3>
-                        <p style="text-align: justify;">A 2D bullet hell game developed in Unity, featuring two distinct difficulty modes. The first level is designed as an accessible introduction to bullet hell mechanics, while the second offers a high-intensity challenge for experienced players. Implemented custom enemy behavior, projectile patterns, and difficulty scaling systems to ensure varied gameplay experiences.</p>
-                            <p class="project-tech">Technologies: Unity, C#</p>
-                            <div class="github-buttons-container">
-                                <a href="https://mronebit.itch.io/cosmic-chaos" target="_blank" class="github-button">Itch.io</a>
-                            </div>
+                        <div class="project-description-short">
+                            <ul class="project-highlights">
+                                <li>Designed and developed a 2D bullet hell game with Unity.</li>
+                                <li>Created two distinct difficulty modes for varied player experiences.</li>
+                                <li>Implemented custom enemy AI, projectile patterns, and difficulty scaling.</li>
+                                <li>Published on Itch.io with complete gameplay systems.</li>
+                            </ul>
+                        </div>
+                        <div class="project-description-full" style="display: none;">
+                            <p style="text-align: justify;">A 2D bullet hell game developed in Unity, featuring two distinct difficulty modes. The first level is designed as an accessible introduction to bullet hell mechanics, while the second offers a high-intensity challenge for experienced players. Implemented custom enemy behavior, projectile patterns, and difficulty scaling systems to ensure varied gameplay experiences.</p>
+                        </div>
+                        <a href="#" class="read-more-btn">Read more...</a>
+                        <p class="project-tech">Technologies: Unity, C#</p>
+                        <div class="github-buttons-container">
+                            <a href="https://mronebit.itch.io/cosmic-chaos" target="_blank" class="github-button">Itch.io</a>
+                        </div>
                     </div>
 
                     <!-- OneTech Engine Project -->
-                    <div class="project-card" data-category="engine">
+                    <div class="project-card" data-category="engine" data-profiles="default,engine">
                         <img src="images/projectImages/onetech-engine.bmp" alt="OneTek Engine - Custom 2D game engine screenshot" class="project-image" loading="lazy">
                         <h3>OneTek Engine</h3>
-                        <p style="text-align: justify;">A custom 2D game engine developed in C, focused on rendering levels, managing player input, and handling interactive game objects such as walls and doors. The engine supports loading maps from text files, enabling rapid prototyping of simple FPS-style gameplay.</p>
+                        <div class="project-description-short">
+                            <ul class="project-highlights">
+                                <li>Built a custom 2D game engine in C with OpenGL rendering.</li>
+                                <li>Developed level rendering and player input management systems.</li>
+                                <li>Created interactive game objects including walls and doors.</li>
+                                <li>Implemented text file-based map loading for rapid prototyping.</li>
+                            </ul>
+                        </div>
+                        <div class="project-description-full" style="display: none;">
+                            <p style="text-align: justify;">A custom 2D game engine developed in C, focused on rendering levels, managing player input, and handling interactive game objects such as walls and doors. The engine supports loading maps from text files, enabling rapid prototyping of simple FPS-style gameplay.</p>
+                        </div>
+                        <a href="#" class="read-more-btn">Read more...</a>
                         <p class="project-tech">Technologies: C, OpenGL, CMake</p>
                         <div class="github-buttons-container">
                             <a href="https://github.com/Onebit5/OneTech-Engine" target="_blank" class="github-button">GitHub</a>
                         </div>
                     </div>
                     
-                        <!-- Unity Prototypes Project -->
-                    <div class="project-card" data-category="game">
+                    <!-- Unity Prototypes Project -->
+                    <div class="project-card" data-category="game" data-profiles="default,gameplay">
                         <img src="images/projectImages/prototype.bmp" alt="Unity Prototypes - Collection of gameplay prototypes" class="project-image" loading="lazy">
                         <h3>Unity Prototypes</h3>
-                        <p>A collection of gameplay prototypes developed in Unity using C#, exploring core mechanics such as gravity manipulation, interactive object control, and basic AI behavior for enemy characters.</p>
+                        <div class="project-description-short">
+                            <ul class="project-highlights">
+                                <li>Created multiple gameplay prototypes in Unity with C#.</li>
+                                <li>Developed gravity manipulation mechanics.</li>
+                                <li>Implemented interactive object control systems.</li>
+                                <li>Designed basic AI behavior for enemy characters.</li>
+                            </ul>
+                        </div>
+                        <div class="project-description-full" style="display: none;">
+                            <p>A collection of gameplay prototypes developed in Unity using C#, exploring core mechanics such as gravity manipulation, interactive object control, and basic AI behavior for enemy characters.</p>
+                        </div>
+                        <a href="#" class="read-more-btn">Read more...</a>
                         <p class="project-tech">Technologies: Unity, C#</p>
                         <div class="github-buttons-container">
                             <a href="https://github.com/Onebit5/Prototypes" target="_blank" class="github-button">GitHub</a>
@@ -288,72 +388,309 @@
         </section>
 
         <!-- Skills Section -->
-        <section id="programming-languages" class="glassmorphism">
+        <section id="skills" class="glassmorphism">
             <div class="container">
-                <h2>Programming Languages</h2>
-                <ul>
-                    <li><img src="images/logos/c.svg" alt="C Programming Language" class="skill-image" loading="lazy"></li>
-                    <li><img src="images/logos/cpp.svg" alt="C++ Programming Language" class="skill-image" loading="lazy"></li>
-                    <li><img src="images/logos/csharp.svg" alt="C# Programming Language" class="skill-image" loading="lazy"></li>
-                    <li><img src="images/logos/lua.svg" alt="Lua Programming Language" class="skill-image" loading="lazy"></li>
-                    <li><img src="images/logos/java.svg" alt="Java Programming Language" class="skill-image" loading="lazy"></li>
-                </ul>
-            </div>
-        </section>
+                <h2>Skills</h2>
+                <div class="skills-container">
+                    <!-- Programming Languages (All/Engine) -->
+                    <div class="skill-category" data-skill-profiles="default,engine">
+                        <h3 class="skill-category-title">
+                            <i class="fas fa-code"></i>
+                            Programming Languages
+                        </h3>
+                        <div class="skill-items">
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/c.svg" alt="C" class="skill-logo">
+                                <span>C</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/cpp.svg" alt="C++" class="skill-logo">
+                                <span>C++</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/csharp.svg" alt="C#" class="skill-logo">
+                                <span>C#</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/java.svg" alt="Java" class="skill-logo">
+                                <span>Java</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/lua.svg" alt="Lua" class="skill-logo">
+                                <span>Lua</span>
+                            </div>
+                        </div>
+                    </div>
 
-        <section id="development-environments" class="glassmorphism">
-            <div class="container">
-                <h2>Development Environments</h2>
-                <ul>
-                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visualstudio/visualstudio-plain.svg" alt="Visual Studio IDE" class="skill-image" loading="lazy"></li>
-                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" alt="Visual Studio Code" class="skill-image" loading="lazy"></li>
-                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/intellij/intellij-original.svg" alt="IntelliJ IDEA" class="skill-image" loading="lazy"></li>
-                </ul>
-            </div>
-        </section>
+                    <!-- Programming & Software Fundamentals (Gameplay) -->
+                    <div class="skill-category" data-skill-profiles="gameplay">
+                        <h3 class="skill-category-title">
+                            <i class="fas fa-code"></i>
+                            Programming & Software Fundamentals
+                        </h3>
+                        <div class="skill-items">
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/cpp.svg" alt="C++" class="skill-logo">
+                                <span>C++</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/csharp.svg" alt="C#" class="skill-logo">
+                                <span>C#</span>
+                            </div>
+                            <div class="skill-item">OOP & Memory</div>
+                            <div class="skill-item">DOD & ECS</div>
+                            <div class="skill-item">Design Patterns</div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/git.svg" alt="Git" class="skill-logo">
+                                <span>Git</span>
+                            </div>
+                            <div class="skill-item">Unit Testing & TDD</div>
+                            <div class="skill-item">Debugging & Profiling</div>
+                        </div>
+                    </div>
 
-        <section id="operating-systems" class="glassmorphism">
-            <div class="container">
-                <h2>Operating Systems</h2>
-                <ul>
-                    <li><img src="images/logos/windows.svg" alt="Microsoft Windows" class="skill-image" loading="lazy"></li>
-                    <li><img src="images/logos/ubuntu.svg" alt="Ubuntu Linux" class="skill-image" loading="lazy"></li>
-                    <li><img src="images/logos/debian.svg" alt="Debian Linux" class="skill-image" loading="lazy"></li>
-                    <li><img src="images/logos/kali.svg" alt="Kali Linux" class="skill-image" loading="lazy"></li>
-                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/archlinux/archlinux-original.svg" alt="Arch Linux" class="skill-image" loading="lazy"></li>
-                </ul>
-            </div>
-        </section>
+                    <!-- Game & Engine Development (All) -->
+                    <div class="skill-category" data-skill-profiles="default">
+                        <h3 class="skill-category-title">
+                            <i class="fas fa-gamepad"></i>
+                            Game & Engine Development
+                        </h3>
+                        <div class="skill-items">
+                            <div class="skill-item">Data-Oriented Design (DOD)</div>
+                            <div class="skill-item">Debugging</div>
+                            <div class="skill-item">ECS Systems</div>
+                            <div class="skill-item">Game Engine Architecture</div>
+                            <div class="skill-item">Memory Management</div>
+                            <div class="skill-item">Multithreading</div>
+                            <div class="skill-item">Performance Optimization</div>
+                            <div class="skill-item">Scripting Language Integration</div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/lua.svg" alt="Lua" class="skill-logo">
+                                <span>Lua Embedding</span>
+                            </div>
+                            <div class="skill-item">Networking Fundamentals</div>
+                            <div class="skill-item">Client-Server Architecture</div>
+                        </div>
+                    </div>
 
-        <section id="version-control" class="glassmorphism">
-            <div class="container">
-                <h2>Version Control</h2>
-                <ul>
-                    <li><img src="images/logos/git.svg" alt="Git Version Control" class="skill-image" loading="lazy"></li>
-                    <li><img src="images/logos/Github-desktop-logo-symbol.svg.png" alt="GitHub" class="skill-image" loading="lazy"></li>
-                </ul>
-            </div>
-        </section>
+                    <!-- Game Architecture & Systems (Gameplay) -->
+                    <div class="skill-category" data-skill-profiles="gameplay">
+                        <h3 class="skill-category-title">
+                            <i class="fas fa-gamepad"></i>
+                            Game Development
+                        </h3>
+                        <div class="skill-items">
+                            <div class="skill-item">ECS Architecture</div>
+                            <div class="skill-item">Game Loops</div>
+                            <div class="skill-item">Input & Events</div>
+                            <div class="skill-item">Physics & Collision</div>
+                            <div class="skill-item">Animation Systems</div>
+                            <div class="skill-item">NPC AI</div>
+                            <div class="skill-item">UI Programming</div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/lua.svg" alt="Lua" class="skill-logo">
+                                <span>Lua Scripting</span>
+                            </div>
+                            <div class="skill-item">Multiplayer & Networking</div>
+                            <div class="skill-item">Level Design</div>
+                            <div class="skill-item">Prototyping</div>
+                            <div class="skill-item">Performance Optimization</div>
+                        </div>
+                    </div>
 
-        <section id="game-engines" class="glassmorphism">
-            <div class="container">
-                <h2>Video Game Engines</h2>
-                <ul>
-                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/unity/unity-original.svg" alt="Unity Game Engine" class="skill-image" loading="lazy"></li>
-                    <li><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/godot/godot-original.svg" alt="Godot Game Engine" class="skill-image" loading="lazy"></li>
-                </ul>
-            </div>
-        </section>
+                    <!-- Engine Development (Engine) -->
+                    <div class="skill-category" data-skill-profiles="engine">
+                        <h3 class="skill-category-title">
+                            <i class="fas fa-cogs"></i>
+                            Engine Development
+                        </h3>
+                        <div class="skill-items">
+                            <div class="skill-item">Data-Oriented Design (DOD)</div>
+                            <div class="skill-item">ECS Systems</div>
+                            <div class="skill-item">Engine Architecture</div>
+                            <div class="skill-item">Memory Management</div>
+                            <div class="skill-item">Multithreading</div>
+                            <div class="skill-item">Performance Optimization</div>
+                            <div class="skill-item">Asset Pipeline</div>
+                            <div class="skill-item">Build Systems</div>
+                            <div class="skill-item">Debugging & Profiling</div>
+                            <div class="skill-item">Cross-Platform Development</div>
+                            <div class="skill-item">Scripting Language Integration</div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/lua.svg" alt="Lua" class="skill-logo">
+                                <span>Lua Embedding</span>
+                            </div>
+                            <div class="skill-item">Networking Architecture</div>
+                            <div class="skill-item">Network Protocol Design</div>
+                        </div>
+                    </div>
 
-        <section id="other-technologies" class="glassmorphism">
-            <div class="container">
-                <h2>Other Technologies</h2>
-                <ul>
-                    <li><img src="images/logos/opengl.svg" alt="OpenGL Graphics API" class="skill-image" loading="lazy"></li>
-                    <li><img src="images/logos/cmake.svg" alt="CMake Build System" class="skill-image" loading="lazy"></li>
-                    <li><img src="images/logos/vulkan.svg" alt="Vulkan Graphics API" class="skill-image" loading="lazy"></li>
-                    <li><img src="images/logos/directx.svg" alt="Directx Graphics API" class="skill-image" loading="lazy"></li>
-                </ul>
+                    <!-- Technical Skills (All/Engine) -->
+                    <div class="skill-category" data-skill-profiles="default,engine">
+                        <h3 class="skill-category-title">
+                            <i class="fas fa-cogs"></i>
+                            Technical Skills
+                        </h3>
+                        <div class="skill-items">
+                            <!-- Graphics -->
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/vulkan.svg" alt="Vulkan" class="skill-logo">
+                                <span>Vulkan</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/directx.svg" alt="DirectX 12" class="skill-logo">
+                                <span>DirectX 12</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/opengl.svg" alt="OpenGL" class="skill-logo">
+                                <span>OpenGL</span>
+                            </div>
+                            <div class="skill-item">Shader Programming</div>
+                            <div class="skill-item">PBR & Lighting</div>
+                            <!-- Math & Physics -->
+                            <div class="skill-item">Linear Algebra</div>
+                            <div class="skill-item">3D Math</div>
+                            <div class="skill-item">Physics & Collision</div>
+                            <!-- AI -->
+                            <div class="skill-item">Pathfinding & NavMesh</div>
+                            <div class="skill-item">AI Architecture</div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Skills (Gameplay) -->
+                    <div class="skill-category" data-skill-profiles="gameplay">
+                        <h3 class="skill-category-title">
+                            <i class="fas fa-cogs"></i>
+                            Technical Skills
+                        </h3>
+                        <div class="skill-items">
+                            <!-- Math & Physics -->
+                            <div class="skill-item">3D Math & Vectors</div>
+                            <div class="skill-item">Collision & Raycasting</div>
+                            <div class="skill-item">Interpolation</div>
+                            <!-- AI -->
+                            <div class="skill-item">Enemy AI</div>
+                            <div class="skill-item">Pathfinding</div>
+                            <div class="skill-item">State Machines</div>
+                            <div class="skill-item">Behavior Trees</div>
+                            <!-- Graphics -->
+                            <div class="skill-item">Shaders & Materials</div>
+                            <div class="skill-item">Camera Systems</div>
+                            <div class="skill-item">Animation Blending</div>
+                        </div>
+                    </div>
+
+                    <!-- Tools & Frameworks (All) -->
+                    <div class="skill-category" data-skill-profiles="default">
+                        <h3 class="skill-category-title">
+                            <i class="fas fa-tools"></i>
+                            Tools & Frameworks
+                        </h3>
+                        <div class="skill-items">
+                            <div class="skill-item">Assimp</div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/cmake.svg" alt="CMake" class="skill-logo">
+                                <span>CMake</span>
+                            </div>
+                            <div class="skill-item">Dear ImGui</div>
+                            <div class="skill-item">Freetype</div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/git.svg" alt="Git" class="skill-logo">
+                                <span>Git</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/ubuntu.svg" alt="Linux" class="skill-logo">
+                                <span>Linux</span>
+                            </div>
+                            <div class="skill-item">PhysX</div>
+                            <div class="skill-item">SDL2</div>
+                            <div class="skill-item">STB</div>
+                            <div class="skill-item with-logo">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visualstudio/visualstudio-plain.svg" alt="Visual Studio" class="skill-logo">
+                                <span>Visual Studio</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/unity/unity-original.svg" alt="Unity" class="skill-logo">
+                                <span>Unity</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/godot/godot-original.svg" alt="Godot" class="skill-logo">
+                                <span>Godot</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tools (Gameplay) -->
+                    <div class="skill-category" data-skill-profiles="gameplay">
+                        <h3 class="skill-category-title">
+                            <i class="fas fa-tools"></i>
+                            Tools & Engines
+                        </h3>
+                        <div class="skill-items">
+                            <div class="skill-item with-logo">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/unity/unity-original.svg" alt="Unity" class="skill-logo">
+                                <span>Unity</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/godot/godot-original.svg" alt="Godot" class="skill-logo">
+                                <span>Godot</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visualstudio/visualstudio-plain.svg" alt="Visual Studio" class="skill-logo">
+                                <span>Visual Studio</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/git.svg" alt="Git" class="skill-logo">
+                                <span>Git</span>
+                            </div>
+                            <div class="skill-item">Cinemachine</div>
+                            <div class="skill-item">Profiling Tools</div>
+                        </div>
+                    </div>
+
+                    <!-- Tools (Engine) -->
+                    <div class="skill-category" data-skill-profiles="engine">
+                        <h3 class="skill-category-title">
+                            <i class="fas fa-tools"></i>
+                            Tools & Libraries
+                        </h3>
+                        <div class="skill-items">
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/cmake.svg" alt="CMake" class="skill-logo">
+                                <span>CMake</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visualstudio/visualstudio-plain.svg" alt="Visual Studio" class="skill-logo">
+                                <span>Visual Studio</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/git.svg" alt="Git" class="skill-logo">
+                                <span>Git</span>
+                            </div>
+                            <div class="skill-item with-logo">
+                                <img src="images/logos/ubuntu.svg" alt="Linux" class="skill-logo">
+                                <span>Linux</span>
+                            </div>
+                            <div class="skill-item">PhysX</div>
+                            <div class="skill-item">Dear ImGui</div>
+                            <div class="skill-item">SDL2</div>
+                            <div class="skill-item">Assimp</div>
+                        </div>
+                    </div>
+
+                    <!-- Languages -->
+                    <div class="skill-category" data-skill-profiles="default,gameplay,engine">
+                        <h3 class="skill-category-title">
+                            <i class="fas fa-language"></i>
+                            Languages
+                        </h3>
+                        <div class="skill-items">
+                            <div class="skill-item">English (C1)</div>
+                            <div class="skill-item">Spanish (Native)</div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </section>
     </main>
@@ -383,205 +720,5 @@
             <p>&copy; 2025 Jose Antonio. All rights reserved.</p>
         </div>
     </footer>
-
-    <script>
-        'use strict';
-
-        // Portfolio Application Main Module
-        const Portfolio = {
-            // Configuration
-            config: {
-                typewriterSpeed: 140,
-                scrollRevealOffset: 50,
-                autoSlideInterval: 5000
-            },
-
-            // Initialize all functionality
-            init() {
-                this.typewriter.init();
-                this.scrollReveal.init();
-                this.projectFilter.init();
-                this.themeToggle.init();
-                this.smoothScroll.init();
-                this.accessibility.init();
-            },
-
-            // Typewriter effect module
-            typewriter: {
-                init() {
-                    const target = document.getElementById('typewriter');
-                    if (!target) return;
-
-                    const text = 'Jose Antonio';
-                    let i = 0;
-
-                    const typeWriter = () => {
-                        if (i < text.length) {
-                            target.textContent += text.charAt(i);
-                            i++;
-                            setTimeout(typeWriter, Portfolio.config.typewriterSpeed);
-                        }
-                    };
-
-                    typeWriter();
-                }
-            },
-
-            // Scroll reveal animation module
-            scrollReveal: {
-                init() {
-                    const elements = document.querySelectorAll('section, .project-card');
-
-                    const revealOnScroll = () => {
-                        elements.forEach(element => {
-                            const elementTop = element.getBoundingClientRect().top;
-                            const windowHeight = window.innerHeight;
-
-                            if (elementTop < windowHeight - Portfolio.config.scrollRevealOffset) {
-                                element.style.opacity = '1';
-                            }
-                        });
-                    };
-
-                    // Use throttled scroll for better performance
-                    let ticking = false;
-                    const scrollHandler = () => {
-                        if (!ticking) {
-                            requestAnimationFrame(() => {
-                                revealOnScroll();
-                                ticking = false;
-                            });
-                            ticking = true;
-                        }
-                    };
-
-                    window.addEventListener('scroll', scrollHandler, { passive: true });
-                    revealOnScroll(); // Initial call
-                }
-            },
-
-            // Project filtering module (for future use)
-            projectFilter: {
-                init() {
-                    const filterBtns = document.querySelectorAll('.filter-btn');
-                    const projectCards = document.querySelectorAll('.project-card');
-
-                    if (!filterBtns.length || !projectCards.length) return;
-
-                    filterBtns.forEach(btn => {
-                        btn.addEventListener('click', this.handleFilter.bind(this));
-                    });
-                },
-
-                handleFilter(event) {
-                    const btn = event.currentTarget;
-                    const filter = btn.getAttribute('data-filter');
-
-                    // Update active button
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-
-                    // Apply filter logic here
-                    this.filterProjects(filter);
-                },
-
-                filterProjects(filter) {
-                    const projectCards = document.querySelectorAll('.project-card');
-
-                    projectCards.forEach(card => {
-                        const isVisible = filter === 'all' || card.getAttribute('data-category') === filter;
-                        card.style.display = isVisible ? 'flex' : 'none';
-                    });
-                }
-            },
-
-            // Theme toggle module
-            themeToggle: {
-                init() {
-                    const themeToggle = document.getElementById('theme-toggle');
-                    if (!themeToggle) return;
-
-                    // Load saved theme
-                    const currentTheme = localStorage.getItem('theme');
-                    if (currentTheme === 'dark') {
-                        document.body.classList.add('dark-mode');
-                    }
-
-                    themeToggle.addEventListener('click', this.toggleTheme.bind(this));
-                },
-
-                toggleTheme() {
-                    document.body.classList.toggle('dark-mode');
-
-                    const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
-                    localStorage.setItem('theme', theme);
-                }
-            },
-
-            // Smooth scrolling for anchor links
-            smoothScroll: {
-                init() {
-                    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                        anchor.addEventListener('click', this.handleClick);
-                    });
-                },
-
-                handleClick(event) {
-                    event.preventDefault();
-                    const target = document.querySelector(event.currentTarget.getAttribute('href'));
-
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                }
-            },
-
-            // Accessibility enhancements
-            accessibility: {
-                init() {
-                    // Skip to main content link
-                    this.addSkipLink();
-
-                    // Keyboard navigation
-                    this.enhanceKeyboardNav();
-                },
-
-                enhanceKeyboardNav() {
-                    // Ensure all interactive elements are keyboard accessible
-                    const interactiveElements = document.querySelectorAll('a, button, [tabindex]');
-
-                    interactiveElements.forEach(element => {
-                        if (!element.hasAttribute('tabindex') && element.tagName !== 'A' && element.tagName !== 'BUTTON') {
-                            element.setAttribute('tabindex', '0');
-                        }
-                    });
-                }
-            }
-        };
-
-        // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => Portfolio.init());
-        } else {
-            Portfolio.init();
-        }
-
-        const birthYear = 2007; 
-        const birthMonth = 5;
-        const birthDay = 6;
-
-        const today = new Date();
-        let age = today.getFullYear() - birthYear;
-
-        if (today.getMonth() + 1 < birthMonth || (today.getMonth() + 1 === birthMonth && today.getDate() < birthDay)) {
-            age--;
-        }
-
-        document.getElementById('age').textContent = age + " Years";
-    </script>
-    </script>
 </body>
 </html>
