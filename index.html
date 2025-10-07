@@ -44,11 +44,10 @@
                     <p class="fade-in header-subtitle">Game Engine Developer / Gameplay Programmer</p>
 
                     <!-- Profile Tabs -->
-                    <!--<div class="profile-tabs">
-                        <button class="profile-tab" data-profile="default">All</button>
+                    <div class="profile-tabs">
                         <button class="profile-tab active" data-profile="gameplay">Gameplay Programmer</button>
-                        <button class="profile-tab" data-profile="engine">Engine Programmer</button>
-                    </div>-->
+                        <!--<button class="profile-tab" data-profile="engine">Engine Programmer</button>-->
+                    </div>
                     
                     <div class="header-social">
                         <a href="mailto:sronebitco@gmail.com" class="social-icon" aria-label="Email">
@@ -79,24 +78,6 @@
             <div class="container">
                 <h2>About Me</h2>
                 <div class="about-content">
-                    <!-- Default About -->
-                    <div class="about-text" data-profile-section="">
-                        <p>Hello! I'm <strong>Jose Antonio</strong>, a game developer specializing in both engine architecture and gameplay programming. Currently contributing to the <strong>Godot Engine</strong> open-source project, I bring hands-on experience building game systems from the ground up.</p>
-
-                        <p>I've developed <strong>OneTek Engine 2</strong>, a cross-platform 3D engine featuring multi-API rendering (Vulkan/DirectX 12/OpenGL), PhysX integration, and AI navigation systems. My work spans from low-level engine architecture to shipping complete games like <strong>Cosmic Chaos</strong> on Itch.io.</p>
-
-                        <p>My technical expertise includes:</p>
-
-                        <ul class="about-skills">
-                            <li><span class="skill-highlight">Engine Development</span> Multi-API rendering, ECS architecture, physics integration</li>
-                            <li><span class="skill-highlight">Graphics Programming</span> Vulkan, DirectX 12, OpenGL, PBR materials, shader programming</li>
-                            <li><span class="skill-highlight">Gameplay Systems</span> AI behavior, animation systems, multiplayer networking</li>
-                            <li><span class="skill-highlight">Languages & Tools</span> C/C++, C#, Unity, Godot, CMake, Git</li>
-                        </ul>
-
-                        <p>I'm passionate about building efficient, maintainable systems that enable creative expression while maintaining technical excellence.</p>
-                    </div>
-
                     <!-- Gameplay Programmer About -->
                     <div class="about-text" data-profile-section="gameplay" style="display: none;">
                         <p>Hello! I'm <strong>Jose Antonio</strong>, a Gameplay Programmer passionate about crafting engaging, responsive, and immersive player experiences. I specialize in designing and implementing gameplay systems that bring creative ideas to life while maintaining clean, efficient, and maintainable code.</p>
@@ -392,7 +373,7 @@
             <div class="container">
                 <h2>Skills</h2>
                 <div class="skills-container">
-                    <!-- Programming Languages (All/Engine) -->
+                    <!-- Programming Languages (Engine) -->
                     <div class="skill-category" data-skill-profiles="engine">
                         <h3 class="skill-category-title">
                             <i class="fas fa-code"></i>
@@ -449,30 +430,6 @@
                         </div>
                     </div>
 
-                    <!-- Game & Engine Development (All) -->
-                    <div class="skill-category" data-skill-profiles="">
-                        <h3 class="skill-category-title">
-                            <i class="fas fa-gamepad"></i>
-                            Game & Engine Development
-                        </h3>
-                        <div class="skill-items">
-                            <div class="skill-item">Data-Oriented Design (DOD)</div>
-                            <div class="skill-item">Debugging</div>
-                            <div class="skill-item">ECS Systems</div>
-                            <div class="skill-item">Game Engine Architecture</div>
-                            <div class="skill-item">Memory Management</div>
-                            <div class="skill-item">Multithreading</div>
-                            <div class="skill-item">Performance Optimization</div>
-                            <div class="skill-item">Scripting Language Integration</div>
-                            <div class="skill-item with-logo">
-                                <img src="images/logos/lua.svg" alt="Lua" class="skill-logo">
-                                <span>Lua Embedding</span>
-                            </div>
-                            <div class="skill-item">Networking Fundamentals</div>
-                            <div class="skill-item">Client-Server Architecture</div>
-                        </div>
-                    </div>
-
                     <!-- Game Architecture & Systems (Gameplay) -->
                     <div class="skill-category" data-skill-profiles="gameplay">
                         <h3 class="skill-category-title">
@@ -525,7 +482,7 @@
                         </div>
                     </div>
 
-                    <!-- Technical Skills (All/Engine) -->
+                    <!-- Technical Skills (Engine) -->
                     <div class="skill-category" data-skill-profiles="engine">
                         <h3 class="skill-category-title">
                             <i class="fas fa-cogs"></i>
@@ -577,46 +534,6 @@
                             <div class="skill-item">Shaders & Materials</div>
                             <div class="skill-item">Camera Systems</div>
                             <div class="skill-item">Animation Blending</div>
-                        </div>
-                    </div>
-
-                    <!-- Tools & Frameworks (All) -->
-                    <div class="skill-category" data-skill-profiles="">
-                        <h3 class="skill-category-title">
-                            <i class="fas fa-tools"></i>
-                            Tools & Frameworks
-                        </h3>
-                        <div class="skill-items">
-                            <div class="skill-item">Assimp</div>
-                            <div class="skill-item with-logo">
-                                <img src="images/logos/cmake.svg" alt="CMake" class="skill-logo">
-                                <span>CMake</span>
-                            </div>
-                            <div class="skill-item">Dear ImGui</div>
-                            <div class="skill-item">Freetype</div>
-                            <div class="skill-item with-logo">
-                                <img src="images/logos/git.svg" alt="Git" class="skill-logo">
-                                <span>Git</span>
-                            </div>
-                            <div class="skill-item with-logo">
-                                <img src="images/logos/ubuntu.svg" alt="Linux" class="skill-logo">
-                                <span>Linux</span>
-                            </div>
-                            <div class="skill-item">PhysX</div>
-                            <div class="skill-item">SDL2</div>
-                            <div class="skill-item">STB</div>
-                            <div class="skill-item with-logo">
-                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visualstudio/visualstudio-plain.svg" alt="Visual Studio" class="skill-logo">
-                                <span>Visual Studio</span>
-                            </div>
-                            <div class="skill-item with-logo">
-                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/unity/unity-original.svg" alt="Unity" class="skill-logo">
-                                <span>Unity</span>
-                            </div>
-                            <div class="skill-item with-logo">
-                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/godot/godot-original.svg" alt="Godot" class="skill-logo">
-                                <span>Godot</span>
-                            </div>
                         </div>
                     </div>
 
@@ -679,7 +596,7 @@
                     </div>
 
                     <!-- Languages -->
-                    <div class="skill-category" data-skill-profiles="gameplay,engine">
+                    <div class="skill-category" data-skill-profiles="default,gameplay,engine">
                         <h3 class="skill-category-title">
                             <i class="fas fa-language"></i>
                             Languages

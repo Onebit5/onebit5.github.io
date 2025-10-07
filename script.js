@@ -189,12 +189,12 @@ const Portfolio = {
 
             let initialProfile = 'gameplay';
 
-            if (profileParam && ['default', 'gameplay', 'engine'].includes(profileParam)) {
+            if (profileParam && ['gameplay', 'engine'].includes(profileParam)) {
                 initialProfile = profileParam;
             } else {
                 // Load saved profile preference if no URL param
                 const savedProfile = localStorage.getItem('activeProfile');
-                if (savedProfile && ['default', 'gameplay', 'engine'].includes(savedProfile)) {
+                if (savedProfile && ['gameplay', 'engine'].includes(savedProfile)) {
                     initialProfile = savedProfile;
                 }
             }
@@ -221,7 +221,7 @@ const Portfolio = {
 
             // Update URL without page reload
             const url = new URL(window.location);
-            if (profile === 'default') {
+            if (profile === 'gameplay') {
                 url.searchParams.delete('profile');
             } else {
                 url.searchParams.set('profile', profile);
@@ -273,8 +273,6 @@ const Portfolio = {
                     subtitle.textContent = 'Gameplay Programmer';
                 } else if (profile === 'engine') {
                     subtitle.textContent = 'Engine Programmer';
-                } else {
-                    subtitle.textContent = 'Game Engine Developer / Gameplay Programmer';
                 }
             }
         }
@@ -347,4 +345,3 @@ if (document.readyState === 'loading') {
         ageElement.textContent = age + " Years";
     }
 }
-
