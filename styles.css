@@ -18,6 +18,14 @@
     --accent-red: #f85149;
     --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* Fluid spacing scale */
+    --space-xs: clamp(0.5rem, 1vw, 0.75rem);
+    --space-sm: clamp(0.75rem, 1.5vw, 1rem);
+    --space-md: clamp(1rem, 2vw, 1.5rem);
+    --space-lg: clamp(1.5rem, 3vw, 2.5rem);
+    --space-xl: clamp(2rem, 4vw, 3.5rem);
+    --space-2xl: clamp(3rem, 6vw, 5rem);
 }
 
 html {
@@ -66,25 +74,26 @@ body {
 /* Contributions Section Header */
 .contributions-section-header {
     text-align: center;
-    padding: 40px 20px;
-    margin-bottom: 20px;
+    padding: clamp(2rem, 5vw, 2.5rem) var(--space-md);
+    margin-bottom: var(--space-md);
 }
 
 .contributions-section-header h2 {
     font-family: var(--font-mono);
-    font-size: 1.8rem;
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
     margin-bottom: 12px;
     justify-content: center;
 }
 
 .contributions-subtitle {
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: clamp(0.8rem, 1.5vw, 0.9rem);
     color: var(--text-secondary);
     max-width: 600px;
     margin: 0 auto;
 }
 
+/* Header & Navigation */
 header {
     position: fixed;
     top: 0;
@@ -100,29 +109,82 @@ header {
 nav {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 15px 20px;
+    padding: clamp(0.75rem, 2vw, 0.9375rem) var(--space-md);
+    position: relative;
+}
+
+/* Mobile Menu Toggle (Hamburger) */
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 1001;
+    position: relative;
+}
+
+.hamburger {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--text-primary);
+    position: relative;
+    transition: background 0.3s ease;
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background: var(--text-primary);
+    transition: transform 0.3s ease;
+}
+
+.hamburger::before {
+    top: -7px;
+}
+
+.hamburger::after {
+    top: 7px;
+}
+
+.mobile-menu-toggle.active .hamburger {
+    background: transparent;
+}
+
+.mobile-menu-toggle.active .hamburger::before {
+    transform: rotate(45deg) translateY(7px) translateX(7px);
+}
+
+.mobile-menu-toggle.active .hamburger::after {
+    transform: rotate(-45deg) translateY(-7px) translateX(7px);
 }
 
 .nav-links {
     display: flex;
     list-style: none;
-    gap: 30px;
+    gap: clamp(1.25rem, 3vw, 1.875rem);
     justify-content: center;
 }
 
 .nav-links a {
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: clamp(0.8rem, 1.5vw, 0.9rem);
     color: var(--text-secondary);
     text-decoration: none;
     transition: color 0.2s ease;
     position: relative;
+    display: block;
+    padding: 0.5rem 0;
 }
 
 .nav-links a::after {
     content: '';
     position: absolute;
-    bottom: -5px;
+    bottom: 0;
     left: 0;
     width: 0;
     height: 2px;
@@ -138,13 +200,15 @@ nav {
     width: 100%;
 }
 
+/* Sections */
 section {
-    padding: 60px 0;
+    padding: clamp(3rem, 8vw, 3.75rem) 0;
 }
 
+/* Hero Section */
 #hero {
     min-height: auto;
-    padding: 100px 20px;
+    padding: clamp(5rem, 12vw, 6.25rem) var(--space-md);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -158,18 +222,19 @@ section {
     position: relative;
     z-index: 1;
     max-width: 800px;
+    width: 100%;
 }
 
 .profile-row {
     display: flex;
     align-items: center;
-    gap: 30px;
-    margin-bottom: 25px;
+    gap: clamp(1.25rem, 3vw, 1.875rem);
+    margin-bottom: clamp(1.25rem, 3vw, 1.5625rem);
 }
 
 .profile-image {
-    width: 120px;
-    height: 120px;
+    width: clamp(80px, 15vw, 120px);
+    height: clamp(80px, 15vw, 120px);
     flex-shrink: 0;
     border-radius: 50%;
     overflow: hidden;
@@ -190,10 +255,11 @@ section {
 
 .hero-info h1 {
     font-family: var(--font-mono);
-    font-size: 2.22rem;
+    font-size: clamp(1.4rem, 4vw, 2.22rem);
     font-weight: 600;
     margin-bottom: 8px;
-    letter-spacing: -1px;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
 }
 
 .hero-info h1::before {
@@ -203,9 +269,10 @@ section {
 
 .tagline {
     font-family: var(--font-mono);
-    font-size: 0.95rem;
+    font-size: clamp(0.8rem, 1.8vw, 0.95rem);
     color: var(--text-secondary);
     margin-bottom: 0;
+    line-height: 1.5;
 }
 
 .tagline .highlight {
@@ -214,19 +281,19 @@ section {
 
 .location {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: clamp(0.7rem, 1.5vw, 0.8rem);
     color: var(--text-secondary);
     opacity: 0.7;
     margin-top: 5px;
 }
 
 .about-compact {
-    margin: 20px 0 25px 0;
+    margin: clamp(1rem, 3vw, 1.25rem) 0 clamp(1.25rem, 3vw, 1.5625rem) 0;
     padding-left: 0;
 }
 
 .about-compact .about-text {
-    font-size: 0.95rem;
+    font-size: clamp(0.85rem, 1.8vw, 0.95rem);
     color: var(--text-secondary);
     max-width: 600px;
     line-height: 1.6;
@@ -234,18 +301,20 @@ section {
 
 .social-links {
     display: flex;
-    gap: 12px;
+    gap: clamp(0.625rem, 1.5vw, 0.75rem);
     justify-content: flex-start;
+    flex-wrap: wrap;
 }
 
 .social-btn {
     font-family: var(--font-mono);
-    font-size: 0.9rem;
-    padding: 10px 25px;
+    font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+    padding: clamp(0.5rem, 1.5vw, 0.625rem) clamp(1rem, 3vw, 1.5625rem);
     border-radius: 6px;
     text-decoration: none;
     border: 1px solid var(--border-color);
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .social-btn.github {
@@ -284,35 +353,37 @@ section {
     transform: translateY(-2px);
 }
 
+/* Container */
 .container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 var(--space-md);
 }
 
 h2 {
     font-family: var(--font-mono);
-    font-size: 1.3rem;
-    margin-bottom: 30px;
+    font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+    margin-bottom: clamp(1.5rem, 3vw, 1.875rem);
     color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 15px;
 }
 
+/* Skills Section */
 #skills {
     background: var(--bg-secondary);
 }
 
 .skills-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+    gap: clamp(1rem, 3vw, 1.5625rem);
 }
 
 .skill-category h3 {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
+    font-size: clamp(0.75rem, 1.5vw, 0.85rem);
     color: var(--accent-orange);
     margin-bottom: 12px;
 }
@@ -325,8 +396,8 @@ h2 {
 
 .skill-list span {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    padding: 4px 10px;
+    font-size: clamp(0.7rem, 1.3vw, 0.75rem);
+    padding: clamp(0.25rem, 0.5vw, 0.25rem) clamp(0.5rem, 1vw, 0.625rem);
     background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -339,21 +410,22 @@ h2 {
     transform: translateY(-2px);
 }
 
+/* Projects Section */
 #projects {
     background: var(--bg-primary);
 }
 
 .projects-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: clamp(1rem, 2.5vw, 1.25rem);
 }
 
 .project-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 20px;
+    padding: clamp(1rem, 2.5vw, 1.25rem);
     transition: all 0.3s ease;
 }
 
@@ -371,25 +443,25 @@ h2 {
 }
 
 .project-card h3 {
-    font-size: 1rem;
+    font-size: clamp(0.9rem, 2vw, 1rem);
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .project-icon {
     color: var(--accent-green);
-    font-size: 1rem;
+    font-size: clamp(0.9rem, 2vw, 1rem);
 }
 
 .project-type {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: clamp(0.7rem, 1.3vw, 0.75rem);
     color: var(--accent-orange);
     margin-bottom: 10px;
 }
 
 .project-description {
-    font-size: 0.85rem;
+    font-size: clamp(0.8rem, 1.5vw, 0.85rem);
     color: var(--text-secondary);
     margin-bottom: 12px;
     line-height: 1.5;
@@ -397,16 +469,18 @@ h2 {
 
 .project-links {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 10px;
     margin-bottom: 12px;
+    flex-wrap: wrap;
 }
 
 .project-link {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: clamp(0.65rem, 1.2vw, 0.7rem);
     color: var(--accent-blue);
     text-decoration: none;
-    padding: 3px 8px;
+    padding: clamp(0.2rem, 0.5vw, 0.25rem) clamp(0.5rem, 1vw, 0.625rem);
     background: rgba(88, 166, 255, 0.1);
     border: 1px solid rgba(88, 166, 255, 0.3);
     border-radius: 4px;
@@ -428,23 +502,24 @@ h2 {
 
 .tech-stack span {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    padding: 3px 8px;
+    font-size: clamp(0.65rem, 1.2vw, 0.7rem);
+    padding: clamp(0.2rem, 0.5vw, 0.25rem) clamp(0.5rem, 1vw, 0.625rem);
     background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
     border-radius: 4px;
     color: var(--accent-green);
 }
 
+/* Contact Section */
 #contact {
     background: var(--bg-secondary);
     text-align: center;
 }
 
 .contact-text {
-    font-size: 0.9rem;
+    font-size: clamp(0.8rem, 1.5vw, 0.9rem);
     color: var(--text-secondary);
-    margin-bottom: 20px;
+    margin-bottom: var(--space-md);
     max-width: 500px;
     margin-left: auto;
     margin-right: auto;
@@ -452,15 +527,15 @@ h2 {
 
 .contact-links {
     display: flex;
-    gap: 12px;
+    gap: clamp(0.625rem, 1.5vw, 0.75rem);
     justify-content: center;
     flex-wrap: wrap;
 }
 
 .contact-btn {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
-    padding: 8px 20px;
+    font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+    padding: clamp(0.5rem, 1.2vw, 0.625rem) clamp(1rem, 2.5vw, 1.25rem);
     border-radius: 6px;
     text-decoration: none;
     border: 1px solid var(--border-color);
@@ -468,6 +543,8 @@ h2 {
     color: var(--text-primary);
     transition: all 0.2s ease;
     cursor: pointer;
+    white-space: nowrap;
+    position: relative;
 }
 
 .contact-btn:hover {
@@ -482,33 +559,36 @@ h2 {
     transform: translateY(-5px);
     transition: all 0.3s ease;
     color: var(--accent-green) !important;
+    margin-left: 8px;
 }
 
+/* Footer */
 footer {
     background: var(--bg-primary);
     border-top: 1px solid var(--border-color);
-    padding: 20px 0;
+    padding: var(--space-md) 0;
     text-align: center;
 }
 
 footer p {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: clamp(0.7rem, 1.3vw, 0.75rem);
     color: var(--text-secondary);
 }
 
+/* Contributions Filter Buttons */
 .filter-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 30px;
+    gap: clamp(0.5rem, 1.5vw, 0.625rem);
+    margin-bottom: clamp(1.5rem, 3vw, 1.875rem);
     justify-content: center;
 }
 
 .filter-btn {
     font-family: var(--font-mono);
-    font-size: 0.85rem;
-    padding: 8px 16px;
+    font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+    padding: clamp(0.5rem, 1.2vw, 0.625rem) clamp(0.875rem, 2vw, 1rem);
     border-radius: 6px;
     text-decoration: none;
     border: 1px solid var(--border-color);
@@ -516,6 +596,7 @@ footer p {
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .filter-btn:hover {
@@ -530,10 +611,11 @@ footer p {
     color: var(--bg-primary);
 }
 
+/* Contributions Timeline */
 .contributions-timeline {
     position: relative;
-    padding-left: 30px;
-    padding-bottom: 60px;
+    padding-left: clamp(1.25rem, 3vw, 1.875rem);
+    padding-bottom: clamp(2.5rem, 5vw, 3.75rem);
 }
 
 .contributions-timeline::before {
@@ -548,8 +630,8 @@ footer p {
 
 .contribution-item {
     position: relative;
-    padding-bottom: 35px;
-    padding-left: 25px;
+    padding-bottom: clamp(1.5rem, 3vw, 2.1875rem);
+    padding-left: clamp(1.25rem, 3vw, 1.5625rem);
 }
 
 .contribution-item:last-child {
@@ -559,7 +641,7 @@ footer p {
 .contribution-item::before {
     content: '';
     position: absolute;
-    left: -26px;
+    left: clamp(-1.375rem, -3vw, -1.625rem);
     top: 5px;
     width: 12px;
     height: 12px;
@@ -589,7 +671,7 @@ footer p {
 
 .contribution-date {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: clamp(0.7rem, 1.3vw, 0.8rem);
     color: var(--text-secondary);
     margin-bottom: 5px;
 }
@@ -598,7 +680,7 @@ footer p {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 18px;
+    padding: clamp(0.875rem, 2vw, 1.125rem);
     transition: all 0.3s ease;
 }
 
@@ -617,7 +699,7 @@ footer p {
 }
 
 .contribution-title {
-    font-size: 1rem;
+    font-size: clamp(0.9rem, 2vw, 1rem);
     font-weight: 600;
     color: var(--text-primary);
     line-height: 1.4;
@@ -625,8 +707,8 @@ footer p {
 
 .contribution-status {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
-    padding: 3px 8px;
+    font-size: clamp(0.6rem, 1.2vw, 0.65rem);
+    padding: clamp(0.2rem, 0.5vw, 0.25rem) clamp(0.5rem, 1vw, 0.625rem);
     border-radius: 4px;
     white-space: nowrap;
     flex-shrink: 0;
@@ -652,13 +734,13 @@ footer p {
 
 .contribution-repo {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: clamp(0.7rem, 1.3vw, 0.75rem);
     color: var(--accent-purple);
     margin-bottom: 8px;
 }
 
 .contribution-description {
-    font-size: 0.85rem;
+    font-size: clamp(0.8rem, 1.5vw, 0.85rem);
     color: var(--text-secondary);
     margin-bottom: 12px;
     line-height: 1.5;
@@ -666,29 +748,30 @@ footer p {
 
 .contribution-stats {
     display: flex;
-    gap: 15px;
+    gap: clamp(0.75rem, 2vw, 0.9375rem);
     margin-bottom: 12px;
+    flex-wrap: wrap;
 }
 
 .contribution-stat {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: clamp(0.7rem, 1.3vw, 0.75rem);
     color: var(--text-secondary);
 }
 
 .contribution-links {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: clamp(0.5rem, 1.5vw, 0.625rem);
     flex-wrap: wrap;
 }
 
 .contribution-link {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
+    font-size: clamp(0.65rem, 1.2vw, 0.7rem);
     color: var(--accent-blue);
     text-decoration: none;
-    padding: 3px 8px;
+    padding: clamp(0.2rem, 0.5vw, 0.25rem) clamp(0.5rem, 1vw, 0.625rem);
     background: rgba(88, 166, 255, 0.1);
     border: 1px solid rgba(88, 166, 255, 0.3);
     border-radius: 4px;
@@ -710,8 +793,8 @@ footer p {
 
 .contribution-tag {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    padding: 3px 8px;
+    font-size: clamp(0.65rem, 1.2vw, 0.7rem);
+    padding: clamp(0.2rem, 0.5vw, 0.25rem) clamp(0.5rem, 1vw, 0.625rem);
     background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -726,8 +809,8 @@ footer p {
 
 .contribution-project-tag {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    padding: 3px 8px;
+    font-size: clamp(0.65rem, 1.2vw, 0.7rem);
+    padding: clamp(0.2rem, 0.5vw, 0.25rem) clamp(0.5rem, 1vw, 0.625rem);
     border-radius: 4px;
     font-weight: 600;
 }
@@ -744,40 +827,101 @@ footer p {
     border: 1px solid rgba(232, 180, 65, 0.3);
 }
 
-@media (max-width: 768px) {
-    .hero-info h1 {
-        font-size: 2rem;
+/* ========== RESPONSIVE BREAKPOINTS ========== */
+
+/* Large tablets and small desktops (900px - 1024px) */
+@media (max-width: 1024px) {
+    .container {
+        max-width: 100%;
     }
 
-    .profile-image {
-        width: 100px;
-        height: 100px;
+    .projects-grid {
+        grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    }
+}
+
+/* Tablets (768px - 900px) */
+@media (max-width: 900px) {
+    .nav-links {
+        gap: 1.25rem;
+    }
+
+    .skills-grid {
+        grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+    }
+}
+
+/* Small tablets and large phones (600px - 768px) */
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 59px;
+        left: 0;
+        right: 0;
+        background: rgba(13, 17, 23, 0.98);
+        flex-direction: column;
+        gap: 0;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-color);
+        transform: translateY(-100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .nav-links.active {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .nav-links li {
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-links a {
+        display: block;
+        padding: 1rem;
+        width: 100%;
+    }
+
+    .nav-links a::after {
+        display: none;
     }
 
     .profile-row {
         flex-direction: column;
         text-align: center;
-        gap: 20px;
+        gap: 1.25rem;
+    }
+
+    .hero-content {
+        text-align: center;
+    }
+
+    .about-compact .about-text {
+        max-width: 100%;
     }
 
     .social-links {
         justify-content: center;
     }
 
-    .nav-links {
-        gap: 20px;
-    }
-
     .contributions-timeline {
-        padding-left: 20px;
+        padding-left: 1.25rem;
     }
 
     .contribution-item {
-        padding-left: 20px;
+        padding-left: 1.25rem;
     }
 
     .contribution-item::before {
-        left: -21px;
+        left: -1.3125rem;
         width: 10px;
         height: 10px;
     }
@@ -789,23 +933,134 @@ footer p {
     .projects-grid {
         grid-template-columns: 1fr;
     }
+}
 
-    section {
-        padding: 50px 0;
+/* Phones (480px - 600px) */
+@media (max-width: 600px) {
+    :root {
+        --space-md: 1rem;
+    }
+
+    .hero-info h1 {
+        word-break: break-word;
+    }
+
+    .contribution-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .contribution-status {
+        align-self: flex-start;
     }
 }
 
+/* Small phones (up to 480px) */
 @media (max-width: 480px) {
     .social-links {
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
     }
 
-    .nav-links {
-        gap: 15px;
+    .social-btn {
+        text-align: center;
     }
 
     .nav-links a {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .skills-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-buttons {
+        gap: 0.5rem;
+    }
+
+    .filter-btn {
+        flex: 1 1 auto;
+        min-width: min-content;
+    }
+}
+
+/* Very small screens (up to 360px) */
+@media (max-width: 360px) {
+    .profile-image {
+        width: 70px;
+        height: 70px;
+    }
+
+    .hero-info h1::before {
+        content: '';
+    }
+
+    .contribution-item::before {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+/* Large screens (1400px+) */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1100px;
+    }
+
+    .hero-content {
+        max-width: 900px;
+    }
+
+    .projects-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+
+    .nav-links a,
+    .social-btn,
+    .contact-btn,
+    .filter-btn,
+    .project-link,
+    .contribution-link {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .skill-list span,
+    .tech-stack span,
+    .contribution-tag {
+        min-height: 32px;
+        display: inline-flex;
+        align-items: center;
+    }
+}
+
+/* Print styles */
+@media print {
+    header {
+        position: static;
+    }
+
+    .mobile-menu-toggle {
+        display: none;
+    }
+
+    .nav-links {
+        display: flex;
+        position: static;
+        transform: none;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .project-card,
+    .contribution-content {
+        break-inside: avoid;
     }
 }

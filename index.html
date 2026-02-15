@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jose A. Perez de Azpillaga Vaello - Engine Programmer</title>
+    <title>Jose A. Perez de Azpillaga - Engine Programmer</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -25,10 +25,10 @@
         <div class="hero-content">
             <div class="profile-row">
                 <div class="profile-image">
-                    <img src="profile.jpg" alt="Jose A. Perez de Azpillaga Vaello">
+                    <img src="profile.jpg" alt="Jose A. Perez de Azpillaga">
                 </div>
                 <div class="hero-info">
-                    <h1>Jose A. Perez de Azpillaga Vaello</h1>
+                    <h1>Jose A. Perez de Azpillaga</h1>
                     <p class="tagline">
                         <span class="highlight">Engine Programmer</span> // C++ programmer focusing on game engine
                         systems and graphics fundamentals
@@ -200,6 +200,35 @@
             </div>
 
             <div class="contributions-timeline">
+                <div class="contribution-item show" data-project="Linux Kernel">
+                    <div class="contribution-date">Feb 11, 2026</div>
+                    <div class="contribution-content">
+                        <div class="contribution-header">
+                            <h3 class="contribution-title">greybus/usb: handle unspecified lengths in hub_control</h3>
+                            <span class="contribution-status open">Submitted</span>
+                        </div>
+                        <p class="contribution-repo">linux-kernel/drivers/staging/greybus</p>
+                        <p class="contribution-description">
+                            Fixed the FIXME in hub_control where response length was not handled correctly
+                            for Greybus USB devices.
+                            Ensures proper buffer copy without exceeding actual response size. Contribution archived on
+                            the Greybus mailing list.
+                        </p>
+                        <div class="contribution-links">
+                            <a href="https://lore.kernel.org/all/aYz8aUyx9W_IZD3F@fedora/T/#u" class="contribution-link"
+                                target="_blank">Patch</a>
+                            <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
+                        </div>
+                        <div class="contribution-tags">
+                            <span class="contribution-project-tag linux">Linux Kernel</span>
+                            <span class="contribution-tag">C</span>
+                            <span class="contribution-tag">Device Drivers</span>
+                            <span class="contribution-tag">USB</span>
+                            <span class="contribution-tag">Greybus</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="contribution-item show" data-project="Godot Engine">
                     <div class="contribution-date">Feb 7, 2026</div>
                     <div class="contribution-content">
@@ -228,35 +257,6 @@
                             <span class="contribution-tag">C++</span>
                             <span class="contribution-tag">bug</span>
                             <span class="contribution-tag">GI</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="contribution-item show" data-project="Godot Engine">
-                    <div class="contribution-date">Feb 5, 2026</div>
-                    <div class="contribution-content">
-                        <div class="contribution-header">
-                            <h3 class="contribution-title">Add scripts</h3>
-                            <span class="contribution-status merged">Merged</span>
-                        </div>
-                        <p class="contribution-repo">Onebit5/MachinaMathLibrary</p>
-                        <p class="contribution-description">
-                            Added build scripts and development workflow automation for the Machina Math Library.
-                        </p>
-                        <div class="contribution-stats">
-                            <span class="contribution-stat"><span class="stat-icon">+</span>700</span>
-                            <span class="contribution-stat"><span class="stat-icon">-</span>2</span>
-                            <span class="contribution-stat"><span class="stat-icon">💬</span>0</span>
-                        </div>
-                        <div class="contribution-links">
-                            <a href="https://github.com/Onebit5/MachinaMathLibrary/pull/1" class="contribution-link"
-                                target="_blank">#1</a>
-                        </div>
-                        <div class="contribution-tags">
-                            <span class="contribution-project-tag godot">Godot Engine</span>
-                            <span class="contribution-tag">C++</span>
-                            <span class="contribution-tag">scripts</span>
-                            <span class="contribution-tag">build</span>
                         </div>
                     </div>
                 </div>
@@ -329,44 +329,13 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="contribution-item show" data-project="Godot Engine">
-                    <div class="contribution-date">Nov 8, 2025</div>
-                    <div class="contribution-content">
-                        <div class="contribution-header">
-                            <h3 class="contribution-title">Optimize D3D12 Uniform Set Binding Performance</h3>
-                            <span class="contribution-status closed">Closed</span>
-                        </div>
-                        <p class="contribution-repo">godotengine/godot</p>
-                        <p class="contribution-description">
-                            Optimized D3D12 uniform set binding by caching descriptor batch calculations from
-                            per-frame hot path to uniform set creation time. Achieved ~25% performance improvement
-                            (1.5ms saved per frame) on Godot TPS Demo.
-                        </p>
-                        <div class="contribution-stats">
-                            <span class="contribution-stat"><span class="stat-icon">+</span>133</span>
-                            <span class="contribution-stat"><span class="stat-icon">-</span>7</span>
-                            <span class="contribution-stat"><span class="stat-icon">💬</span>3</span>
-                        </div>
-                        <div class="contribution-links">
-                            <a href="https://github.com/godotengine/godot/pull/112521" class="contribution-link"
-                                target="_blank">#112521</a>
-                        </div>
-                        <div class="contribution-tags">
-                            <span class="contribution-project-tag godot">Godot Engine</span>
-                            <span class="contribution-tag">D3D12</span>
-                            <span class="contribution-tag">performance</span>
-                            <span class="contribution-tag">rendering</span>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer - Always Visible -->
+    <!-- Footer -->
     <footer>
-        <p>2026 &copy Jose A. Perez de Azpillaga Vaello</p>
+        <p>2026 &copy Jose A. Perez de Azpillaga</p>
     </footer>
 
     <script>
