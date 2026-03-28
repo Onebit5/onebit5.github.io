@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jose A. Perez de Azpillaga - Engine Programmer</title>
+    <title>Jose A. Perez de Azpillaga - Linux Kernel & Systems Engineer</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -20,29 +20,27 @@
         </nav>
     </header>
 
-    <!-- Hero Section - Always Visible -->
+    <!-- Hero Section -->
     <section id="hero">
         <div class="hero-content">
             <div class="profile-row">
                 <div class="profile-image">
-                    <img src="profile.jpg" alt="Jose A. Perez de Azpillaga">
+                    <img src="https://media.licdn.com/dms/image/v2/D4D03AQFtbvAzCVNzJw/profile-displayphoto-scale_400_400/B4DZmMq85GJYAg-/0/1759001698067?e=1776297600&v=beta&t=lQ8vnSBYwaI17gje3es4jCawiDW45lW8pR83nfM2aOY" alt="Jose A. Perez de Azpillaga">
                 </div>
                 <div class="hero-info">
                     <h1>Jose A. Perez de Azpillaga</h1>
                     <p class="tagline">
-                        <span class="highlight">Engine Programmer</span> // C++ programmer focusing on game engine
-                        systems and graphics fundamentals
+                        <span class="highlight">Linux Systems & Kernel Engineer</span> // Upstream contributor focusing on driver architecture and OS internals
                     </p>
-                    <p class="location">Based in Málaga, Spain</p>
+                    <p class="location">Currently based in <strong>Warsaw, Poland</strong> // Available for Remote</p>
                 </div>
             </div>
             <div class="about-compact">
                 <p class="about-text">
-                    C++ programmer focused on game engine systems, math foundations, and graphics fundamentals.
-                    I build low-level projects such as math libraries and rendering prototypes to strengthen my
-                    understanding of real-time systems. I also contribute to open-source projects like Godot and
-                    develop
-                    small custom engine experiments.
+                    Self-taught systems programmer specializing in the <strong>Linux Kernel</strong> and low-level C development.
+                    Mainline contributor to the <code>staging</code>, <code>media</code>, and <code>greybus</code> subsystems,
+                    with experience in driver refactoring, synchronization primitives, and static analysis (Smatch, Sparse).
+                    I combine my passion for OS internals with a strong foundation in high-performance C++ through contributions to the <strong>Godot Engine</strong>.
                 </p>
             </div>
             <div class="social-links">
@@ -57,40 +55,41 @@
     <div id="portfolioView" class="view-container">
         <section id="skills">
             <div class="container">
-                <h2>Skills</h2>
+                <h2>Technical Skills</h2>
                 <div class="skills-grid">
                     <div class="skill-category">
                         <h3>Languages</h3>
                         <div class="skill-list">
-                            <span>C++</span>
-                            <span>C</span>
-                            <span>C#</span>
-                            <span>GLSL</span>
-                            <span>HLSL</span>
+                            <span>C (Kernel-space)</span>
+                            <span>C++ (Modern)</span>
+                            <span>Shell Scripting</span>
+                            <span>Rust</span>
                         </div>
                     </div>
                     <div class="skill-category">
-                        <h3>Graphics</h3>
+                        <h3>Kernel & Systems</h3>
                         <div class="skill-list">
+                            <span>Driver Architecture</span>
+                            <span>Concurrency & Locking</span>
+                            <span>Memory Management</span>
+                            <span>Synchronization Primitives</span>
+                        </div>
+                    </div>
+                    <div class="skill-category">
+                        <h3>Analysis & Debugging</h3>
+                        <div class="skill-list">
+                            <span>Smatch</span>
+                            <span>Sparse</span>
+                            <span>Coccinelle</span>
+                            <span>GDB / QEMU</span>
+                        </div>
+                    </div>
+                    <div class="skill-category">
+                        <h3>Workflow</h3>
+                        <div class="skill-list">
+                            <span>Git (Upstream/Lore)</span>
+                            <span>Make / Kconfig</span>
                             <span>Vulkan</span>
-                            <span>DirectX 12</span>
-                            <span>OpenGL</span>
-                        </div>
-                    </div>
-                    <div class="skill-category">
-                        <h3>Tools</h3>
-                        <div class="skill-list">
-                            <span>Git</span>
-                            <span>CMake</span>
-                            <span>Visual Studio</span>
-                            <span>VS Code</span>
-                        </div>
-                    </div>
-                    <div class="skill-category">
-                        <h3>Platforms</h3>
-                        <div class="skill-list">
-                            <span>Windows</span>
-                            <span>Linux</span>
                         </div>
                     </div>
                 </div>
@@ -103,24 +102,23 @@
                 <div class="projects-grid">
                     <div class="project-card">
                         <div class="project-header">
-                            <h3>Linux Kernel</h3>
+                            <h3>Linux Mainline</h3>
                             <span class="project-icon">◉</span>
                         </div>
-                        <p class="project-type">Open Source</p>
+                        <p class="project-type">Kernel Development</p>
                         <p class="project-description">
-                            Open-source contributor to the Linux kernel Greybus subsystem. Submitted a patch
-                            fixing unspecified response lengths in <code>hub_control</code> for USB devices.
-                            Contributions reviewed and archived on the Greybus mailing list.
+                            Active contributor to the <strong>Linux Mainline</strong>. I focus on driver refactoring, fixing logic bugs,
+                            and API modernization. Notable work includes fixing a critical loop shadowing bug in the <strong>AtomISP</strong> driver
+                            and refactoring WiFi MLME flows.
                         </p>
                         <div class="project-links">
-                            <a href="https://lore.kernel.org/" class="project-link">Patch Archive</a>
-                            <a href="https://www.kernel.org/" class="project-link">Kernel.org</a>
+                            <a href="https://lore.kernel.org/all/?q=Jose+A.+Perez+de+Azpillaga" target="_blank" class="project-link">Patch Archive</a>
+                            <a href="https://www.kernel.org/" target="_blank" class="project-link">Kernel.org</a>
                         </div>
                         <div class="tech-stack">
-                            <span>C</span>
-                            <span>Linux Kernel</span>
-                            <span>USB Subsystem</span>
-                            <span>Greybus</span>
+                            <span>C (Kernel)</span>
+                            <span>Driver Architecture</span>
+                            <span>Synchronization</span>
                             <span>Git</span>
                         </div>
                     </div>
@@ -129,17 +127,15 @@
                             <h3>Godot Engine</h3>
                             <span class="project-icon">◉</span>
                         </div>
-                        <p class="project-type">Open Source</p>
-                        <p class="project-description">Open-source contributor to the Godot Engine, contributing
-                            features and bug fixes in C++.</p>
+                        <p class="project-type">High-Performance C++</p>
+                        <p class="project-description">Open-source contributor to Godot. Focused on systems-level fixes, including multithreaded rendering stability and shader preprocessor enhancements to strengthen OS/engine integration.</p>
                         <div class="project-links">
-                            <a href="https://github.com/godotengine/godot" class="project-link">Github</a>
-                            <a href="https://godotengine.org/" class="project-link">Download</a>
+                            <a href="https://github.com/godotengine/godot" target="_blank" class="project-link">GitHub</a>
                         </div>
                         <div class="tech-stack">
                             <span>C++</span>
                             <span>Shaders</span>
-                            <span>GLSL</span>
+                            <span>Multithreading</span>
                             <span>Git</span>
                         </div>
                     </div>
@@ -148,22 +144,15 @@
                             <h3>Machina Math Library</h3>
                             <span class="project-icon">◉</span>
                         </div>
-                        <p class="project-type">Personal Open Source Project</p>
-                        <p class="project-description">Header-only C++20 math library created as a learning and
-                            experimentation project for game engine development.
-                            Includes vectors, matrices, quaternions, and geometry primitives.</p>
+                        <p class="project-type">SIMD Optimization</p>
+                        <p class="project-description">Header-only C++20 math library designed for game engine development. Implements vectors, matrices, and quaternions with a focus on SIMD hardware acceleration and zero-cost abstractions.</p>
                         <div class="project-links">
-                            <a href="https://github.com/Onebit5/MachinaMathLibrary" class="project-link">Github</a>
-                            <a href="https://github.com/Onebit5/MachinaMathLibrary/releases"
-                                class="project-link">Download</a>
+                            <a href="https://github.com/Onebit5/MachinaMathLibrary" target="_blank" class="project-link">GitHub</a>
                         </div>
                         <div class="tech-stack">
-                            <span>C++</span>
+                            <span>C++20</span>
                             <span>SIMD</span>
-                            <span>Math</span>
-                            <span>Vulkan</span>
-                            <span>Shaders</span>
-                            <span>GLSL</span>
+                            <span>Intrinsics</span>
                             <span>Git</span>
                         </div>
                     </div>
@@ -174,7 +163,7 @@
         <section id="contact">
             <div class="container">
                 <h2>Get In Touch</h2>
-                <p class="contact-text">I'm always open to discussing new opportunities and interesting projects.</p>
+                <p class="contact-text">I am currently seeking Junior Kernel/Systems roles in Warsaw or Remote. Let's discuss low-level engineering.</p>
                 <div class="contact-links">
                     <a href="https://linkedin.com/in/joseonebit" target="_blank" class="contact-btn">LinkedIn</a>
                     <button class="contact-btn" id="copyEmail">Copy Email</button>
@@ -186,156 +175,356 @@
 
     <!-- Contributions View -->
     <div id="contributionsView" class="view-container">
-        <div class="container">
-            <div class="contributions-section-header">
-                <h2>Open Source Contributions</h2>
-                <p class="contributions-subtitle">Recent patches and features submitted to major open-source projects
-                </p>
+    <div class="container">
+        <div class="contributions-section-header">
+            <h2>Open Source Contributions</h2>
+            <p class="contributions-subtitle">Recent patches and features submitted to major open-source projects
+            </p>
+        </div>
+
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="Godot Engine">Godot Engine</button>
+            <button class="filter-btn" data-filter="Linux Kernel">Linux Kernel</button>
+        </div>
+
+        <div class="contributions-timeline">
+	<div class="contribution-item show" data-project="Linux Kernel">
+                <div class="contribution-date">Mar 26, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">staging: media: atomisp: clean up ia_css_stream_destroy</h3>
+                        <span class="contribution-status open">Reviewed</span>
+                    </div>
+                    <p class="contribution-repo">linux/drivers/staging/media/atomisp/pci</p>
+                    <p class="contribution-description">
+			Identified and fixed a shadowed loop variable bug (i vs j) in the ISP2401 destruction path.
+			Refactored cleanup logic into a helper function and improved resource resilience by replacing
+			early returns with continue to ensure maximum resource recovery during cleanup.
+			Replaced dangerous assert() (BUG()) calls with safe resource recovery logic to prevent kernel panics.
+		</p>
+                    <div class="contribution-links">
+                        <a href="https://lore.kernel.org/linux-staging/acY2P24KESCLXA2g@stanley.mountain/T/#t" class="contribution-link"
+                            target="_blank">Patch</a>
+                        <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag linux">Linux Kernel</span>
+                        <span class="contribution-tag">C</span>
+                        <span class="contribution-tag">AtomISP</span>
+                        <span class="contribution-tag">Bug Fix</span>
+                        <span class="contribution-tag">Resource Management</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">All</button>
-                <button class="filter-btn" data-filter="Godot Engine">Godot Engine</button>
-                <button class="filter-btn" data-filter="Linux Kernel">Linux Kernel</button>
+	<div class="contribution-item show" data-project="Linux Kernel">
+                <div class="contribution-date">Mar 21, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">staging: rtl8723bs: clean up rtw_joinbss_event_prehandle</h3>
+                        <span class="contribution-status open">Reviewed</span>
+                    </div>
+                    <p class="contribution-repo">linux/drivers/staging/rtl8723bs</p>
+                    <p class="contribution-description">
+			 Removed dead REJOIN code and the unused retry variable. Refactored rtw_joinbss_event_prehandle using guard clauses
+			 and direct returns to eliminate deep nesting and labels per maintainer feedback.
+		</p>
+                    <div class="contribution-links">
+                        <a href="https://lore.kernel.org/linux-staging/ab8NSN0ypuc6WTmv@stanley.mountain/T/#t" class="contribution-link"
+                            target="_blank">Patch</a>
+                        <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag linux">Linux Kernel</span>
+                        <span class="contribution-tag">C</span>
+                        <span class="contribution-tag">rtl8723bs</span>
+                        <span class="contribution-tag">Logic Refactoring</span>
+                        <span class="contribution-tag">Staging</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="contributions-timeline">
-                <div class="contribution-item show" data-project="Linux Kernel">
-                    <div class="contribution-date">Feb 11, 2026</div>
-                    <div class="contribution-content">
-                        <div class="contribution-header">
-                            <h3 class="contribution-title">greybus/usb: handle unspecified lengths in hub_control</h3>
-                            <span class="contribution-status open">Submitted</span>
-                        </div>
-                        <p class="contribution-repo">linux-kernel/drivers/staging/greybus</p>
-                        <p class="contribution-description">
-                            Fixed the FIXME in hub_control where response length was not handled correctly
-                            for Greybus USB devices.
-                            Ensures proper buffer copy without exceeding actual response size. Contribution archived on
-                            the Greybus mailing list.
-                        </p>
-                        <div class="contribution-links">
-                            <a href="https://lore.kernel.org/all/aYz8aUyx9W_IZD3F@fedora/T/#u" class="contribution-link"
-                                target="_blank">Patch</a>
-                            <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
-                        </div>
-                        <div class="contribution-tags">
-                            <span class="contribution-project-tag linux">Linux Kernel</span>
-                            <span class="contribution-tag">C</span>
-                            <span class="contribution-tag">Device Drivers</span>
-                            <span class="contribution-tag">USB</span>
-                            <span class="contribution-tag">Greybus</span>
-                        </div>
+	<div class="contribution-item show" data-project="Linux Kernel">
+                <div class="contribution-date">Mar 08, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">staging: rtl8723bs: CamelCase cleanup series</h3>
+                        <span class="contribution-status open">v1 Sent</span>
+                    </div>
+                    <p class="contribution-repo">linux/drivers/staging/rtl8723bs</p>
+                    <p class="contribution-description">
+			 Cleanup of rtw_pwrctrl.c. Fixed CamelCase checks.
+		</p>
+                    <div class="contribution-links">
+                        <a href="https://lore.kernel.org/linux-staging/20260308192734.186757-1-azpijr@gmail.com/T/#t" class="contribution-link"
+                            target="_blank">Patch</a>
+                        <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag linux">Linux Kernel</span>
+                        <span class="contribution-tag">C</span>
+                        <span class="contribution-tag">Style Cleanup</span>
+                        <span class="contribution-tag">checkpatch.pl</span>
                     </div>
                 </div>
+            </div>
 
-                <div class="contribution-item show" data-project="Godot Engine">
-                    <div class="contribution-date">Feb 7, 2026</div>
-                    <div class="contribution-content">
-                        <div class="contribution-header">
-                            <h3 class="contribution-title">Fix crash with Dynamic GI in rotated VoxelGI</h3>
-                            <span class="contribution-status open">Open</span>
-                        </div>
-                        <p class="contribution-repo">godotengine/godot</p>
-                        <p class="contribution-description">
-                            Fixed a crash when moving a mesh with Dynamic GI mode into a rotated VoxelGI probe.
-                            Normalizes negative AABB sizes by calling aabb.abs() and validates bounds after clamping.
-                        </p>
-                        <div class="contribution-stats">
-                            <span class="contribution-stat"><span class="stat-icon">+</span>8</span>
-                            <span class="contribution-stat"><span class="stat-icon">-</span>0</span>
-                            <span class="contribution-stat"><span class="stat-icon">💬</span>0</span>
-                        </div>
-                        <div class="contribution-links">
-                            <a href="https://github.com/godotengine/godot/pull/116010" class="contribution-link"
-                                target="_blank">#116010</a>
-                            <a href="https://github.com/godotengine/godot/issues/115463" class="contribution-link"
-                                target="_blank">Issue #115463</a>
-                        </div>
-                        <div class="contribution-tags">
-                            <span class="contribution-project-tag godot">Godot Engine</span>
-                            <span class="contribution-tag">C++</span>
-                            <span class="contribution-tag">bug</span>
-                            <span class="contribution-tag">GI</span>
-                        </div>
+	<div class="contribution-item show" data-project="Linux Kernel">
+                <div class="contribution-date">Mar 03, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">staging: rtl8723bs: coding style cleanups</h3>
+                        <span class="contribution-status open">Accepted</span>
+                    </div>
+                    <p class="contribution-repo">linux/drivers/staging/rtl8723bs</p>
+                    <p class="contribution-description">
+			 Cleanup of rtw_pwrctrl.c. Fixed redundant blank lines, operator spacing, brace consistency, and indentation/line wrapping.
+		</p>
+                    <div class="contribution-links">
+                        <a href="https://lore.kernel.org/linux-staging/20260303173844.47975-1-azpijr@gmail.com/T/#u" class="contribution-link"
+                            target="_blank">Patch</a>
+                        <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag linux">Linux Kernel</span>
+			<span class="contribution-tag">C</span>
+			<span class="contribution-tag">Style Cleanup</span>
+			<span class="contribution-tag">checkpatch.pl</span>
                     </div>
                 </div>
+            </div>
 
-                <div class="contribution-item show" data-project="Godot Engine">
-                    <div class="contribution-date">Jan 29, 2026</div>
-                    <div class="contribution-content">
-                        <div class="contribution-header">
-                            <h3 class="contribution-title">Add #unsafe directive support to shader preprocessor</h3>
-                            <span class="contribution-status open">Open</span>
-                        </div>
-                        <p class="contribution-repo">godotengine/godot</p>
-                        <p class="contribution-description">
-                            Implements the #unsafe directive for Godot shaders, allowing safe but explicit access
-                            to native shader variables like fog_cell_size, fog_position, and
-                            volumetric_fog_detail_spread.
-                            Provides type-safe, compile-time validated access to internal shader variables.
-                        </p>
-                        <div class="contribution-stats">
-                            <span class="contribution-stat"><span class="stat-icon">+</span>150</span>
-                            <span class="contribution-stat"><span class="stat-icon">-</span>5</span>
-                            <span class="contribution-stat"><span class="stat-icon">💬</span>0</span>
-                        </div>
-                        <div class="contribution-links">
-                            <a href="https://github.com/godotengine/godot/pull/115611" class="contribution-link"
-                                target="_blank">#115611</a>
-                            <a href="https://github.com/godotengine/godot-proposals/issues/14047"
-                                class="contribution-link" target="_blank">Proposal</a>
-                        </div>
-                        <div class="contribution-tags">
-                            <span class="contribution-project-tag godot">Godot Engine</span>
-                            <span class="contribution-tag">GLSL</span>
-                            <span class="contribution-tag">enhancement</span>
-                            <span class="contribution-tag">shaders</span>
-                        </div>
+	<div class="contribution-item show" data-project="Linux Kernel">
+                <div class="contribution-date">Mar 02, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">staging: rtl8723bs: fix bitwise OR operator spacing</h3>
+                        <span class="contribution-status open">Accepted</span>
+                    </div>
+                    <p class="contribution-repo">linux/drivers/staging/rtl8723bs</p>
+                    <p class="contribution-description">
+			 Fixed bitwise OR spacing in rtw_ieee80211.c. Refactored if statement to remove braces and improve line breaks per reviewer feedback.
+		</p>
+                    <div class="contribution-links">
+                        <a href="https://lore.kernel.org/linux-staging/DGSMWOAQTXOL.2W8CCUWRIG7ZX@gmail.com/T/#t" class="contribution-link"
+                            target="_blank">Patch</a>
+                        <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag linux">Linux Kernel</span>
+                        <span class="contribution-tag">C</span>
+                        <span class="contribution-tag">Logic Tidy</span>
+                        <span class="contribution-tag">rtl8723bs</span>
                     </div>
                 </div>
+            </div>
 
-                <div class="contribution-item show" data-project="Godot Engine">
-                    <div class="contribution-date">Oct 8, 2025</div>
-                    <div class="contribution-content">
-                        <div class="contribution-header">
-                            <h3 class="contribution-title">Fix GDScript translation parser for FileDialog.add_filter()
-                                two-parameter format</h3>
-                            <span class="contribution-status merged">Merged</span>
-                        </div>
-                        <p class="contribution-repo">godotengine/godot</p>
-                        <p class="contribution-description">
-                            Fixed the GDScript translation parser to properly handle FileDialog.add_filter() with
-                            the two-parameter format add_filter("*.jpg", "JPE Images"). Previously only the
-                            single-parameter
-                            semicolon format was supported.
-                        </p>
-                        <div class="contribution-stats">
-                            <span class="contribution-stat"><span class="stat-icon">+</span>16</span>
-                            <span class="contribution-stat"><span class="stat-icon">-</span>6</span>
-                            <span class="contribution-stat"><span class="stat-icon">💬</span>5</span>
-                        </div>
-                        <div class="contribution-links">
-                            <a href="https://github.com/godotengine/godot/pull/111298" class="contribution-link"
-                                target="_blank">#111298</a>
-                            <a href="https://github.com/godotengine/godot/issues/111286" class="contribution-link"
-                                target="_blank">Issue #111286</a>
-                        </div>
-                        <div class="contribution-tags">
-                            <span class="contribution-project-tag godot">Godot Engine</span>
-                            <span class="contribution-tag">GDScript</span>
-                            <span class="contribution-tag">bug</span>
-                            <span class="contribution-tag">i18n</span>
-                        </div>
+	<div class="contribution-item show" data-project="Linux Kernel">
+                <div class="contribution-date">Mar 02, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">staging: rtl8723bs: fix operator spacing in rtw_ieee80211.c</h3>
+                        <span class="contribution-status open">Already Added</span>
+                    </div>
+                    <p class="contribution-repo">linux/drivers/staging/rtl8723bs</p>
+                    <p class="contribution-description">
+			 Bulk fix for binary/ternary operator spacing and indentation in rtw_ieee80211.c.
+		</p>
+                    <div class="contribution-links">
+                        <a href="https://lore.kernel.org/linux-staging/aaXXbxA-K9jgXffc@gmail.com/T/#t" class="contribution-link"
+                            target="_blank">Patch</a>
+                        <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag linux">Linux Kernel</span>
+                        <span class="contribution-tag">C</span>
+                        <span class="contribution-tag">Style Cleanup</span>
+                    </div>
+                </div>
+            </div>
+
+	<div class="contribution-item show" data-project="Linux Kernel">
+                <div class="contribution-date">Feb 27, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">staging: rtl8723bs: replace msleep() with fsleep() in rtw_cmd.c</h3>
+                        <span class="contribution-status open">Accepted</span>
+                    </div>
+                    <p class="contribution-repo">linux/drivers/staging/rtl8723bs</p>
+                    <p class="contribution-description">
+			 Replaced msleep() with fsleep() in rtw_cmd.c. Resolved checkpatch.pl style checks.
+		</p>
+                    <div class="contribution-links">
+                        <a href="https://lore.kernel.org/linux-staging/20260226010536.179729-1-azpijr@gmail.com/T/#u" class="contribution-link"
+                            target="_blank">Patch</a>
+                        <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag linux">Linux Kernel</span>
+                        <span class="contribution-tag">C</span>
+                        <span class="contribution-tag">API Modernization<</span>
+                        <span class="contribution-tag">Timing</span>
+                    </div>
+                </div>
+            </div>
+
+	<div class="contribution-item show" data-project="Linux Kernel">
+                <div class="contribution-date">Feb 25, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">staging: fbtft: fb_ra8875: replace udelays with fsleep</h3>
+                        <span class="contribution-status open">Withdrawn</span>
+                    </div>
+                    <p class="contribution-repo">linux/drivers/staging/fbtft</p>
+                    <p class="contribution-description">
+			 Refactored fb_ra8875 to use fsleep() instead of udelay().
+		</p>
+                    <div class="contribution-links">
+                        <a href="https://lore.kernel.org/linux-staging/2026022515-booth-silent-f3bd@gregkh/T/#t" class="contribution-link"
+                            target="_blank">Patch</a>
+                        <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag linux">Linux Kernel</span>
+                        <span class="contribution-tag">C</span>
+                        <span class="contribution-tag">API Modernization</span>
+                        <span class="contribution-tag">fbtft</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contribution-item show" data-project="Linux Kernel">
+                <div class="contribution-date">Feb 25, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">staging: greybus: camera: add comment for mutex</h3>
+                        <span class="contribution-status open">Withdrawn</span>
+                    </div>
+                    <p class="contribution-repo">linux/drivers/staging/greybus</p>
+                    <p class="contribution-description">
+                        Added clarifying comments regarding mutex locking requirements in camera.c.
+                    </p>
+                    <div class="contribution-links">
+                        <a href="https://lore.kernel.org/all/aZ7aaxEWO_7gaNzY@stanley.mountain/T/#md6c3eae662b04b5983d0c812e483b0c2239ebcdc" class="contribution-link"
+                            target="_blank">Patch</a>
+                        <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag linux">Linux Kernel</span>
+                        <span class="contribution-tag">C</span>
+                        <span class="contribution-tag">Concurrency</span>
+                        <span class="contribution-tag">Documentation</span>
+                        <span class="contribution-tag">Greybus</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contribution-item show" data-project="Godot Engine">
+                <div class="contribution-date">Feb 7, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">Fix crash with Dynamic GI in rotated VoxelGI</h3>
+                        <span class="contribution-status open">Open</span>
+                    </div>
+                    <p class="contribution-repo">godotengine/godot</p>
+                    <p class="contribution-description">
+                        Fixed a crash when moving a mesh with Dynamic GI mode into a rotated VoxelGI probe.
+                        Normalizes negative AABB sizes by calling aabb.abs() and validates bounds after clamping.
+                    </p>
+                    <div class="contribution-stats">
+                        <span class="contribution-stat"><span class="stat-icon">+</span>8</span>
+                        <span class="contribution-stat"><span class="stat-icon">-</span>0</span>
+                        <span class="contribution-stat"><span class="stat-icon">💬</span>0</span>
+                    </div>
+                    <div class="contribution-links">
+                        <a href="https://github.com/godotengine/godot/pull/116010" class="contribution-link"
+                            target="_blank">#116010</a>
+                        <a href="https://github.com/godotengine/godot/issues/115463" class="contribution-link"
+                            target="_blank">Issue #115463</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag godot">Godot Engine</span>
+                        <span class="contribution-tag">C++</span>
+                        <span class="contribution-tag">bug</span>
+                        <span class="contribution-tag">GI</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contribution-item show" data-project="Godot Engine">
+                <div class="contribution-date">Jan 29, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">Add #unsafe directive support to shader preprocessor</h3>
+                        <span class="contribution-status open">Open</span>
+                    </div>
+                    <p class="contribution-repo">godotengine/godot</p>
+                    <p class="contribution-description">
+                        Implements the #unsafe directive for Godot shaders, allowing safe but explicit access
+                        to native shader variables like fog_cell_size, fog_position, and
+                        volumetric_fog_detail_spread.
+                        Provides type-safe, compile-time validated access to internal shader variables.
+                    </p>
+                    <div class="contribution-stats">
+                        <span class="contribution-stat"><span class="stat-icon">+</span>150</span>
+                        <span class="contribution-stat"><span class="stat-icon">-</span>5</span>
+                        <span class="contribution-stat"><span class="stat-icon">💬</span>0</span>
+                    </div>
+                    <div class="contribution-links">
+                        <a href="https://github.com/godotengine/godot/pull/115611" class="contribution-link"
+                            target="_blank">#115611</a>
+                        <a href="https://github.com/godotengine/godot-proposals/issues/14047"
+                            class="contribution-link" target="_blank">Proposal</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag godot">Godot Engine</span>
+                        <span class="contribution-tag">GLSL</span>
+                        <span class="contribution-tag">enhancement</span>
+                        <span class="contribution-tag">shaders</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contribution-item show" data-project="Godot Engine">
+                <div class="contribution-date">Oct 8, 2025</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">Fix GDScript translation parser for FileDialog.add_filter()
+                            two-parameter format</h3>
+                        <span class="contribution-status merged">Merged</span>
+                    </div>
+                    <p class="contribution-repo">godotengine/godot</p>
+                    <p class="contribution-description">
+                        Fixed the GDScript translation parser to properly handle FileDialog.add_filter() with
+                        the two-parameter format add_filter("*.jpg", "JPE Images"). Previously only the
+                        single-parameter
+                        semicolon format was supported.
+                    </p>
+                    <div class="contribution-stats">
+                        <span class="contribution-stat"><span class="stat-icon">+</span>16</span>
+                        <span class="contribution-stat"><span class="stat-icon">-</span>6</span>
+                        <span class="contribution-stat"><span class="stat-icon">💬</span>5</span>
+                    </div>
+                    <div class="contribution-links">
+                        <a href="https://github.com/godotengine/godot/pull/111298" class="contribution-link"
+                            target="_blank">#111298</a>
+                        <a href="https://github.com/godotengine/godot/issues/111286" class="contribution-link"
+                            target="_blank">Issue #111286</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag godot">Godot Engine</span>
+                        <span class="contribution-tag">GDScript</span>
+                        <span class="contribution-tag">bug</span>
+                        <span class="contribution-tag">i18n</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Footer -->
+</div>
     <footer>
-        <p>2026 &copy Jose A. Perez de Azpillaga</p>
+        <p>2026 &copy; Jose A. Perez de Azpillaga // Warsaw, Poland</p>
     </footer>
 
     <script>
@@ -348,9 +537,7 @@
 
         function switchToContributions(e, skipHistory = false) {
             if (e) e.preventDefault();
-
             portfolioView.classList.add('fade-out');
-
             setTimeout(() => {
                 portfolioView.style.display = 'none';
                 portfolioView.classList.remove('fade-out', 'fade-in');
@@ -360,23 +547,15 @@
                 viewToggleBtn.textContent = 'Profile';
                 isContributionsView = true;
                 window.scrollTo(0, 0);
-
-                // Update URL without adding to history if coming from popstate
                 if (!skipHistory) {
                     history.pushState({ view: 'contributions' }, '', '#contributions');
                 }
-
-                setTimeout(() => {
-                    contributionsView.classList.remove('fade-in');
-                }, 500);
             }, 300);
         }
 
         function switchToPortfolio(e, skipHistory = false) {
             if (e) e.preventDefault();
-
             contributionsView.classList.add('fade-out');
-
             setTimeout(() => {
                 contributionsView.style.display = 'none';
                 contributionsView.classList.remove('fade-out', 'fade-in');
@@ -386,22 +565,14 @@
                 viewToggleBtn.textContent = 'Contributions';
                 isContributionsView = false;
                 window.scrollTo(0, 0);
-
-                // Update URL without adding to history if coming from popstate
                 if (!skipHistory) {
                     history.pushState({ view: 'portfolio' }, '', '#');
                 }
-
-                setTimeout(() => {
-                    portfolioView.classList.remove('fade-in');
-                }, 500);
             }, 300);
         }
 
-        // Initialize view based on URL hash
         function initializeView() {
             if (window.location.hash === '#contributions') {
-                // Show contributions immediately without transition on page load
                 portfolioView.style.display = 'none';
                 contributionsView.style.display = 'block';
                 viewToggleBtn.textContent = 'Profile';
@@ -409,37 +580,25 @@
             }
         }
 
-        // Handle browser back/forward buttons
         window.addEventListener('popstate', function (e) {
             if (window.location.hash === '#contributions') {
-                if (!isContributionsView) {
-                    switchToContributions(null, true);
-                }
+                if (!isContributionsView) switchToContributions(null, true);
             } else {
-                if (isContributionsView) {
-                    switchToPortfolio(null, true);
-                }
+                if (isContributionsView) switchToPortfolio(null, true);
             }
         });
 
         viewToggleBtn.addEventListener('click', function (e) {
-            if (isContributionsView) {
-                switchToPortfolio(e);
-            } else {
-                switchToContributions(e);
-            }
+            if (isContributionsView) switchToPortfolio(e); else switchToContributions(e);
         });
 
         contributionsNav.addEventListener('click', function (e) {
-            if (!isContributionsView) {
-                switchToContributions(e);
-            }
+            if (!isContributionsView) switchToContributions(e);
         });
 
-        // Initialize on page load
         initializeView();
 
-        // Email Copy (obfuscated)
+        // Email Copy
         const emailParts = ['azpijr', 'gmail', 'com'];
         const emailAddress = emailParts[0] + '@' + emailParts[1] + '.' + emailParts[2];
         const copyEmailBtn = document.getElementById('copyEmail');
@@ -456,55 +615,23 @@
             });
         });
 
-        // Filter Contributions
-        document.addEventListener('DOMContentLoaded', function () {
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            const contributionItems = document.querySelectorAll('.contribution-item');
+        // Filtering Logic
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const contributionItems = document.querySelectorAll('.contribution-item');
 
-            filterButtons.forEach(button => {
-                button.addEventListener('click', function () {
-                    const filter = this.dataset.filter;
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const filter = this.dataset.filter;
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
 
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-
-                    contributionItems.forEach(item => {
-                        if (filter === 'all' || item.dataset.project === filter) {
-                            item.style.opacity = '0';
-                            item.style.transform = 'translateY(-10px)';
-                            item.style.display = 'block';
-
-                            setTimeout(function () {
-                                item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                                item.style.opacity = '1';
-                                item.style.transform = 'translateY(0)';
-                            }, 50);
-                        } else {
-                            item.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-                            item.style.opacity = '0';
-                            item.style.transform = 'translateY(-10px)';
-                            setTimeout(function () {
-                                item.style.display = 'none';
-                            }, 200);
-                        }
-                    });
-                });
-            });
-        });
-
-        // Smooth scroll for nav links
-        document.querySelectorAll('.nav-item[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                if (this.getAttribute('href') !== '#') {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target && !isContributionsView) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
+                contributionItems.forEach(item => {
+                    if (filter === 'all' || item.dataset.project === filter) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
                     }
-                }
+                });
             });
         });
     </script>
