@@ -192,6 +192,36 @@
         </div>
 
         <div class="contributions-timeline">
+			<div class="contribution-item show" data-project="Linux Kernel">
+                <div class="contribution-date">Mar 28, 2026</div>
+                <div class="contribution-content">
+                    <div class="contribution-header">
+                        <h3 class="contribution-title">media: atomisp: clean up ISP configuration path</h3>
+                        <span class="contribution-status open">Reviewed</span>
+                    </div>
+                    <p class="contribution-repo">linux/drivers/staging/media/atomisp/pci</p>
+                    <p class="contribution-description">
+						Resolved a long-standing FIXME in the AtomISP ISP configuration path by identifying why delay_frames is NULL in certain pipelines: 
+						when ref_frame is disabled, frame allocation is intentionally skipped to save memory. Gated ref, crop, and TNR configuration calls 
+						behind the corresponding ISP feature flags (enable.ref_frame, enable.tnr), aligning the configuration path with what was actually 
+						built into the pipeline. Also removed a redundant call to ia_css_output0_configure(), a pure software-side DMEM parameter setter 
+						with no hardware interaction. Identified through static code review; no hardware available.
+					</p>
+                    <div class="contribution-links">
+                        <a href="https://lore.kernel.org/linux-staging/20260405093051.515222-1-azpijr@gmail.com/T/#t" class="contribution-link"
+                            target="_blank">Patch</a>
+                        <a href="https://www.kernel.org/" class="contribution-link" target="_blank">Kernel.org</a>
+                    </div>
+                    <div class="contribution-tags">
+                        <span class="contribution-project-tag linux">Linux Kernel</span>
+                        <span class="contribution-tag">C</span>
+                        <span class="contribution-tag">AtomISP</span>
+                        <span class="contribution-tag">Bug Fix</span>
+                        <span class="contribution-tag">ISP Pipeline</span>
+                    </div>
+                </div>
+            </div>
+			
 	<div class="contribution-item show" data-project="Linux Kernel">
                 <div class="contribution-date">Mar 26, 2026</div>
                 <div class="contribution-content">
