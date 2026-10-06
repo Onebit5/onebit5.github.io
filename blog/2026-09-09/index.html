@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing a Solar System Is Mostly Choosing Which Lies to Tell · {{name}}</title>
+    <link rel="icon" sizes="32x32" href="/favicon-32.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="description"
+        content="Orbitalis-3D 0.2.0: six steps from an empty window to an orbiting, trailing, gravity-welled view of the Sun and Earth, and the seven things that went wrong doing it.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+    <script src="../../site.js" defer></script>
+
+    <!-- KaTeX, for this post's equations -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+</head>
+
+<body>
+    <header id="mainHeader">
+        <nav>
+            <ul class="nav-links"></ul>
+        </nav>
+    </header>
+
+    <section class="post-hero">
+        <div class="post-container">
+            <div class="post-breadcrumb">
+                <span class="prompt-sym">~/</span>blog/2026-09-09<span class="prompt-sym"> $</span> cat
+                post.md<span class="cursor-blink"></span>
+            </div>
+            <h1 class="post-title">drawing a solar system is mostly choosing which lies to tell</h1>
+            <p class="post-subtitle">Orbitalis-3D 0.2.0: six steps from an empty window to an orbiting, trailing,
+                gravity-welled view of the Sun and Earth, and the seven things I got wrong doing it</p>
+            <div class="post-meta">
+                <span>2026 September 09</span>
+                <span>·</span>
+                <span>20 min read</span>
+                <span>·</span>
+                <span class="accent">orbitalis-3d / viewer</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="post-body-section">
+        <div class="post-container">
+            <article class="post-body">
+
+                <h2>the result, first</h2>
+
+                <figure>
+                    <img src="media/viewer_0.2.0.png" alt="the Orbitalis-3D viewer at milestone 0.2.0">
+                    <figcaption>the viewer at 0.2.0</figcaption>
+                </figure>
+
+                <pre><code>elapsed  202.90 days   (0.555 orbits)
+clock    dt 15779 s   x1.753e+06 real-time   running
+camera   az   45.0   el  +28.0   dist 18 units
+detail   4.756e+04 m per float step at this range
+view     star-centred   compressed   gravity well on
+trails   371 / 900 points</code></pre>
+
+                <p>
+                    drag to rotate, scroll to zoom, click or <code>TAB</code> to select a body, <code>SPACE</code>
+                    to pause, <code>.</code> to single-step, <code>+</code>/<code>-</code> for speed. the Earth
+                    orbits, leaves a fading trail, and the ground is a plot of the gravitational potential
+                    funnelling down under the Sun.
+                </p>
+                <p>
+                    and the number that matters most is one you cannot see: <strong>a run at 30 fps and the
+                        same run at 300 fps end in bit-identical positions.</strong> not close. equal.
+                </p>
+
+                <hr>
+
+                <h2>the problem this milestone exists to solve</h2>
+
+                <p>
+                    I moved the viewer ahead of the serious numerical-methods work on purpose. the original
+                    spec had it as an afterthought: dump binary files, look at them later in ParaView. staring
+                    at printed floats for three more milestones sounded miserable, and I would never have
+                    caught a bug that way.
+                </p>
+                <p>then I measured what an honest picture of the solar system actually looks like:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>body</th>
+                            <th>radius</th>
+                            <th>pixels on screen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Sun</td>
+                            <td>6.957e8 m</td>
+                            <td>1.67</td>
+                        </tr>
+                        <tr>
+                            <td>Jupiter</td>
+                            <td>6.991e7 m</td>
+                            <td>0.168</td>
+                        </tr>
+                        <tr>
+                            <td>Earth</td>
+                            <td>6.371e6 m</td>
+                            <td>0.0153</td>
+                        </tr>
+                        <tr>
+                            <td>Ceres</td>
+                            <td>4.730e5 m</td>
+                            <td>0.0011</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    Earth is one sixty-fifth of a pixel. Ceres is one nine-hundredth. even the Sun, which holds
+                    99.86% of the system's mass, is under two pixels across.
+                </p>
+                <p>
+                    that is not a rendering problem to fix. it is what the solar system <em>is</em>. if you drew
+                    Earth's orbit as a circle one metre across, Earth would be 42.6 micrometres, about half the
+                    width of a human hair, and the Sun would be a 4.65 mm grain of rice at the centre.
+                    <strong>an accurate picture is a black screen.</strong>
+                </p>
+                <p>
+                    so the viewer has to lie. the engineering is in deciding which lies, keeping them
+                    consistent, and admitting to them on screen.
+                </p>
+                <p>it is also in knowing which things must not be lies at all, and that turns out to be the harder half.
+                </p>
+
+                <hr>
+
+                <h2>part one: the things that must be exact</h2>
+
+                <h3>coordinates, and a floor you cannot zoom past</h3>
+
+                <p>
+                    the simulation stores positions in metres as doubles, around $1.5 \times 10^{11}$. OpenGL is
+                    a 32-bit float pipeline the whole way down: vertex positions, the model-view matrix, the
+                    depth buffer. so a double has to become a float somewhere, and <em>where</em> decides
+                    whether the picture survives being zoomed into.
+                </p>
+                <p>
+                    a float has a 24-bit significand. at 1 AU, which sits between $2^{37}$ and $2^{38}$, the gap
+                    between consecutive representable floats is
+                </p>
+
+                $$2^{37-23} = 2^{14} = 16{,}384 \text{ m} \approx 16 \text{ km}$$
+
+                <p>the obvious conversion scales first and subtracts later, which in practice means the subtraction
+                    happens in float:</p>
+
+                <pre><code>render = float(position / scale) - float(focus / scale)</code></pre>
+
+                <p>
+                    put the camera on the Earth at one AU per render unit. both operands are then within
+                    $7 \times 10^{-9}$ of 1.0, and float spacing near 1.0 is $1.2 \times 10^{-7}$.
+                    <strong>both values round to the same float.</strong> the subtraction gives exactly zero,
+                    and a spacecraft a kilometre away renders inside the planet.
+                </p>
+                <p>the fix is to subtract first, in double, and narrow last:</p>
+
+                <pre><code>render = float((position - focus) / scale)</code></pre>
+
+                <p>
+                    the quantity being narrowed is no longer $1.5 \times 10^{11}$, it is the offset from the
+                    camera, which for anything visible is small. that offset then gets the full <em>relative</em>
+                    precision of a float: seven significant digits of whatever it happens to be, rather than
+                    seven significant digits of an astronomical unit.
+                </p>
+                <p>
+                    <strong>the part I did not expect</strong> was what happens when you zoom. I assumed the
+                    naive version would at least improve. it does not. sweeping the scale across eight orders of
+                    magnitude, camera parked on the Earth, the smallest offset the naive transform can
+                    represent:
+                </p>
+
+                <pre><code>1 AU/unit    →  9069 m
+1e9 m/unit   →  6873 m
+1e6 m/unit   → 12205 m
+1e3 m/unit   →  9435 m</code></pre>
+
+                <p>
+                    <strong>a hard floor around 9 km, regardless of zoom.</strong> both operands scale together,
+                    so shrinking the scale grows the quantities being subtracted, the float ULP grows with
+                    them, and the metric error stays put at roughly $\text{AU} \times 2^{-24}$. Earth is 12,742
+                    km across, so under the naive scheme every close-up view is a lie you cannot escape by
+                    zooming.
+                </p>
+                <p>
+                    camera-relative has no floor. resolution is proportional to distance <em>from the
+                        camera</em>, so zooming genuinely recovers detail. the HUD reports it live: 23,780 m per
+                    float step at 14 units out, 1,486 m at 0.57.
+                </p>
+                <p>this is the same principle that has now decided four separate designs in this project:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>where</th>
+                            <th>the wrong way</th>
+                            <th>the right way</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Vec3 division</td>
+                            <td><code>v * (1/s)</code></td>
+                            <td><code>v / s</code>, one rounding not two</td>
+                        </tr>
+                        <tr>
+                            <td>gravity kernel</td>
+                            <td><code>normalized()</code> then scale</td>
+                            <td><code>d2 * sqrt(d2)</code>, no cancellation lost</td>
+                        </tr>
+                        <tr>
+                            <td>coordinates</td>
+                            <td>narrow then subtract</td>
+                            <td>subtract then narrow</td>
+                        </tr>
+                        <tr>
+                            <td>trails</td>
+                            <td>store render coords</td>
+                            <td>store metres, convert late</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    <strong>do the cancellation in the wide type, and narrow as late as possible.</strong> I
+                    should probably write it on something.
+                </p>
+
+                <h3>the timestep, and why frame time must never reach the integrator</h3>
+
+                <p>
+                    the obvious simulation loop is <code>integrator.step(system, frame_delta * speed)</code>. it
+                    is wrong in two ways, and only one is obvious.
+                </p>
+                <p>
+                    <strong>it destroys reproducibility.</strong> the timestep becomes whatever the frame
+                    happened to take, so the same scenario gives different answers on a 60 Hz machine, a 144 Hz
+                    one, and the same machine when something else grabs the CPU. there is no run to compare
+                    against because there is no run twice.
+                </p>
+                <p>
+                    <strong>it also destroys the reason I chose the integrator.</strong> back at 0.0.5 I
+                    measured that semi-implicit Euler keeps a circular orbit closed to within four parts in a
+                    hundred thousand while forward Euler spirals out 20% per orbit, and that its energy error
+                    stays bounded at 0.0296% forever instead of growing. all of that assumed a constant
+                    <code>dt</code>. semi-implicit Euler is symplectic <em>only</em> for a fixed step. vary it
+                    and the bounded, oscillating error becomes a drifting one, and the method loses the exact
+                    property it was picked for.
+                </p>
+                <p>so real time goes into an accumulator and whole fixed steps come out:</p>
+
+                <pre><code>accumulator += real_delta * time_scale;
+steps = floor(accumulator / timestep);
+accumulator -= steps * timestep;</code></pre>
+
+                <p>the integrator only ever sees <code>timestep()</code>. the <em>number</em> of steps absorbs all the
+                    variation.</p>
+                <p>
+                    there is one more thing it needs. if a frame runs long enough to owe more steps than can be
+                    computed in time, running them all makes the next frame later still, which owes even more,
+                    and the application locks solid. so steps per frame are capped and <strong>the backlog
+                        beyond the cap is dropped rather than carried</strong>. carrying it is precisely what turns
+                    one slow frame into a permanent one. simulated time falls behind real time under load,
+                    which is the right trade: a simulation that runs slow is usable and one that hangs is not.
+                </p>
+
+                <h3>the orientation, and a negation that carries the whole thing</h3>
+
+                <p>
+                    the orbit was drawn vertically, standing on its edge. the cause is a convention clash I had
+                    walked straight past for five steps.
+                </p>
+                <p>
+                    the simulation uses the astronomical convention: the orbital plane is <strong>XY</strong>
+                    and Z is the orbit normal, the same way ephemerides define the ecliptic. renderers are
+                    <strong>Y-up</strong>. handing simulation coordinates straight to the GPU therefore tips the
+                    entire solar system onto its side.
+                </p>
+                <p>
+                    the fix is a rotation, and it lives in the renderer because the physics has no preferred
+                    plane and no business knowing which way a graphics API points its Y axis:
+                </p>
+
+                <pre><code>render.x =  sim.x
+render.y =  sim.z        (orbit normal becomes "up")
+render.z = -sim.y</code></pre>
+
+                <p>
+                    <strong>that negation is load-bearing and I nearly left it out.</strong> swapping two axes
+                    without it mirrors the space. a mirrored space silently reverses the apparent direction of
+                    every orbit: prograde motion drawn retrograde, with nothing on screen to hint that anything
+                    is wrong. with the negation it is a −90° rotation about X and handedness survives. there is
+                    a test checking the render basis still satisfies $\vec x \times \vec y = \vec z$, which is
+                    the kind of test that looks pedantic right up until it isn't.
+                </p>
+
+                <hr>
+
+                <h2>part two: the things that must be distorted</h2>
+
+                <h3>body sizes, and being loud about it</h3>
+
+                <p>a constant multiplier does not work, because the proportions are the problem:</p>
+
+                <pre><code>Sun : Earth   =  109 : 1
+Sun : Ceres   = 1471 : 1</code></pre>
+
+                <p>any factor that makes Ceres visible at three pixels makes the Sun 4,400 pixels across.</p>
+                <p>so radii go through a power law instead:</p>
+
+                $$R_{render} = R_{ref} \left( \frac{r}{r_{ref}} \right)^{n}$$
+
+                <p>what different exponents do to that 1471:1 range:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>exponent</th>
+                            <th>Sun:Earth</th>
+                            <th>Sun:Ceres</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1 (honest)</td>
+                            <td>109 : 1</td>
+                            <td>1471 : 1</td>
+                        </tr>
+                        <tr>
+                            <td>1/2</td>
+                            <td>10.5 : 1</td>
+                            <td>38.4 : 1</td>
+                        </tr>
+                        <tr>
+                            <td><strong>1/3</strong></td>
+                            <td><strong>4.8 : 1</strong></td>
+                            <td><strong>11.4 : 1</strong></td>
+                        </tr>
+                        <tr>
+                            <td>1/4</td>
+                            <td>3.2 : 1</td>
+                            <td>6.2 : 1</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    the cube root. 11:1 across the whole range from a star to a dwarf planet still reads clearly
+                    as "the Sun is much bigger", while keeping everything on screen at once.
+                </p>
+
+                <figure>
+                    <video src="media/body-compression.mp4" autoplay loop muted playsinline></video>
+                    <figcaption>true radii compressing under the cube-root power law. rendered with Manim.</figcaption>
+                </figure>
+
+                <p>
+                    the property I actually care about is not the exponent. it is that the mapping stays
+                    <strong>strictly monotonic</strong>: the picture is allowed to lie about ratios and is never
+                    allowed to lie about ordering. a bigger body must never be drawn smaller than a smaller one,
+                    and there is a test pinning Sun &gt; Jupiter &gt; Earth &gt; Ceres.
+                </p>
+                <p>
+                    compression alone is not enough, because "visible" is a screen-space idea and a radius is a
+                    world-space number. so the drawn radius is floored at three pixels, computed per body per
+                    frame, because it depends on how far that particular body is from the camera:
+                </p>
+
+                $$p = \frac{R \cdot H}{2 \, d \, \tan(\theta_{fov}/2)}$$
+
+                <p>inverted for $R$. a body twice as far away needs twice the world radius to hold the same three
+                    pixels.</p>
+                <p><strong>and the HUD says how big the lie is:</strong></p>
+
+                <pre><code>Sun    radius 6.9570e+08 m   drawn 14x too big
+Earth  radius 6.3710e+06 m   drawn 313x too big</code></pre>
+
+                <p>
+                    I think this matters more than it looks. most space visualisations exaggerate silently, and
+                    a viewer that quietly draws the Earth 313 times too big is teaching someone something
+                    false. it costs one line of HUD text to be honest instead. it also makes the compression
+                    legible: Earth needs 313&times; of help and the Sun only 14&times;, and that gap <em>is</em>
+                    the power law working, because small things need more assistance than large ones.
+                </p>
+                <p>
+                    pressing <strong>T</strong> switches to true scale, and the result is a better demonstration
+                    than anything I designed. at true scale the Sun is 1.67 px and Earth is 0.0153 px, so
+                    <strong>both fall below the three-pixel floor and clamp to the same dot.</strong> a star
+                    that could swallow a million Earths, drawn identically to a planet, because at any zoom
+                    where you can see the orbit both are specks. that fell out of the floor with no special
+                    case, which I like considerably more than if I had written one.
+                </p>
+
+                <h3>trails, and what uniform spacing throws away</h3>
+
+                <p>
+                    trails store <strong>simulation coordinates, not render ones</strong>, and converting at
+                    draw time is the whole design.
+                </p>
+                <p>
+                    render coordinates are relative to the camera focus. change what you are following and the
+                    focus jumps by an astronomical unit, so every historical point is suddenly expressed against
+                    a different origin than the one it was recorded in. the trail stops travelling with the body
+                    and smears across the screen. storing metres makes a trail mean the same thing in every
+                    reference frame, at the cost of one conversion per point per frame.
+                </p>
+                <p>
+                    points are sampled by <strong>distance travelled</strong>, not once per frame. a body near
+                    perihelion moves several times faster than at aphelion, so time-based sampling bunches
+                    points where the body is slow and stretches them where it is fast, which is exactly
+                    backwards: the fast part is where the curve bends hardest and needs the most points.
+                </p>
+                <p>
+                    but that choice is itself a lie, and a specific one. <strong>Kepler's second law says a body
+                        sweeps equal areas in equal times</strong>, which means it moves fastest at perihelion. a
+                    uniform-spacing trail deliberately erases exactly that. so the picture that best shows the
+                    <em>shape</em> of an orbit is the one that shows least about its <em>dynamics</em>. a
+                    time-sampled trail would make the second law visible immediately, as points bunching at
+                    aphelion and spreading at perihelion. that is a genuinely useful alternate view and it is on
+                    the list for later.
+                </p>
+
+                <figure>
+                    <video src="media/trail_demo.mp4" autoplay loop muted playsinline></video>
+                    <figcaption>trail capture, drag/zoom/select in action.</figcaption>
+                </figure>
+
+                <p><strong>and then there is the Sun's trail, which has one point.</strong></p>
+
+                <pre><code>Sun     1 trail points
+Earth   366 trail points</code></pre>
+
+                <p>
+                    not a bug. both bodies orbit their common barycentre, and their orbital radii are in inverse
+                    proportion to their masses. Earth's is $1.496 \times 10^{11}$ m and the Sun's is
+                    $4.49 \times 10^5$ m: a ratio of <strong>333,000 to one</strong>, which is exactly the mass
+                    ratio, because that is what the barycentre condition requires. the Sun's whole orbit is
+                    therefore 898 km across, while one trail sampling step at this scale is 1.12 million km:
+                    <strong>the entire orbit is about 1,250 times smaller than a single step</strong>.
+                </p>
+                <p>
+                    distance-based sampling gave the honest answer without being asked: at any zoom where you
+                    can see Earth's orbit, the Sun's orbit is one point. the Sun's motion is real, and it is how
+                    the first exoplanets were found, but it is not visible on the same picture as the planet
+                    causing it.
+                </p>
+
+                <h3>the gravity well, and what it does and does not say</h3>
+
+                <p>
+                    the ground plane is a grid of the <strong>gravitational potential</strong>, displaced
+                    downward into a well. the picture everyone recognises, done as an actual plot rather than an
+                    illustration.
+                </p>
+
+                $$\Phi(\vec r) = -\sum_i \frac{G \, m_i}{\sqrt{|\vec r - \vec r_i|^2 + \varepsilon^2}}$$
+
+                <figure>
+                    <video src="media/gravity-well.mp4" autoplay loop muted playsinline></video>
+                    <figcaption>the potential cross-section and the energy line that bounds an orbit. rendered with
+                        Manim.</figcaption>
+                </figure>
+
+                <p>
+                    <strong>the height is a real quantity.</strong> $\Phi$ is the energy per kilogram needed to
+                    haul a test mass from that point out to infinity. it is negative everywhere and rises toward
+                    zero as you leave, which is why it is a well rather than a hill, and it has units of J/kg.
+                    there is a test checking that $\sqrt{2|\Phi|}$ at one AU gives Earth's escape velocity of
+                    42.1 km/s, which is also $\sqrt2$ times the circular speed, as it should be.
+                </p>
+                <p><strong>and the shape explains the orbit</strong> because the slope is the acceleration:</p>
+
+                $$\vec a = -\nabla \Phi$$
+
+                <p>
+                    there is a test for that too, comparing a numerical gradient of the potential against what
+                    the force solver produces at the same point. they agree to a part in $10^6$. so the
+                    steepness you can see <em>is</em> the pull. a planet stays in orbit because it is moving
+                    sideways fast enough to keep climbing the wall as fast as it falls inward; something without
+                    that sideways speed goes down the funnel. that is the thing this picture is genuinely good
+                    at showing.
+                </p>
+                <p>
+                    <strong>what it is not</strong> is curved spacetime. the usual criticism of the rubber-sheet
+                    analogy is that it explains gravity using gravity, since it relies on your intuition that
+                    balls roll downhill. that criticism is completely fair when the picture is presented as
+                    general relativity. as a plot of $\Phi$ it is simply correct, and it is honest about being a
+                    plot: the vertical axis is not a spatial dimension any more than height on a contour map is.
+                    nothing physically moves up or down.
+                </p>
+                <p>
+                    one detail worth knowing: $\Phi$ falls off as $1/r$ while the force falls off as $1/r^2$. so
+                    the well is much wider than it looks steep. the potential at 10 AU is a tenth of what it is
+                    at 1 AU, not a hundredth. the funnel looks narrow only because the depth normalisation is
+                    dominated by the softened floor right next to the Sun.
+                </p>
+                <p>
+                    Earth has a well too. it is 333,000 times shallower and invisible at this scale, which is
+                    the same ratio that gives the Sun one trail point and Earth 313&times; exaggeration. in a
+                    two-body system the mass ratio is the only number that matters, and it keeps turning up
+                    wearing different hats.
+                </p>
+
+                <hr>
+
+                <h2>part three: the architecture that made any of this testable</h2>
+
+                <p>
+                    a viewer is nearly untestable. there is no display on a build agent, so anything that opens
+                    a window is either skipped or flaky.
+                </p>
+                <p>
+                    but almost nothing the viewer does is actually a draw call. converting coordinates, sizing
+                    bodies, orbiting a camera, intersecting a ray with a sphere, maintaining a ring buffer,
+                    accumulating a timestep: all of it is arithmetic with real edge cases, and none of it needs
+                    raylib.
+                </p>
+                <p>so the view layer splits in two:</p>
+
+                <pre><code>orbitalis-core        physics, no dependencies
+      ^
+      |
+orbitalis-render      view logic, links core, NO graphics API
+      ^                    ^
+      |                    |
+orbitalis-viewer      orbitalis-tests
+ (thin raylib shell)</code></pre>
+
+                <p>
+                    <code>orbitalis-render</code> holds <code>RenderFrame</code>, <code>BodyScale</code>,
+                    <code>OrbitCamera</code>, <code>Picking</code>, <code>Trail</code>,
+                    <code>PotentialSurface</code> and <code>SimClock</code>. the test suite links it happily and
+                    never opens a window. the viewer became a thin shell over the top, and it is the only target
+                    that needs a GPU.
+                </p>
+                <p>
+                    that rule is enforced by the build rather than by good intentions. a comment does not stop
+                    anyone, including me in eight months, from adding a graphics dependency to solve some small
+                    problem:
+                </p>
+
+                <pre><code>foreach(_guarded IN ITEMS orbitalis-core orbitalis-render)
+    get_target_property(_links ${_guarded} LINK_LIBRARIES)
+    if(_links MATCHES "raylib|glfw|opengl|OpenGL|SDL")
+        message(FATAL_ERROR "${_guarded} links a graphics library ...")
+    endif()
+endforeach()</code></pre>
+
+                <p>I tested it the only way worth testing such a thing: by breaking the rule and confirming the
+                    configure fails.</p>
+                <p>
+                    the payoff is 177 test cases and 732 assertions covering a graphical application, of which
+                    exactly one needs the binary to run at all, and that one just checks <code>--version</code>
+                    returns before <code>InitWindow</code>.
+                </p>
+
+                <hr>
+
+                <h2>seven things I got wrong</h2>
+
+                <p>the maths above was the part that was supposed to be hard. these are the parts that actually cost me
+                    time, and five of the seven share a shape.</p>
+
+                <h3>1. a test that did not exist, while ctest reported success</h3>
+
+                <p>I added a smoke test for the viewer, rebuilt, ran ctest:</p>
+
+                <pre><code>100% tests passed, 0 tests failed out of 78</code></pre>
+
+                <p>
+                    78. it had been 78 before. <strong>adding a test had changed nothing, and the test runner
+                        reported complete success while doing so.</strong>
+                </p>
+                <p>
+                    <code>add_test()</code> in a subdirectory is silently ignored unless
+                    <code>enable_testing()</code> has already been called in an enclosing scope. my root
+                    CMakeLists called it <em>after</em> descending into the viewer. no warning, no error, no
+                    diagnostic of any kind.
+                </p>
+                <p>
+                    I only caught it because I happened to remember the number from a minute earlier. a green
+                    run with a missing test looks exactly like a green run.
+                </p>
+
+                <h3>2. an edit script that discarded half its work</h3>
+
+                <p>
+                    I patch files with a helper that reports when a pattern does not match. it reported one
+                    miss, correctly. what it did not say is that the <em>other</em> change to that file, which
+                    had matched fine, was thrown away too: the helper returned early before writing.
+                </p>
+                <p>
+                    so a two-change batch with one bad pattern applied neither, while printing a message that
+                    looked like it affected only one of them. the build failed on the missing link, which is
+                    the only reason I noticed.
+                </p>
+
+                <h3>3. a loose assertion sheltering a wrong belief</h3>
+
+                <p>
+                    I wrote a comment claiming the Sun was drawn "~2.9x too big". it is 14&times;. I had divided
+                    something backwards while estimating and never checked.
+                </p>
+                <p>
+                    nothing failed, because the assertion next to it said only <code>sun &gt; 1.0</code>.
+                    <strong>a loose assertion is not merely weak, it is shelter for a wrong belief.</strong> it
+                    passed happily for as long as I believed something false, and would have kept passing
+                    forever. where the real number is known, assert the real number.
+                </p>
+
+                <h3>4. testing a state machine through a GPU window</h3>
+
+                <p>
+                    I added TAB to cycle through bodies, then tried to verify it by posting synthetic key events
+                    at the window. <strong>only the first of three ever arrived.</strong> I still do not know
+                    why.
+                </p>
+                <p>
+                    I could have gone hunting. instead I noticed I was trying to test a pure state transition
+                    through a graphics window, which is a silly place to test one from. the cycling logic moved
+                    into <code>orbitalis-render</code> as a four-line function, and the full loop became four
+                    assertions.
+                </p>
+                <p>
+                    <strong>when something is hard to test, that is usually information about where it
+                        lives</strong>, not a reason to test it less.
+                </p>
+
+                <h3>5. two rates beating against each other</h3>
+
+                <p>the trail looked fine but held 625 points after 1.25 orbits when the geometry said 1,177.</p>
+                <p>
+                    sampling ran once per frame with a 0.04-unit threshold, and Earth was moving
+                    <strong>0.037 units per frame</strong>. so roughly every other frame failed the test and the
+                    spacing alternated instead of being uniform. visually invisible at 2 to 4 pixels, but it
+                    meant the trail's length in orbits depended on the framerate, which is the exact coupling
+                    the next step existed to remove, showing up somewhere I was not looking for it.
+                </p>
+
+                <h3>6. asserting the wrong guarantee entirely</h3>
+
+                <p>
+                    the headline test for the simulation loop: ten seconds of real time should produce ten
+                    steps at 30, 60, 144 and 300 fps. three of the four failed.
+                </p>
+                <p>
+                    not a bug. summing $1/30$ three hundred times gives <strong>9.9999999999999751</strong>,
+                    while $1/60$ six hundred times gives <strong>10.000000000000076</strong>. ten seconds is
+                    exactly a multiple of the timestep, so it sits precisely on a <code>floor()</code> boundary,
+                    and a shortfall of 1e-14 costs a whole step. no accumulator built on doubles avoids this.
+                </p>
+                <p>
+                    I had asserted the wrong property. <strong>the guarantee is not the step count</strong>, it
+                    is that every step is the <em>same length</em>, so the physics is identical and at most one
+                    step separates two framerates. the test that actually mattered was the end-to-end one:
+                </p>
+
+                <pre><code>const Vec3 slow = run_at(1.0 / 30.0);
+const Vec3 fast = run_at(1.0 / 300.0);
+CHECK(slow == fast);          // exact equality</code></pre>
+
+                <p>
+                    ten times the frames, bit-identical trajectory. that one passed first time, which is how I
+                    knew the clock was fine and the test was not.
+                </p>
+
+                <h3>7. misreading my own HUD</h3>
+
+                <p>
+                    with the camera at a star's surface the whole viewport is bright yellow, and pale grey text
+                    on it is illegible. I know it is illegible because I misread my own camera distance off a
+                    screenshot: I read 0.5706 and spent a while working out why the clamp was 0.5% off, before
+                    realising the clamp was exactly right at 0.5736 and I had misread a 3 as a 0.
+                </p>
+                <p>
+                    two lines of semi-transparent backing panel fixed it. a readout that only works against a
+                    dark background is not a readout.
+                </p>
+
+                <h3>the shape they share</h3>
+
+                <p>
+                    five of those seven are the same failure: <strong>a tool or a test reporting success while
+                        doing less than I thought.</strong> vcpkg linking a scripting language into my binaries at
+                    exit code 0 back in the first milestone. an edit helper printing one miss while discarding
+                    two changes. <code>add_test</code> ignored while ctest said 100%. an assertion passing while
+                    I believed a wrong number. a test passing while measuring something other than the thing it
+                    claimed.
+                </p>
+                <p>
+                    I keep writing "the dangerous failures are the silent ones" in my notes and then getting
+                    caught by another one. the actual conclusion is not to be more vigilant, because vigilance
+                    does not scale. it is to prefer tools that fail loudly, and to check that a change actually
+                    changed something: after adding a test, look at whether the count went up.
+                </p>
+                <p>
+                    the other recurring lesson, from numbers 5 and 6, is subtler and I think more useful:
+                    <strong>write tests from what you can guarantee, not from what you expect.</strong> three
+                    failing tests in this project turned out to be measuring the wrong thing, and in every case
+                    the code was fine. the tempting response is to loosen the tolerance until it goes green,
+                    which leaves you with a test that still passes and no longer means anything.
+                </p>
+
+                <hr>
+
+                <h2>where 0.2.0 landed</h2>
+
+                <p>
+                    the promise was: <em>I can watch Sun-Earth, spin the camera and speed it up, and the sim
+                        gives identical results at 30 fps and at 300 fps.</em>
+                </p>
+
+                <ul>
+                    <li><strong>bit-identical final positions at 30 and 300 fps</strong>, checked by exact equality, not
+                        by eye</li>
+                    <li>an interactive camera: drag, scroll, click or TAB to select, pause, single-step, speed</li>
+                    <li>bodies drawn at readable sizes with the exaggeration factor stated on screen</li>
+                    <li>trails that reproject correctly in any reference frame</li>
+                    <li>a gravitational potential surface whose slope is the actual acceleration</li>
+                    <li>177 test cases and 732 assertions, in a library that links no graphics symbols at all</li>
+                </ul>
+
+                <p>six steps: a window, a coordinate system, spheres, a camera, trails, a clock.</p>
+
+                <h2>what is next</h2>
+
+                <p>
+                    <strong>milestone 0.3.0: integrators, properly.</strong> velocity Verlet, classic RK4, and
+                    RKF45 with adaptive stepping, plus the energy diagnostics that prove which of them is
+                    actually conserving anything.
+                </p>
+                <p>
+                    <code>gravitational_potential()</code> is already sitting in the core library, written for
+                    the gravity well, and the potential-energy term of the total energy is built from exactly
+                    that function. so the thing that draws the picture will also be the thing that measures
+                    whether the integrator is lying. which feels like the right way round for a project whose
+                    whole theme this milestone turned out to be honesty about what you are looking at.
+                </p>
+
+            </article>
+
+            <div class="post-tags">
+                <span class="contribution-tag">C++20</span>
+                <span class="contribution-tag">OpenGL</span>
+                <span class="contribution-tag">raylib</span>
+                <span class="contribution-tag">Floating Point</span>
+                <span class="contribution-tag">Manim</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="post-footer-nav">
+        <div class="post-container">
+            <a href="../" class="post-back-link">&larr; Back to blog</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>2026 &copy; <span data-site="name"></span> // <span data-site="city"></span>, <span
+                data-site="country"></span></p>
+    </footer>
+</body>
+
+</html>

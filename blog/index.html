@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog · {{name}}</title>
+    <link rel="icon" sizes="32x32" href="/favicon-32.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="description" content="Notes on kernel work, driver internals, and systems programming from {{name}}.">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="blog.css">
+    <script src="../site.js" defer></script>
+</head>
+
+<body>
+    <header id="mainHeader">
+        <nav>
+            <ul class="nav-links"></ul>
+        </nav>
+    </header>
+
+    <section class="blog-header">
+        <h1>blog</h1>
+        <p>Notes about my projects or about my life and goals :p</p>
+        <p>Personal blog are more informal than project blogs, since I talk about myself.</p>
+    </section>
+
+    <section class="blog-list">
+        <div class="container">
+            <a href="2026-09-19/" class="blog-entry">
+                <div class="blog-entry-path"><span class="prompt-sym">~/</span>blog/2026-09-19/</div>
+                <h2 class="blog-entry-title">Orbitalis-3D is Slowing Down, on Purpose</h2>
+                <div class="blog-entry-date">2026 September 19 · 3 min read</div>
+                <p class="blog-entry-summary">
+                    The student year started, so Orbitalis-3D moves to whenever there's a free weekend
+                    instead of a predictable cadence. Open source contributions and tinyOS keep the same
+                    pace, on purpose, not by default.
+
+                </p>
+                <div class="blog-entry-tags">
+                    <span class="contribution-tag">Orbitalis-3D</span>
+                    <span class="contribution-tag">Status Update</span>
+                </div>
+            </a>
+
+            <a href="2026-09-18/" class="blog-entry">
+                <div class="blog-entry-path"><span class="prompt-sym">~/</span>blog/2026-09-18/</div>
+                <h2 class="blog-entry-title">The Most Accurate Integrator Is the One That Wrecks Your Solar System -
+                    Orbitalis-3D</h2>
+                <div class="blog-entry-date">2026 September 18 · 24 min read</div>
+                <p class="blog-entry-summary">
+                    Five swappable integrators, live conservation diagnostics, and
+                    the orbit where RKF45's superior accuracy stops mattering and Verlet's boring
+                    stability starts winning forever, plus the eight measurement bugs that nearly
+                    printed the wrong verdict.
+                </p>
+                <div class="blog-entry-tags">
+                    <span class="contribution-tag">C++20</span>
+                    <span class="contribution-tag">Numerical Methods</span>
+                    <span class="contribution-tag">Symplectic Integrators</span>
+                </div>
+            </a>
+
+            <a href="2026-09-09/" class="blog-entry">
+                <div class="blog-entry-path"><span class="prompt-sym">~/</span>blog/2026-09-09/</div>
+                <h2 class="blog-entry-title">Drawing a Solar System Is Mostly Choosing Which Lies to Tell - Orbitalis-3D
+                </h2>
+                <div class="blog-entry-date">2026 September 09 · 20 min read</div>
+                <p class="blog-entry-summary">
+                    Six steps from an empty window to an orbiting, trailing,
+                    gravity-welled view of the Sun and Earth, and the seven things that went wrong
+                    building it, from a float floor you can't zoom past to a test that passed while
+                    measuring nothing.
+                </p>
+                <div class="blog-entry-tags">
+                    <span class="contribution-tag">C++20</span>
+                    <span class="contribution-tag">OpenGL</span>
+                    <span class="contribution-tag">Floating Point</span>
+                </div>
+            </a>
+
+            <a href="2026-08-31/" class="blog-entry">
+                <div class="blog-entry-path"><span class="prompt-sym">~/</span>blog/2026-08-31/</div>
+                <h2 class="blog-entry-title">Building an N-Body Simulator From Nothing - Orbitalis-3D</h2>
+                <div class="blog-entry-date">2026 August 31 · 18 min read</div>
+                <p class="blog-entry-summary">
+                    Six small steps from an empty folder to Earth orbiting the Sun: the maths behind each
+                    one, the five things that went wrong, and why a semi-implicit Euler step is one word
+                    away from a spiral into nowhere.
+                </p>
+                <div class="blog-entry-tags">
+                    <span class="contribution-tag">C++20</span>
+                    <span class="contribution-tag">Physics Simulation</span>
+                    <span class="contribution-tag">Numerical Methods</span>
+                </div>
+            </a>
+
+            <p class="blog-more-soon"># more entries land here as they're written</p>
+
+        </div>
+    </section>
+
+    <footer>
+        <p>2026 &copy; <span data-site="name"></span> // <span data-site="city"></span>, <span
+                data-site="country"></span></p>
+    </footer>
+</body>
+
+</html>

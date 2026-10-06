@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Most Accurate Integrator Is the One That Wrecks Your Solar System · {{name}}</title>
+    <link rel="icon" sizes="32x32" href="/favicon-32.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="description"
+        content="Orbitalis-3D 0.3.0: six steps from one hardcoded Euler to five swappable integrators with live conservation diagnostics, and the eight things that went wrong doing it.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+    <script src="../../site.js" defer></script>
+
+    <!-- KaTeX, for this post's equations -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+</head>
+
+<body>
+    <header id="mainHeader">
+        <nav>
+            <ul class="nav-links"></ul>
+        </nav>
+    </header>
+
+    <section class="post-hero">
+        <div class="post-container">
+            <div class="post-breadcrumb">
+                <span class="prompt-sym">~/</span>blog/2026-09-18/<span class="prompt-sym"> $</span> cat
+                post.md<span class="cursor-blink"></span>
+            </div>
+            <h1 class="post-title">the most accurate integrator is the one that wrecks your solar system</h1>
+            <p class="post-subtitle">Orbitalis-3D 0.3.0: six steps from one hardcoded Euler to five swappable
+                integrators with live conservation diagnostics, and the eight things I got wrong doing it</p>
+            <div class="post-meta">
+                <span>2026 September 18</span>
+                <span>·</span>
+                <span>24 min read</span>
+                <span>·</span>
+                <span class="accent">orbitalis-3d / integrators</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="post-body-section">
+        <div class="post-container">
+            <article class="post-body">
+
+                <h2>the result, first</h2>
+
+                <p>five methods, one scenario, one table. Sun and Earth, circular, twenty orbits at 365 steps each:</p>
+
+                <pre><code>method               order sympl  evaluations   energy worst  energy end   bounded closure (m)
+-----------------------------------------------------------------------------------------------
+forward-euler            1    no         7300     5.8641e-01  +5.864e-01        NO  4.9660e+11
+semi-implicit-euler      1   yes         7300     2.9635e-04  +2.158e-08       yes  3.9458e+09
+velocity-verlet          2   yes         7301     2.1943e-08  +4.983e-14       yes  1.8567e+09
+rk4                      4    no        29200     5.2768e-09  -5.277e-09        NO  1.1222e+05
+rkf45                    5    no        43800     7.6037e-10  -7.604e-10        NO  1.0729e+04</code></pre>
+
+                <p>read it twice, because the two readings disagree.</p>
+                <p>
+                    <strong>by accuracy</strong>, RKF45 wins. its orbit closes to within 10.7 km after
+                    twenty years, against velocity Verlet's 1.86 million km. that is five orders of
+                    magnitude, and the ranking is RKF45, RK4, Verlet, semi-implicit, forward Euler, exactly
+                    in order of sophistication.
+                </p>
+                <p>
+                    <strong>by whether the answer stays good</strong>, the ranking inverts at the top. the
+                    two most accurate methods are the two that say <code>NO</code> in the bounded column.
+                    their energy error is growing and has no mechanism to stop.
+                </p>
+                <p>
+                    I measured where those two readings cross. running RK4 and velocity Verlet side by side
+                    and asking when RK4's accumulating error first exceeds Verlet's fixed envelope:
+                </p>
+
+                <blockquote>orbit 84.</blockquote>
+
+                <figure>
+                    <video src="media/energy-error-comparison.mp4" autoplay loop muted playsinline></video>
+                    <figcaption>bounded vs unbounded, and the crossover the whole milestone argues toward. rendered with
+                        Manim.</figcaption>
+                </figure>
+
+                <p>
+                    before that RK4 is the better method. after it, forever, Verlet is. by orbit 400 RK4 is
+                    five times worse and still climbing while Verlet has not moved in the sixth significant
+                    figure.
+                </p>
+                <p>
+                    that number is what this whole milestone was arguing toward, and it is why "which
+                    integrator should I use" has a table for an answer instead of a name.
+                </p>
+
+                <figure>
+                    <img src="media/viewer_0.3.0.png" alt="the Orbitalis-3D viewer at milestone 0.3.0">
+                    <figcaption>the viewer at 0.3.0.</figcaption>
+                </figure>
+
+                <hr>
+
+                <h2>the problem this milestone exists to solve</h2>
+
+                <p>
+                    Newton hands you an acceleration, not a trajectory. that is a statement about the
+                    second derivative of position, and what you want is where things are at some future
+                    moment.
+                </p>
+                <p>
+                    for two bodies there is a closed form: Kepler ellipses, jump straight to any time you
+                    like. for three or more, no such formula exists. not "nobody has found one yet" but
+                    proven not to exist in general, by Poincare in 1890. the three-body problem is chaotic.
+                </p>
+                <p>
+                    so there is no shortcut. you have to walk. an <strong>integrator</strong> is the rule
+                    for taking one step: given where everything is and how fast it is moving right now,
+                    plus the forces, where is it <code>dt</code> from now.
+                </p>
+                <p>the naive rule is what anyone writes first:</p>
+
+                <pre><code>position += velocity * dt;      // forward Euler
+velocity += acceleration * dt;</code></pre>
+
+                <p>
+                    over the step the body genuinely curves, and this moves it along the tangent it started
+                    on. a tangent to a circle always lands outside the circle, so every step throws the
+                    body slightly too far out, the error always points the same way, and it accumulates. a
+                    circular orbit at 1 AU becomes 1.206 AU after a single year.
+                </p>
+                <p>then swap two lines:</p>
+
+                <pre><code>velocity += acceleration * dt;  // semi-implicit Euler
+position += velocity * dt;      // <- now the NEW velocity</code></pre>
+
+                <p>
+                    same instructions, same one force evaluation, same cost. the orbit now stays closed to
+                    four parts in a hundred thousand.
+                </p>
+                <p>
+                    that result is genuinely startling the first time and it is the doorway into the real
+                    idea. nothing about accuracy changed. both are first order. what changed is that the
+                    error stopped having a preferred direction.
+                </p>
+
+                <hr>
+
+                <h2>part one: two axes, not one</h2>
+
+                <p>
+                    everything in this milestone follows from the fact that integrators vary along two
+                    nearly independent axes, and that "better" without saying which axis is meaningless.
+                </p>
+
+                <h3>order: how fast the error shrinks</h3>
+
+                <p>
+                    <strong>order</strong> is the exponent. a method of order $p$ has a global error over a
+                    fixed interval that goes as $dt^p$, so halving the timestep divides the error by $2^p$.
+                </p>
+                <p>measured, on a quarter orbit against the analytic circular solution:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>method</th>
+                            <th>claimed order</th>
+                            <th>measured ratio per halving</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>semi-implicit Euler</td>
+                            <td>1</td>
+                            <td>1.9974, 1.9988</td>
+                        </tr>
+                        <tr>
+                            <td>velocity Verlet</td>
+                            <td>2</td>
+                            <td>3.9998, 3.9999</td>
+                        </tr>
+                        <tr>
+                            <td>RK4</td>
+                            <td>4</td>
+                            <td>16.15, 16.10</td>
+                        </tr>
+                        <tr>
+                            <td>RKF45</td>
+                            <td>5</td>
+                            <td>32.72, 32.53</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    every one of those is a <em>measurement</em>, not a citation. this matters more than it
+                    sounds: all four methods still produce something that looks exactly like an orbit on
+                    screen when their coefficients are wrong. the convergence ratio is the only thing that
+                    notices.
+                </p>
+                <p>
+                    one detail from measuring RK4 that I did not expect. at 2048 steps its quarter-orbit
+                    error is 1.6e-3 m and the measured ratio has fallen to <strong>8.4</strong>, not 16.
+                    that is not a bug: the answer is now accurate enough that double-precision cancellation
+                    dominates the truncation error. measuring "order" down there measures the hardware. the
+                    step counts in the tests are chosen against that floor.
+                </p>
+
+                <h3>symplecticity: whether the error accumulates</h3>
+
+                <p><strong>symplecticity</strong> is the other axis and it is not about accuracy at all.</p>
+                <p>
+                    a symplectic integrator does not approximate your system. it <strong>exactly solves a
+                        nearby one</strong>. there is a modified Hamiltonian, the shadow Hamiltonian,
+                </p>
+
+                $$\tilde H = H + O(dt^2)$$
+
+                <p>
+                    that velocity Verlet conserves perfectly. so the energy you measure oscillates around
+                    the true value by an amount set by how far $\tilde H$ sits from $H$, and it stays there.
+                    it cannot wander off, because wandering off would mean failing to conserve $\tilde H$,
+                    and $\tilde H$ is conserved by construction.
+                </p>
+                <p>
+                    a non-symplectic method has no such quantity. its error is free to accumulate in one
+                    direction, and it does.
+                </p>
+                <p>the proof for velocity Verlet needs no error analysis at all. the update is:</p>
+
+                $$
+                \begin{aligned}
+                v(n+\tfrac12) &= v(n) + \tfrac12 a(n)\, dt \qquad \text{kick} \\
+                x(n+1) &= x(n) + v(n+\tfrac12)\, dt \qquad \text{drift} \\
+                a(n+1) &= f(x(n+1)) \\
+                v(n+1) &= v(n+\tfrac12) + \tfrac12 a(n+1)\, dt \qquad \text{kick}
+                \end{aligned}
+                $$
+
+                <p>
+                    a drift is what a body does with gravity switched off. a kick is what it does with
+                    motion switched off. each is an <em>exact</em> solution of half the problem and
+                    therefore individually symplectic, and a composition of symplectic maps is symplectic.
+                    that is the entire argument.
+                </p>
+                <p>
+                    the <strong>symmetry</strong> of that composition, half-kick around a whole drift rather
+                    than two whole steps, buys the second order for free: the sequence reads the same in
+                    both directions, so the odd-order error terms cancel. which means you can test it
+                    directly. step 2000 steps forward, flip every velocity, step 2000 back, flip again:
+                </p>
+
+                <pre><code>velocity Verlet   0.00059 m from the start, on an orbit 1.5e11 m across
+forward Euler     1.1e11 m, which is 0.74 AU</code></pre>
+
+                <p>Verlet's residual is accumulated floating-point rounding over 4000 steps, not method error.</p>
+
+                <h3>the two axes are nearly independent</h3>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>method</th>
+                            <th>order</th>
+                            <th>symplectic</th>
+                            <th>over one orbit</th>
+                            <th>over a hundred million steps</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>forward Euler</td>
+                            <td>1</td>
+                            <td>no</td>
+                            <td>bad</td>
+                            <td>catastrophic</td>
+                        </tr>
+                        <tr>
+                            <td>semi-implicit Euler</td>
+                            <td>1</td>
+                            <td><strong>yes</strong></td>
+                            <td>bad</td>
+                            <td>bounded</td>
+                        </tr>
+                        <tr>
+                            <td>velocity Verlet</td>
+                            <td>2</td>
+                            <td><strong>yes</strong></td>
+                            <td>good</td>
+                            <td>bounded</td>
+                        </tr>
+                        <tr>
+                            <td>RK4</td>
+                            <td>4</td>
+                            <td>no</td>
+                            <td>excellent</td>
+                            <td>catastrophic, slowly</td>
+                        </tr>
+                        <tr>
+                            <td>RKF45</td>
+                            <td>5</td>
+                            <td>no</td>
+                            <td>excellent</td>
+                            <td>catastrophic, slowly</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    both Eulers are order 1. one keeps an orbit closed forever and the other destroys it, at
+                    identical cost. that pairing is why both metadata fields sit on the interface rather
+                    than in a comment:
+                </p>
+
+                <pre><code>[[nodiscard]] virtual int order() const noexcept = 0;
+[[nodiscard]] virtual bool is_symplectic() const noexcept = 0;</code></pre>
+
+                <p>
+                    order is a statement about a fixed interval as dt goes to zero. symplecticity is a
+                    statement about a fixed dt as the number of steps goes to infinity. they answer
+                    different questions and a project that only tracks one of them will confidently
+                    recommend the wrong method.
+                </p>
+
+                <hr>
+
+                <h2>part two: the five methods</h2>
+
+                <h3>velocity Verlet, and the cache that pays for it</h3>
+
+                <p>
+                    second order, symplectic, time-reversible, and still <strong>one force evaluation per
+                        step</strong>. that combination is why essentially every serious n-body code runs some
+                    version of it.
+                </p>
+                <p>
+                    the trick is that $a(n+1)$ is evaluated at the positions the step <em>ends</em> on,
+                    which are the positions the next step <em>begins</em> on. so it gets kept and reused.
+                    without that, velocity Verlet costs two evaluations per step, which is what RK2 costs,
+                    and RK2 is a much worse deal.
+                </p>
+                <p>
+                    the cache is the first piece of state any integrator in the project carries between
+                    steps, and it generated the whole hazard section of that step. it is valid only while
+                    nothing has moved the bodies behind the integrator's back. a body count change is
+                    detected for free. a <em>teleport</em> with the count unchanged is not, and the failure
+                    mode is not a crash: it is one step taken with forces from where the body used to be,
+                    which looks entirely plausible. measured cost of forgetting, after dragging Earth from
+                    1 AU to 0.4 AU: 56 m/s of error against an orbital speed of 30,000. small enough to look
+                    like nothing, large enough to ruin the run.
+                </p>
+                <p>
+                    velocities are deliberately <em>not</em> on the invalidation list, because Newtonian
+                    acceleration depends on positions and masses only. which is convenient, since negating
+                    every velocity is exactly what the time-reversibility test does.
+                </p>
+                <p>
+                    there is a sibling method, DKD leapfrog, that is also second order, also symplectic, one
+                    evaluation per step, and needs <strong>no cache at all</strong> because its single
+                    evaluation happens at the midpoint. genuinely tempting. I went with kick-drift-kick
+                    anyway, for a reason that only shows up one step later: DKD's acceleration is at a
+                    half-step position nobody observes, and KDK's is at the state the step reports. the
+                    diagnostics want quantities at the state on screen, so the cache is not purely a cost.
+                    it is also the number I need next.
+                </p>
+
+                <h3>RK4, and Simpson's rule hiding in the weights</h3>
+
+                <p>four evaluations per step for fourth order:</p>
+
+                $$
+                \begin{aligned}
+                x(n+1) &= x + \frac{dt}{6}(k_{1x} + 2k_{2x} + 2k_{3x} + k_{4x}) \\
+                v(n+1) &= v + \frac{dt}{6}(k_{1v} + 2k_{2v} + 2k_{3v} + k_{4v})
+                \end{aligned}
+                $$
+
+                <p>
+                    the 1, 2, 2, 1 is Simpson's rule, and that is where the fourth order comes from: the two
+                    midpoint samples count double because the midpoint is where a smooth function is best
+                    represented.
+                </p>
+                <p>expand the position line and it collapses into something familiar:</p>
+
+                $$x(n+1) = x + v \, dt + \frac{dt^2}{6}(k_{1v} + k_{2v} + k_{3v})$$
+
+                <p>
+                    which is velocity Verlet's position update with a better averaged acceleration in place
+                    of the single $a(n)$. seeing that drop out made the extra three evaluations feel less
+                    like a different algorithm and more like paying for a better estimate of the same
+                    quantity.
+                </p>
+                <p>
+                    three of RK4's four evaluations happen at trial positions <strong>the system never
+                        actually occupies</strong>. that is why the force solver interface takes a span of
+                    bodies rather than a <code>System</code>, a decision made four milestones earlier with
+                    this method named in the comment. first time it was used.
+                </p>
+                <p>
+                    and a consequence I had not considered until writing the test: the acceleration at the
+                    state the step <em>ends</em> on is never computed at all. Verlet's cache is exactly that
+                    acceleration, which is why the diagnostics can reuse it. RK4 leaves them nothing.
+                </p>
+
+                <h3>RKF45, two answers from six evaluations</h3>
+
+                <p>
+                    the only method here that decides for itself how far to go. six stages produce
+                    <strong>two</strong> answers of different order from the <em>same</em> six evaluations,
+                    their difference estimates the error of the lower one, and that estimate drives the step
+                    size.
+                </p>
+                <p>
+                    the roadmap entry for it, written months earlier, says <em>"proper butcher tableau, do
+                        not typo it"</em>. most of the work went into making that enforceable rather than
+                    aspirational.
+                </p>
+                <p>
+                    first, the tableau is checked against the Runge-Kutta order conditions
+                    <strong>directly</strong>, with no integration involved. every stage row sums to its own
+                    node, the matrix is strictly lower triangular so the method is explicit, and
+                    $\sum b c^k$ is correct through $k = p$ for both rows.
+                </p>
+                <p>
+                    the checks that <strong>fail</strong> matter as much as the ones that pass. the
+                    fourth-order row must miss at $k = 4$ (it gives 83/416, not 1/5) and the fifth must miss
+                    at $k = 5$ (683/4160, not 1/6). a row satisfying one condition too many would be a
+                    different method wearing the wrong label, and the error estimate built from the
+                    difference of the two rows would be measuring essentially nothing.
+                </p>
+                <p>
+                    that test also catches typos no amount of integration could. the fourth-order row never
+                    touches the integration path, since the error weights are stored pre-simplified rather
+                    than computed as $b_5 - b_4$. so a typo in $b_4$ was previously invisible.
+                </p>
+                <p>second, the stage code is a <strong>loop over the table</strong>, not five hand-expanded expressions:
+                </p>
+
+                <pre><code>for (std::size_t s = 1; s < T::kStages; ++s) {
+    for (std::size_t i = 0; i < n; ++i) {
+        Vec3 position_offset{}, velocity_offset{};
+        for (std::size_t j = 0; j < s; ++j) {
+            position_offset += T::a[s][j] * kx_[j][i];
+            velocity_offset += T::a[s][j] * kv_[j][i];
+        }
+        trial_[i].position = bodies[i].position + h * position_offset;
+        kx_[s][i] = bodies[i].velocity + h * velocity_offset;
+    }
+    solver_->compute_accelerations(trial_, kv_[s]);
+}</code></pre>
+
+                <p>
+                    the first version had named scalars and hand-written stages. it worked, and mutation
+                    testing killed every typo I threw at it, and I rewrote it anyway. transcription errors
+                    do not live in the fractions, which a test now checks and which name the failing
+                    condition. they live in writing <code>kx_[4]</code> where <code>kx_[3]</code> was
+                    meant, inside an expression whose other nine indices are correct. that is invisible to a
+                    reading. a loop over a table cannot make it, and the table is the same object the tests
+                    verify.
+                </p>
+
+                <h4>testing an adaptive method's order is a different exercise</h4>
+
+                <p>
+                    shrink the interval handed to <code>step()</code> and RKF45 does not take smaller
+                    steps. it takes <em>fewer</em> of them, because the accuracy is pinned to the tolerance
+                    rather than to the caller's dt. so the usual convergence test would measure the
+                    controller and say nothing about the tableau.
+                </p>
+                <p>
+                    the fix is to test the two separately. loosen the tolerance until nothing can ever be
+                    rejected, turning it into plain fixed-step Fehlberg, and the ratios come out 32.72 and
+                    32.53. then test the controller on its own: quadrupling the outer steps moves the error
+                    by <strong>1.35</strong>, nowhere near 32.
+                </p>
+
+                <h4>the exponent that falls out of local extrapolation</h4>
+
+                <p>
+                    both answers come from the same six evaluations, so taking the better one costs one
+                    extra dot product. propagating the fifth-order answer is called local extrapolation, and
+                    it changes the tolerance scaling in a way I did not predict and had to derive from the
+                    measurement.
+                </p>
+                <p>
+                    the controller sizes $h$ so the <em>fourth</em>-order error meets the tolerance,
+                    $C_4 h^5 = \text{tol}$, so $h \propto \text{tol}^{1/5}$. what actually gets propagated is
+                    fifth order with local error $C_5 h^6$, and there are $T/h$ of them:
+                </p>
+
+                $$\text{global} = \frac{T}{h} \, C_5 h^6 = T C_5 h^5 \propto \text{tol}^1$$
+
+                <p>
+                    <strong>linear.</strong> without extrapolation the same algebra gives
+                    $\text{tol}^{4/5}$. measured, scaling every tolerance by ten: ratios of 10.43 and 9.96.
+                    so the measured exponent is itself evidence that the fifth-order row is genuinely the
+                    one in use.
+                </p>
+
+                <h4>a circular orbit is a terrible test of an adaptive method</h4>
+
+                <p>
+                    this one is obvious in hindsight and was not obvious while writing the first version of
+                    the test against the Sun-Earth scenario.
+                </p>
+                <p>
+                    on a circle the timescale never changes, so the step size never changes, and RKF45 is
+                    just an expensive fixed-step method. measured: step size from 157791 s to 157791 s,
+                    spread exactly 1.0, zero rejections. that is now an asserted null result rather than an
+                    embarrassment.
+                </p>
+                <p>so the project needed an orbit with a varying timescale. an ellipse from the vis-viva equation:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>eccentricity</th>
+                            <th>step size range (s)</th>
+                            <th>spread</th>
+                            <th>evaluations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>0.0</td>
+                            <td>157791 &rarr; 157791</td>
+                            <td>1.0x</td>
+                            <td>1200</td>
+                        </tr>
+                        <tr>
+                            <td>0.5</td>
+                            <td>4001 &rarr; 157791</td>
+                            <td><strong>39x</strong></td>
+                            <td>1434</td>
+                        </tr>
+                        <tr>
+                            <td>0.9</td>
+                            <td>926 &rarr; 157791</td>
+                            <td><strong>170x</strong></td>
+                            <td>1944</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    at $e = 0.9$ the body moves nineteen times faster at perihelion than at aphelion and
+                    feels 361 times the acceleration, and the controller finds that <strong>without being
+                        told where perihelion is</strong>. covering that orbit with a fixed step accurate enough
+                    for perihelion means paying the perihelion price all the way round. RKF45 pays 62% more
+                    than the circular case in total and puts every bit of it where the trajectory is hard.
+                </p>
+
+                <h4>and it is still not symplectic, and adaptivity is the reason</h4>
+
+                <p>
+                    this is the most counter-intuitive thing in the milestone. RKF45 is the most accurate
+                    method here and its energy error still walks in one direction: 4.18e-8 at five orbits,
+                    4.18e-7 at fifty, ratio exactly 10. Verlet over the identical interval measures 1.0.
+                </p>
+                <p>
+                    the reason has nothing to do with Fehlberg. <strong>$\tilde H$ depends on $dt$.</strong>
+                    change the step size and you change which quantity is being conserved, so the guarantee
+                    evaporates and the error is free to accumulate across the joins.
+                </p>
+                <p>
+                    so an adaptive symplectic method is a contradiction, not a gap in the literature. making
+                    velocity Verlet adaptive would not give something both accurate and stable. it would
+                    give something that is neither.
+                </p>
+
+                <hr>
+
+                <h2>part three: measuring, which turned out to be the hard part</h2>
+
+                <h3>you cannot see 1e-8</h3>
+
+                <p>
+                    up to the halfway point of this milestone I was judging integrators by looking at them.
+                    an orbit that comes back to roughly where it started looks correct. "roughly" is doing
+                    an enormous amount of work in that sentence, and the eye cannot tell 1e-8 from 1e-4.
+                </p>
+                <p>
+                    worse, the eye cannot tell a <em>bounded</em> error from a slowly growing one, and that
+                    distinction is the entire point.
+                </p>
+
+                <h3>the potential must be the one whose gradient is the force</h3>
+
+                <p>
+                    the single most important design decision in the diagnostics.
+                    <code>potential_energy()</code> is not a free function taking a softening parameter. it
+                    is a pure virtual on the force solver:
+                </p>
+
+                <pre><code>[[nodiscard]] virtual double potential_energy(std::span&lt;const Body&gt; bodies) const = 0;</code></pre>
+
+                <p>
+                    because the potential has to be the one whose gradient is the force <em>actually being
+                        integrated</em>. a solver with Plummer softening $\varepsilon$ produces
+                </p>
+
+                $$a = \frac{G m \, d}{(|d|^2 + \varepsilon^2)^{3/2}}$$
+
+                <p>
+                    whose potential is $-Gm_i m_j / \sqrt{|d|^2 + \varepsilon^2}$, not the Newtonian
+                    $-Gm_i m_j / |d|$. pair the wrong one and the "energy drift" you measure changes when
+                    $\varepsilon$ changes and stays put when the integrator changes, which is exactly
+                    backwards from what the diagnostic is for.
+                </p>
+                <p>
+                    putting it on the solver makes the mismatch <strong>impossible</strong> rather than
+                    documented. and it gets tested by numerical gradient: $dU/dx_i$ must equal $-m_i a_i$,
+                    every body, every axis, softening off and on. if the force and the potential ever stop
+                    describing the same physics, that fails, and every energy number downstream is
+                    meaningless until it passes again.
+                </p>
+                <p>
+                    this was a note I had written to myself four milestones earlier and had already once
+                    failed to act on. the pattern that keeps working in this project is turning a
+                    note-to-self into a structure where the mistake cannot be expressed.
+                </p>
+
+                <h3>three conserved quantities, three different accusations</h3>
+
+                <p>
+                    the milestone asked for energy. I built three, because they fail differently and that
+                    turns a diagnostic into a <em>diagnosis</em>:
+                </p>
+                <ul>
+                    <li><strong>energy</strong> is the integrator's. it distinguishes methods and nothing else here
+                        does.</li>
+                    <li><strong>linear momentum</strong> is the force solver's, via Newton's third law inside the pair
+                        loop. every integrator here updates velocity as a weighted sum of accelerations, and the
+                        mass-weighted sum of accelerations is exactly zero, so an integrator essentially cannot break
+                        it. a drift above roundoff accuses the pair loop, never the method.</li>
+                    <li><strong>angular momentum</strong> is the one I had wrong.</li>
+                </ul>
+
+                <hr>
+
+                <h2>part four: eight things I got wrong</h2>
+
+                <h3>1. angular momentum belongs to the force solver</h3>
+
+                <p>
+                    I wrote in the header that angular momentum is conserved because gravity is a central
+                    force, so each pair's torques cancel, and therefore it is the solver's property like
+                    linear momentum is. then I wrote the obvious test.
+                </p>
+                <p>
+                    forward Euler measured <strong>0.552</strong>. it had lost 55% of the system's angular
+                    momentum over twenty orbits, while its linear momentum sat at 3.0e-15.
+                </p>
+                <p>
+                    zero net torque is what makes the <em>continuous</em> system conserve $L$, and that
+                    really is the solver's doing. but whether a <em>discrete step</em> preserves it depends
+                    on the order the position and velocity updates happen in:
+                </p>
+
+                $$
+                \begin{aligned}
+                \text{semi-implicit:} \quad L(n{+}1) &= \sum m \, r(n{+}1) \times v(n{+}1) \\
+                &= \sum m \, (r(n) + v(n{+}1)\, dt) \times v(n{+}1) \\
+                &= \sum m \, r(n) \times v(n{+}1) \qquad \text{the } v \times v \text{ term is identically zero} \\
+                &= L(n) + dt \cdot (\text{net torque}) = L(n) \qquad \text{exactly}
+                \end{aligned}
+                $$
+
+                $$
+                \begin{aligned}
+                \text{forward Euler:} \quad L(n{+}1) &= \sum m \, (r + v\, dt) \times (v + a\, dt) \\
+                &= L(n) + dt \cdot (\text{torque}) + dt^2 \sum m \,(v \times a) \\
+                &= L(n) + 0 + dt^2 \sum m \, (v \times a)
+                \end{aligned}
+                $$
+
+                <p>
+                    that last term is not a torque and does not vanish. velocity Verlet is the same
+                    cancellation twice, once around each half kick, and is also exact.
+                </p>
+                <p>so the final ordering is a third one, different again from accuracy and from boundedness:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>method</th>
+                            <th>angular momentum drift, 20 orbits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>velocity Verlet</td>
+                            <td>1.45e-15 (exact)</td>
+                        </tr>
+                        <tr>
+                            <td>semi-implicit Euler</td>
+                            <td>1.64e-15 (exact)</td>
+                        </tr>
+                        <tr>
+                            <td>RK4</td>
+                            <td>2.64e-9</td>
+                        </tr>
+                        <tr>
+                            <td>forward Euler</td>
+                            <td>0.552</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    semi-implicit Euler is four orders of magnitude worse than Verlet on energy and holds
+                    angular momentum <strong>exactly</strong>. RK4 is the most accurate fixed-step method
+                    here and does not: angular momentum is a <em>quadratic</em> invariant, and a Runge-Kutta
+                    method preserves those only if its coefficients satisfy
+                    $b_i a_{ij} + b_j a_{ji} = b_i b_j$. the Gauss-Legendre methods do. classical RK4 does
+                    not.
+                </p>
+                <p>accuracy and conservation are different questions. this is the sharpest demonstration of it in the
+                    project.</p>
+
+                <h4>the ratio that turned out to be Kepler</h4>
+
+                <p>
+                    reading those numbers I noticed RK4's angular momentum drift was almost exactly half its
+                    energy drift, at every sample point: at orbit 100, energy 2.638e-8 and $L$ 1.319e-8,
+                    ratio 1.99999.
+                </p>
+                <p>
+                    not a coincidence. for a circular orbit $|E| \propto 1/a$ and $L \propto \sqrt{a}$, so
+                </p>
+
+                $$\frac{d|E|}{|E|} = -\frac{da}{a} \qquad \text{and} \qquad \frac{dL}{L} = \frac{1}{2}\frac{da}{a}$$
+
+                <p>
+                    and the ratio has to be exactly 2. RK4's drift is a clean secular decay of the
+                    semi-major axis and nothing else: the orbit stays circular and slowly shrinks.
+                </p>
+                <p>
+                    that became a test, because it is a consistency check on the <strong>diagnostics</strong>
+                    as much as on the integrator. if energy and angular momentum disagreed about how far the
+                    orbit had moved, one of them would be computed wrong.
+                </p>
+
+                <h3>2. a metric with a ceiling</h3>
+
+                <p>
+                    my first version of the forward Euler contrast asserted its energy error grew at least
+                    5x from the early orbits to the late ones. it failed: 0.246 early against 0.586 late, a
+                    factor of 2.4.
+                </p>
+                <p>
+                    that is not the method behaving well. $|E - E_0|/|E_0|$ <strong>cannot exceed 1 while
+                        the orbit is still bound</strong>, because forward Euler drives $E$ upward toward zero,
+                    so the ratio flattens against a ceiling that has nothing to do with how badly the
+                    trajectory is being wrecked. I was asking about a ceiling and calling it a measurement.
+                </p>
+                <p>
+                    the fix was to ask about <em>direction</em> instead of size: sample the signed error
+                    once per orbit and count how often it decreased. for forward Euler over twenty orbits,
+                    never. 19 out of 19 rising.
+                </p>
+
+                <h3>3. divided by $E_0$ instead of $|E_0|$</h3>
+
+                <p>
+                    the direction fix immediately reported forward Euler as <em>decreasing</em> every orbit.
+                    a bound orbit has $E_0 < 0$, so dividing the signed difference by $E_0$ flips the sign and an energy
+                        gain reads as a loss. </p>
+                        <p>I had the method exactly backwards and the test passed a different assertion happily.</p>
+
+                        <h3>4. the same phase-creep trap, twice</h3>
+
+                        <p>
+                            having built the per-orbit direction count, I asserted Verlet's should be mixed, since a
+                            bounded oscillation should go down about as often as up. it came out 294 rising out of
+                            299, which looks like a nearly monotonic drift.
+                        </p>
+                        <p>
+                            it is not. the numerical orbit's period is not exactly the analytic one, so "every 365
+                            steps" creeps slowly in phase, and the sampled value slides along a within-orbit
+                            oscillation rather than tracking a trend. I was measuring my sampling, not the method.
+                        </p>
+                        <p>
+                            this is precisely the mistake I made three milestones earlier with an error-envelope
+                            test, and I walked into it again. the direction count is now asserted only for forward
+                            Euler, where the magnitude grows by more than the entire within-orbit variation and
+                            creep cannot fake it.
+                        </p>
+
+                        <h3>5. two tests that read perfectly and proved nothing</h3>
+
+                        <p>both found by mutation testing. I would not have found either by rereading.</p>
+                        <p>
+                            <strong>the first</strong>: a test named "moving bodies behind the integrator's back
+                            needs an explicit reset" called <code>reset()</code> on a <em>freshly constructed</em>
+                            integrator, which has nothing to clear. it proved fresh equals fresh, and survived
+                            <code>reset()</code> becoming a no-op.
+                        </p>
+                        <p>
+                            <strong>the second</strong>: a test named "measure uses the barycentre for angular
+                            momentum" ran on the Sun-Earth scenario, whose barycentre <em>is</em> the origin, so the
+                            two choices are the same number there. it asserted the right idea against a case with no
+                            opinion about it. the rewrite needed a system both drifting and displaced several AU, so
+                            $R \times P$ is comparable to the internal rotation rather than a rounding on top of it.
+                        </p>
+                        <p>
+                            there is a third of the same family in the harness: closure error measured absolutely
+                            rather than relative to the primary survived, because every built-in scenario has the
+                            primary near the origin and the two definitions agree to within the Sun's 4.5e5 m
+                            wobble. killing it needed a scenario translated as well as boosted, since a boost alone
+                            leaves them coinciding at $t = 0$.
+                        </p>
+                        <p>
+                            <strong>the lesson all three share: pick a scenario that can tell the two answers
+                                apart.</strong> a test that cannot distinguish what it claims to test is worse than no
+                            test, because it reads like coverage.
+                        </p>
+
+                        <h3>6. "adding a method is one row" was already false</h3>
+
+                        <p>
+                            I had written, one step earlier, that the integrator registry meant adding a method was
+                            a single row. adding velocity Verlet needed <em>two</em> edits, because the name list
+                            was a second array written out by hand.
+                        </p>
+                        <p>
+                            forgetting the second would have compiled fine and produced an integrator reachable by
+                            name but invisible to the viewer's cycle key and to the comparison harness. the list is
+                            now derived from the factory table, so the claim is actually true.
+                        </p>
+
+                        <h3>7. the default was an index, and the fallback was the worst method</h3>
+
+                        <p>
+                            the viewer picked its starting integrator by index. inserting a method into the registry
+                            would silently have changed which one it began with.
+                        </p>
+                        <p>
+                            I switched to a lookup by name, and then noticed the lookup had a worse failure than the
+                            one it fixed: if the name did not match, <code>std::find</code> returns the end and the
+                            fallback lands on index 0, which is <strong>forward Euler</strong>, the one method in
+                            the project that is deliberately bad. silently defaulting to the worst available option
+                            is the kind of thing that looks like a physics bug for a week.
+                        </p>
+                        <p>
+                            so the name moved into core next to the registry, with a test asserting it resolves and
+                            that whatever it names is symplectic and at least second order.
+                        </p>
+
+                        <h3>8. symplectic is not a promise that holds at any timestep</h3>
+
+                        <p>the last one, and the one that nearly went out in a published table.</p>
+                        <p>on an $e = 0.9$ comet at 365 steps per orbit, the harness printed:</p>
+
+                        <pre><code>semi-implicit-euler   worst 2.0558e+00   bounded yes
+velocity-verlet       worst 5.5740e-01   bounded NO</code></pre>
+
+                        <p>
+                            velocity Verlet reported <strong>not bounded</strong>. semi-implicit reported
+                            <strong>bounded</strong> while carrying a 206% energy error. read literally, the table
+                            says the symplectic guarantee fails and the worse method is the safe one.
+                        </p>
+                        <p>
+                            neither statement means anything. nothing fixed-step resolves an $e = 0.9$ perihelion at
+                            that step. the shadow Hamiltonian $\tilde H = H + O(dt^2)$ is an <em>asymptotic</em>
+                            construction and at a step that coarse it simply does not exist. the numbers are noise
+                            and the verdict was reading noise.
+                        </p>
+                        <p>
+                            so the summary now declines to judge a run that never resolved the orbit, and getting
+                            that right took two attempts. suppressing any row over 1% error was too blunt: it
+                            silenced forward Euler on the circular table, where 59% error is not an artefact, it is
+                            the method being bad, and "spirals out" is exactly the verdict worth printing.
+                        </p>
+                        <p>
+                            resolution is judged at the level of the <strong>table</strong> instead, using the best
+                            symplectic row as the yardstick. if that method cannot hold its energy, the step is too
+                            coarse for the scenario and no fixed-step row means anything. if it can, a bad row is
+                            simply a bad method.
+                        </p>
+                        <p>
+                            symplectic is the principled filter rather than a convenient one: an adaptive method
+                            cannot be symplectic, so every symplectic row is necessarily fixed-step, which is
+                            exactly the population whose accuracy the caller's timestep controls.
+                        </p>
+
+                        <h3>the shape they share</h3>
+
+                        <p>
+                            seven of those eight are not bugs in the physics. they are <strong>bugs in the
+                                measurement</strong>, and they divide into two families.
+                        </p>
+                        <p>
+                            the first family is <em>a number without a scale</em>. dividing by $E_0$ instead of
+                            $|E_0|$. asserting an absolute momentum threshold on a solar-system quantity, in the
+                            very file arguing against that. using a metric with a ceiling and reading the ceiling.
+                            every one of them is a quantity that is meaningless until you say what it is measured
+                            against.
+                        </p>
+                        <p>
+                            the second family is <em>a test that cannot see what it claims to test</em>. the vacuous
+                            reset, the barycentre with no opinion, the closure in a frame where both definitions
+                            coincide, the phase creep where the sampling and the signal share a period. every one
+                            reads like coverage and provides none.
+                        </p>
+                        <p>
+                            the tool that found the second family, three times, is mutation testing. take the code,
+                            break it on purpose in a plausible way, and check the suite goes red. across this
+                            milestone that was 69 mutations across five runs: 67 killed, 2 equivalent. every single
+                            one of the numerical mutations still produced something that looked exactly like an
+                            orbit on screen. most of them were still working integrators, just wearing the wrong
+                            order.
+                        </p>
+
+                        <hr>
+
+                        <h2>where 0.3.0 landed</h2>
+
+                        <p>
+                            five integrators, swappable at runtime through a pointer that never learns which one it
+                            holds. live conservation diagnostics in the viewer. a comparison harness that walks the
+                            registry and prints the table at the top of this piece.
+                        </p>
+                        <p>the numbers worth keeping:</p>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>forward Euler</th>
+                                    <th>semi-implicit</th>
+                                    <th>Verlet</th>
+                                    <th>RK4</th>
+                                    <th>RKF45</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>error ratio per halved step</td>
+                                    <td>&mdash;</td>
+                                    <td>1.997</td>
+                                    <td>3.9998</td>
+                                    <td>16.15</td>
+                                    <td>32.72</td>
+                                </tr>
+                                <tr>
+                                    <td>evaluations/step</td>
+                                    <td>1</td>
+                                    <td>1</td>
+                                    <td>1</td>
+                                    <td>4</td>
+                                    <td>6 per attempt</td>
+                                </tr>
+                                <tr>
+                                    <td>energy, 20 orbits</td>
+                                    <td>0.586</td>
+                                    <td>2.96e-4</td>
+                                    <td>2.19e-8</td>
+                                    <td>5.28e-9</td>
+                                    <td>7.60e-10</td>
+                                </tr>
+                                <tr>
+                                    <td>energy bounded</td>
+                                    <td>no</td>
+                                    <td><strong>yes</strong></td>
+                                    <td><strong>yes</strong></td>
+                                    <td>no</td>
+                                    <td>no</td>
+                                </tr>
+                                <tr>
+                                    <td>angular momentum</td>
+                                    <td>0.552</td>
+                                    <td>exact</td>
+                                    <td>exact</td>
+                                    <td>2.64e-9</td>
+                                    <td>3.80e-10</td>
+                                </tr>
+                                <tr>
+                                    <td>closure, 20 orbits</td>
+                                    <td>4.97e11 m</td>
+                                    <td>3.95e9 m</td>
+                                    <td>1.86e9 m</td>
+                                    <td>1.12e5 m</td>
+                                    <td>1.07e4 m</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p>and the one-line answer the whole thing was for:</p>
+
+                        <blockquote>
+                            RKF45 for a short arc or a close encounter. velocity Verlet for a million steps. forward
+                            Euler for nothing at all.
+                        </blockquote>
+
+                        <p>
+                            the trap is that the long-run question is the one that <em>looks</em> like it wants the
+                            more accurate method.
+                        </p>
+
+                        <h2>what is next</h2>
+
+                        <p>
+                            <strong>0.4.0, Barnes-Hut.</strong> the force solver stops being exact and becomes an
+                            approximation with a tunable error, which is what takes the cost from $O(n^2)$ to
+                            $O(n \log n)$ and makes tens of thousands of bodies possible.
+                        </p>
+                        <p>
+                            everything built here becomes the instrument for measuring that. the conservation
+                            diagnostics already localise a fault: linear momentum accuses the pair loop, energy
+                            accuses the integrator. and angular momentum goes wrong precisely when a force stops
+                            pointing along the line joining two bodies.
+                        </p>
+                        <p>which is exactly what a tree-code bug looks like.</p>
+
+            </article>
+
+            <div class="post-tags">
+                <span class="contribution-tag">C++20</span>
+                <span class="contribution-tag">Numerical Methods</span>
+                <span class="contribution-tag">Runge-Kutta</span>
+                <span class="contribution-tag">Symplectic Integrators</span>
+                <span class="contribution-tag">Mutation Testing</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="post-footer-nav">
+        <div class="post-container">
+            <a href="../index.html" class="post-back-link">&larr; Back to blog</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>2026 &copy; <span data-site="name"></span> // <span data-site="city"></span>, <span
+                data-site="country"></span></p>
+    </footer>
+</body>
+
+</html>

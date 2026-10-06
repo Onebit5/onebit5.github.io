@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building an N-Body Simulator From Nothing · {{name}}</title>
+    <link rel="icon" sizes="32x32" href="/favicon-32.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="description"
+        content="Six small steps from an empty folder to Earth orbiting the Sun: the maths behind each one, and the five things that went wrong on the way.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+    <script src="../../site.js" defer></script>
+
+    <!-- KaTeX, for this post's equations -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+</head>
+
+<body>
+    <header id="mainHeader">
+        <nav>
+            <ul class="nav-links"></ul>
+        </nav>
+    </header>
+
+    <section class="post-hero">
+        <div class="post-container">
+            <div class="post-breadcrumb">
+                <span class="prompt-sym">~/</span>blog/2026-08-31/<span class="prompt-sym"> $</span> cat
+                post.md<span class="cursor-blink"></span>
+            </div>
+            <h1 class="post-title">building an n-body simulator from nothing: Orbitalis-3D 0.1.0</h1>
+            <p class="post-subtitle">how six small steps got from an empty folder to Earth orbiting the Sun, the maths
+                behind each one, and the five things I got wrong on the way</p>
+            <div class="post-meta">
+                <span>2026 August 31</span>
+                <span>·</span>
+                <span>18 min read</span>
+                <span>·</span>
+                <span class="accent">orbitalis-3d / n-body</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="post-body-section">
+        <div class="post-container">
+            <article class="post-body">
+
+                <h2>the result, first</h2>
+
+                <pre><code>scenario   : Sun-Earth, circular, barycentric frame
+period     : 365.256350 days   (real sidereal year is 365.256363)
+timestep   : 1.0007 days
+steps      : 365  (exactly one orbit)
+
+initial state
+  Sun    m = 1.988410e+30 kg   x = -4.493143e+05 m   v = -0.089458 m/s
+  Earth  m = 5.972168e+24 kg   x = +1.495974e+11 m   v = +29784.647103 m/s
+  net drift  : 1.769467e-17 m/s
+
+after one orbit
+  integrator               final r (AU)   return dist (AU)  rel. |dp| drift
+  forward-euler                1.205782       0.886924        3.292e-16
+  semi-implicit-euler          1.000007       0.001319        4.308e-17</code></pre>
+
+                <p>
+                    Earth goes around the Sun and comes back to within <strong>0.001319 AU</strong> of where it
+                    started. that is about 197,000 km, on a path 940 million km long: an error of 0.02% of the
+                    distance travelled, from a first-order method taking day-long steps.
+                </p>
+                <p>
+                    and the computed orbital period lands <strong>1.1 seconds</strong> away from the real
+                    sidereal year. that number cost me an hour and a wrong constant, and it is the best part of
+                    this post.
+                </p>
+
+                <hr>
+
+                <h2>what Orbitalis-3D is</h2>
+
+                <p>
+                    a 3D n-body gravitational simulator in C++. it computes the trajectories of planetary
+                    systems by numerically solving the equations of motion, and the plan runs from here to a
+                    1.0 that does Barnes-Hut at 100,000 bodies with a live 3D viewer and a binary trajectory
+                    format.
+                </p>
+                <p>
+                    everything is written from scratch. the vector type, the force solver, the integrators, and
+                    later the octree. I pull in a test framework and a JSON parser because writing those is not
+                    the point, but nothing that touches the physics comes from a library.
+                </p>
+                <p>
+                    <strong>milestone 0.1.0 promised one thing:</strong> <em>Earth goes around the Sun once and
+                        doesn't fly off into nowhere, and the energy drift is bad and I know it's bad.</em>
+                </p>
+                <p>six steps got there.</p>
+
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>0.0.1</td>
+                            <td>build skeleton, three targets, C++20</td>
+                        </tr>
+                        <tr>
+                            <td>0.0.2</td>
+                            <td><code>Vec3</code> and a test suite</td>
+                        </tr>
+                        <tr>
+                            <td>0.0.3</td>
+                            <td><code>Body</code> and <code>System</code></td>
+                        </tr>
+                        <tr>
+                            <td>0.0.4</td>
+                            <td>newtonian gravity, brute force</td>
+                        </tr>
+                        <tr>
+                            <td>0.0.5</td>
+                            <td>two Euler integrators</td>
+                        </tr>
+                        <tr>
+                            <td>0.0.6</td>
+                            <td>Sun and Earth, the first orbit</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <hr>
+
+                <h2>the architecture, and the one rule</h2>
+
+                <p>three build targets, and the dependency arrow only points one way:</p>
+
+                <pre><code>              orbitalis-core
+              static library
+        the physics. knows nothing
+            about pixels or I/O
+                ^         ^
+                |         |
+      orbitalis-viewer   orbitalis-cli
+       real-time 3D       headless runner</code></pre>
+
+                <p><code>orbitalis-core</code> has <strong>zero graphics dependencies</strong> and never will.</p>
+                <p>
+                    that is not tidiness for its own sake. a later milestone benchmarks Barnes-Hut at 100,000
+                    bodies, and those numbers are only trustworthy if they can be produced headless, with no
+                    window and no GPU. <code>orbitalis-cli</code> exists to keep that path honest.
+                </p>
+                <p>
+                    I built the split on day one, before there was anything to separate, because I have done
+                    the "split it later when it matters" thing before and later never comes. by the time it
+                    matters the graphics code has grown tendrils into the physics and untangling it is a week.
+                </p>
+
+                <hr>
+
+                <h2>the maths</h2>
+
+                <h3>why every number is a double</h3>
+
+                <p>
+                    this normally gets justified with a vague "floats aren't precise enough". the real number
+                    is much more alarming.
+                </p>
+                <p>
+                    a <code>float</code> has a 24-bit significand. Earth's orbital radius is about
+                    $1.496 \times 10^{11}$ m, which sits between $2^{37}$ and $2^{38}$. so the gap between
+                    consecutive representable floats there is:
+                </p>
+
+                $$2^{37-23} = 2^{14} = 16{,}384 \text{ m} \approx 16 \text{ km}$$
+
+                <p>
+                    <strong>a float cannot express Earth's position to better than about 16 kilometres.</strong>
+                    the in-between positions do not exist.
+                </p>
+                <p>
+                    now the part that kills you. Earth orbits at 29.78 km/s. a sane timestep is well under a
+                    second, say $dt = 0.1$ s. per step Earth moves:
+                </p>
+
+                $$29{,}780 \text{ m/s} \times 0.1 \text{ s} = 2{,}978 \text{ m}$$
+
+                <p>
+                    2,978 m is <strong>smaller than the 16,384 m gap</strong>. so <code>position += velocity *
+                    dt</code> rounds straight back to the number it started from. the planet does not move.
+                    and shrinking <code>dt</code> for accuracy makes it <em>worse</em>, because the step gets
+                    smaller while the gap stays fixed. you would be simulating a stationary Earth and hunting
+                    for a bug that is not in your code.
+                </p>
+                <p>with a <code>double</code> (53-bit significand) the same gap is:</p>
+
+                $$2^{37-52} = 2^{-15} \approx 0.0000305 \text{ m} \approx 31 \text{ micrometres}$$
+
+                <p>
+                    thirty micrometres across 150 million kilometres. so <code>double</code> here is not a
+                    preference, it is a requirement. floats exist only in the render layer, where a screen is
+                    2,000 pixels across and 16 km of error is orders of magnitude below one of them.
+                </p>
+
+                <h3>Newton's law, and why the exponent is three</h3>
+
+                <p>the scalar form is the one everyone knows:</p>
+
+                $$F = G \frac{m_1 m_2}{r^2}$$
+
+                <p>
+                    but force is a vector and that only gives its magnitude. to get direction you multiply by
+                    the unit vector between the bodies. writing $\vec d = \vec r_j - \vec r_i$ for the
+                    separation:
+                </p>
+
+                $$\vec F = G m_1 m_2 \frac{\vec d}{|\vec d|} \cdot \frac{1}{|\vec d|^2} = G m_1 m_2 \frac{\vec d}{|\vec
+                d|^3}$$
+
+                <p>
+                    the cube is not a typo and it is where people get confused. it is $1/r^2$ for the physics
+                    times $1/r$ for normalising the direction vector.
+                </p>
+                <p>
+                    <strong>and the solver returns accelerations, not forces.</strong> every caller immediately
+                    wants $\vec a_i = \vec F / m_i$, and that division cancels the $m_i$ Newton's law just
+                    multiplied in. so skip both:
+                </p>
+
+                $$\vec a_i = G \, m_j \, \frac{\vec d}{|\vec d|^3}$$
+
+                <p>
+                    one fewer multiply and one fewer divide per body, on the hottest loop in the project. it
+                    also has a lovely consequence that falls out of the algebra rather than being implemented:
+                    <strong>the accelerated body's own mass never appears.</strong> a grain of dust and a moon
+                    at the same distance from the Sun fall at exactly the same rate. that is Galileo's result
+                    and the equivalence principle, arriving for free because a symbol cancelled.
+                </p>
+                <p>
+                    given $d^2 = \vec d \cdot \vec d$, the kernel wants $|d|^3 = d^2 \cdot \sqrt{d^2}$, so:
+                </p>
+
+                <pre><code>const Vec3   d      = bodies[j].position - bodies[i].position;
+const double d2     = d.length_squared() + softening_squared_;
+const double inv_r3 = 1.0 / (d2 * std::sqrt(d2));
+const Vec3   common = kGravitationalConstant * inv_r3 * d;
+
+accelerations[i] += bodies[j].mass * common;
+accelerations[j] -= bodies[i].mass * common;</code></pre>
+
+                <p>
+                    one square root and one division per pair. the readable-looking alternative,
+                    <code>-G*m/d.length_squared() * d.normalized()</code>, computes <code>length_squared</code>
+                    twice, takes the same square root, and adds three divisions, for an identical answer.
+                </p>
+                <p>
+                    <code>std::pow(d2, 1.5)</code> is also wrong here. <code>pow</code> is a general-purpose
+                    function that goes through logarithms; for this specific exponent it is both slower and
+                    <em>less</em> accurate than a multiply by a square root.
+                </p>
+                <p>
+                    <strong>each pair is computed once.</strong> <code>j</code> starts at <code>i + 1</code> and
+                    the result is applied to both bodies via Newton's third law, so the inner loop runs
+                    $n(n-1)/2$ times instead of $n^2$.
+                </p>
+                <p>there is a genuine trap in that loop bound:</p>
+
+                <pre><code>for (std::size_t i = 0; i + 1 < n; ++i)   // correct
+for (std::size_t i = 0; i < n - 1; ++i)   // hangs on an empty system</code></pre>
+
+                <p>
+                    <code>n</code> is <code>std::size_t</code>, which is unsigned. with zero bodies
+                    <code>n - 1</code> is not -1, it is 18,446,744,073,709,551,615. the second version runs
+                    approximately forever.
+                </p>
+
+                <h3>softening, and being honest about a fudge</h3>
+
+                <p>
+                    as $|\vec d|$ goes to zero, that acceleration goes to infinity. not "large".
+                    <strong>infinity</strong>, then NaN, and then because every body pulls on every other, one
+                    NaN reaches the entire system in a single step. two bodies passing close is not an exotic
+                    edge case in an n-body run, it is Tuesday.
+                </p>
+                <p>Plummer softening replaces the denominator:</p>
+
+                $$\vec a = G \, m_j \, \frac{\vec d}{(|\vec d|^2 + \varepsilon^2)^{3/2}}$$
+
+                <p>
+                    which can never be zero. notice how cheap that is: one addition, no branch, no special
+                    case. a large part of why this fix is standard is that it is free in the inner loop.
+                </p>
+                <p>
+                    <strong>what it actually does to the physics</strong> is worth stating plainly, because it
+                    is easy to treat softening as a bug fix rather than a modelling choice. it is exactly
+                    equivalent to replacing each point mass with a <em>Plummer sphere</em> of scale length
+                    $\varepsilon$: a smooth blob instead of a point. so at separations well inside
+                    $\varepsilon$ the force is deliberately wrong. it does not diverge, it falls to zero. at
+                    exactly zero separation the acceleration is exactly zero, which is physically right for the
+                    sphere, since at its centre the enclosed mass is zero.
+                </p>
+                <p>
+                    so: <strong>softening does not make close encounters accurate, it makes them not
+                        explode.</strong> those are different achievements, and the rule that follows is about
+                    scale. $\varepsilon$ has to be small compared to the separations that matter.
+                </p>
+                <ul>
+                    <li>simulating a star cluster, where individual close encounters are noise and you want the smooth
+                        collective potential? a generous $\varepsilon$ is correct.</li>
+                    <li>simulating solar-system orbital mechanics, where the individual trajectories <em>are</em> the
+                        point? $\varepsilon$ should be zero, and close encounters handled by shrinking the timestep
+                        instead.</li>
+                </ul>
+                <p>
+                    my measurements: at 1 AU, an $\varepsilon$ of 1,000 km changes the acceleration by 7 parts
+                    in $10^{11}$. at a separation of 100,000 km with $\varepsilon = 1{,}000{,}000$ km, it
+                    changes the answer completely. same parameter, opposite verdict, and only the ratio
+                    changed.
+                </p>
+                <p>one thing to carry forward: the potential consistent with this force is</p>
+
+                $$\Phi = -\frac{G \, m}{\sqrt{|\vec d|^2 + \varepsilon^2}}$$
+
+                <p>
+                    not the Newtonian $-Gm/|\vec d|$. measuring energy conservation with the unsoftened
+                    potential while integrating softened forces would show a drift that is pure bookkeeping.
+                </p>
+
+                <h3>the integrators, and one word</h3>
+
+                <p>this is my favourite part of the whole milestone.</p>
+                <p>given $\vec a = f(\vec x)$, here are two ways to advance a step:</p>
+
+                $$
+                \begin{aligned}
+                \text{forward Euler:}\quad & \vec x_{n+1} = \vec x_n + \vec v_n \, dt \quad \text{(OLD velocity)} \\
+                & \vec v_{n+1} = \vec v_n + \vec a_n \, dt
+                \end{aligned}
+                $$
+
+                $$
+                \begin{aligned}
+                \text{semi-implicit Euler:}\quad & \vec v_{n+1} = \vec v_n + \vec a_n \, dt \\
+                & \vec x_{n+1} = \vec x_n + \vec v_{n+1} \, dt \quad \text{(NEW velocity)}
+                \end{aligned}
+                $$
+
+                <p>
+                    that is the entire difference: which velocity the position update reads. same two lines,
+                    swapped. identical cost, one force evaluation each, the same arithmetic, both first order.
+                </p>
+                <p>here is what that one word does to a circular orbit at 1 AU with <code>dt</code> = 1 day:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>radius, started at 1 AU</th>
+                            <th>after 1 orbit</th>
+                            <th>after 10</th>
+                            <th>after 50</th>
+                            <th>energy swing</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>forward Euler</td>
+                            <td>1.2056</td>
+                            <td>1.8944</td>
+                            <td>3.4233</td>
+                            <td>15.3% &rarr; 69.0%</td>
+                        </tr>
+                        <tr>
+                            <td>semi-implicit Euler</td>
+                            <td>1.0000</td>
+                            <td>1.0005</td>
+                            <td>1.0022</td>
+                            <td>0.0296%, flat</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    <strong>why forward Euler always gains.</strong> over the step the body genuinely curves
+                    inward along its arc. forward Euler moves it along the straight line it was travelling on
+                    at the <em>start</em> of the step, which is the tangent, and a tangent always lies outside
+                    the circle. so every single step places the body slightly too far out. the error has a
+                    sign, and 365 same-signed errors compound into a spiral.
+                </p>
+                <p>
+                    I have a test asserting the radius is monotonically non-decreasing across a whole orbit,
+                    which is a sharper claim than checking where it ended up.
+                </p>
+                <p><strong>the closed-form error.</strong> with constant acceleration from rest, $n$ steps of $dt$:</p>
+
+                $$
+                \begin{aligned}
+                \text{exact} \quad & x = \tfrac12 a (n \, dt)^2 = \tfrac12 a n^2 dt^2 \\
+                \text{forward Euler} \quad & x = a \, dt^2 \frac{n(n-1)}{2} = \text{exact} - \tfrac12 a n \, dt^2 \\
+                \text{semi-implicit} \quad & x = a \, dt^2 \frac{n(n+1)}{2} = \text{exact} + \tfrac12 a n \, dt^2
+                \end{aligned}
+                $$
+
+                <p>three things fall out, and all three are tested:</p>
+                <ol>
+                    <li><strong>the velocity is exact for both.</strong> $v = v_0 + at$ is linear in $t$ and both
+                        methods integrate it identically. every bit of the error is in position.</li>
+                    <li><strong>the errors are equal and opposite.</strong> with $a = 10$ m/s², $dt = 0.1$ s, $n = 100$:
+                        exact is 500 m, forward gives 495, semi-implicit gives 505.</li>
+                    <li><strong>so their average is exact.</strong> (495 + 505)/2 = 500. not a coincidence, and a hint
+                        at where higher-order methods come from: velocity Verlet is roughly what you get by making that
+                        averaging structural instead of accidental.</li>
+                </ol>
+                <p>
+                    the error term is proportional to $dt$, which is what "first order" means. halve the
+                    timestep, halve the error. RK4 is fourth order, where halving the timestep divides the
+                    error by sixteen.
+                </p>
+
+                <h3>what "symplectic" actually buys</h3>
+
+                <p>
+                    it is easy to read "symplectic integrators conserve energy" and take away the wrong thing.
+                    they do not conserve the true energy. semi-implicit Euler's energy wobbles by 0.0296% here.
+                </p>
+                <p>
+                    what it conserves exactly, and forever, is a <em>nearby</em> quantity, usually called a
+                    shadow Hamiltonian. the practical consequence is about the <strong>shape</strong> of the
+                    error rather than its size: the error is <strong>bounded</strong> instead of
+                    <strong>accumulating</strong>.
+                </p>
+                <p>
+                    my sharpest measurement of this. semi-implicit turns the circular orbit into a slightly
+                    eccentric one that breathes between two radii, and I sampled that envelope over different
+                    run lengths:
+                </p>
+
+                <pre><code>  1 orbit : lo = 0.991546625472   hi = 1.008749034217
+ 10 orbits: lo = 0.991546587555   hi = 1.008749321873
+ 50 orbits: lo = 0.991546586528   hi = 1.008749322028</code></pre>
+
+                <p>
+                    between 10 and 50 orbits those bounds agree to <strong>ten significant figures</strong>,
+                    and the residual $1.5 \times 10^{-10}$ is not error growth either: 365 steps of one day is
+                    365.0 days against a period of 365.21, so the sampling phase creeps and longer runs simply
+                    land nearer the true extremum. the envelope converges and then stops.
+                </p>
+                <p>
+                    forward Euler over the same span goes 1.2056 &rarr; 1.8944 &rarr; <strong>3.4233</strong>
+                    and keeps climbing, with its energy swing widening from 15% to 69%. that is not a large
+                    error that stays large, it is an error that keeps adding to itself. after a few hundred
+                    orbits the planet is gone.
+                </p>
+                <p>
+                    for this project that distinction is the whole argument for the integrator milestone.
+                    simulating the solar system for a million years is a hundred million steps, and any method
+                    whose error has a preferred sign destroys the system long before then, no matter how small
+                    each individual error is.
+                </p>
+
+                <h3>the two conservation laws test different things</h3>
+
+                <p>
+                    both integrators conserve <strong>linear momentum</strong> to machine precision. even the
+                    bad one.
+                </p>
+                <p>
+                    that is not luck. each step adds $\vec a_i \, dt$ to every velocity, so the change in total
+                    momentum is $dt \sum_i m_i \vec a_i$, and that sum is zero because internal forces cancel
+                    in pairs. the ordering of the two update lines never enters the argument.
+                </p>
+                <p>so:</p>
+                <ul>
+                    <li><strong>momentum conservation is a property of the force solver.</strong> any integrator doing
+                        <code>v += a * dt</code> inherits it.
+                    </li>
+                    <li><strong>energy conservation is a property of the integrator.</strong> the force solver has
+                        nothing to do with it.</li>
+                </ul>
+                <p>
+                    which gives a diagnostic rule I expect to lean on for the rest of the project: if momentum
+                    drifts, the bug is in the force accumulation. if only energy drifts, it is the method, and
+                    it may not be a bug at all.
+                </p>
+                <p>
+                    I measured the momentum residual in the solver at $\mathbf{1.33 \times 10^{-16}}$ on a
+                    four-body system spanning six orders of magnitude in mass. a double epsilon is
+                    $2.22 \times 10^{-16}$, so that is about half a ULP.
+                </p>
+                <p>
+                    it is not zero, and the reason is a nice bit of floating-point pedantry. body $i$
+                    accumulates $m_j \vec c$ and body $j$ accumulates $-m_i \vec c$. weighting by mass gives
+                    $m_i (m_j \vec c)$ against $m_j (m_i \vec c)$: the same product, grouped differently.
+                    floating-point multiplication is commutative but <strong>not</strong> associative, so those
+                    need not agree bitwise. accumulating <em>forces</em> instead would cancel exactly, at the
+                    cost of $n$ extra divisions to recover accelerations. half a ULP is not worth that.
+                </p>
+
+                <h3>the two-body reduction, and why the Sun wobbles</h3>
+
+                <p>the centre of mass of a set of bodies is the mass-weighted mean position:</p>
+
+                $$\vec R = \frac{\sum_i m_i \vec r_i}{\sum_i m_i}$$
+
+                <p>
+                    put the Sun at the origin and Earth one AU away and ask where their common barycentre is.
+                    with $M_\odot = 1.9884 \times 10^{30}$ kg, $m_\oplus = 5.9722 \times 10^{24}$ kg,
+                    $a = 1.495978707 \times 10^{11}$ m:
+                </p>
+
+                $$R = \frac{m_\oplus \, a}{M_\odot + m_\oplus} = 449{,}314 \text{ m} \approx 449 \text{ km}$$
+
+                <p>
+                    the Sun's radius is about 696,000 km. so the barycentre sits <strong>449 km from the Sun's
+                        centre, 0.06% of the way to its surface</strong>, buried deep inside the star.
+                </p>
+                <p>
+                    for the Sun and <strong>Jupiter</strong> the same arithmetic gives 742,000 km, which is
+                    <strong>1.07 solar radii</strong>. the Sun genuinely orbits a point in open space.
+                </p>
+                <p>
+                    this matters for how you set up a simulation. the tempting initial condition is: Sun at the
+                    origin at rest, Earth at 1 AU with orbital velocity. it is what I would have written
+                    without thinking. but the pair then carries a net momentum of $m_\oplus v$, so the
+                    barycentre slides at
+                </p>
+
+                $$v_{drift} = \frac{m_\oplus \, v}{M_\odot + m_\oplus} \approx 0.089 \text{ m/s}$$
+
+                <p>
+                    nine centimetres a second, which is <strong>2,823 km per year</strong>, forever. harmless
+                    over one orbit and a growing embarrassment over a long run. worse, it makes "did Earth come
+                    back?" ill-posed: back to where, in which frame?
+                </p>
+                <p>so the scenario splits position and velocity by the mass ratio:</p>
+
+                <pre><code>const double sun_share   = kEarthGM / gm_total;
+const double earth_share = kSunGM   / gm_total;</code></pre>
+
+                <p>
+                    each body gets the <strong>other</strong> body's share. that reads backwards at first
+                    glance and is the whole content of the two-body reduction: the heavy body barely moves
+                    precisely because the light one is light. the result has total momentum of exactly zero,
+                    measured net drift $1.8 \times 10^{-17}$ m/s.
+                </p>
+                <p>
+                    and it makes something visible that the naive setup hides completely: the Sun moves. it
+                    circles a point 449 km from its own centre at 8.9 cm/s, in antiphase with the Earth, and
+                    the velocity ratio comes out as $GM_\odot / GM_\oplus = 333{,}000$ to one.
+                </p>
+                <p>
+                    that wobble is not a curiosity. it is the radial-velocity method, which is how the first
+                    exoplanets were found. you cannot see the planet, but you can watch the star being pulled
+                    around a point it does not sit at.
+                </p>
+
+                <h3>Kepler's third law, and which year</h3>
+
+                <p>the period of a circular two-body orbit:</p>
+
+                $$T = 2\pi \sqrt{\frac{a^3}{GM}}$$
+
+                <p>
+                    where $GM$ is the <strong>combined</strong> parameter of both bodies and $a$ is their
+                    separation. using only the central body's $GM$ is the common mistake, negligible for Sun
+                    and Earth and catastrophic for a near-equal-mass binary.
+                </p>
+                <p>
+                    the $a^3$ in there is Kepler's third law: period squared goes as separation cubed.
+                    quadruple the separation and the period goes up by eight.
+                </p>
+                <p>
+                    and then there is the question of which year you are comparing against, because there are
+                    three and they are not interchangeable:
+                </p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>length</th>
+                            <th>what it is</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Julian year</td>
+                            <td>365.25 days exactly</td>
+                            <td>a unit of time, defined, not measured</td>
+                        </tr>
+                        <tr>
+                            <td>sidereal year</td>
+                            <td>365.256363 days</td>
+                            <td>Earth back to the same position against the fixed stars</td>
+                        </tr>
+                        <tr>
+                            <td>tropical year</td>
+                            <td>365.24219 days</td>
+                            <td>equinox to equinox, what calendars track</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    the <strong>sidereal</strong> year is the orbital period. the tropical year is 20 minutes
+                    shorter because the equinoxes precess: Earth's axis wobbles with a period of about 26,000
+                    years, so the seasons drift backwards relative to the stars. the Gregorian calendar is
+                    tuned to the tropical year because we care about when spring is, not which constellation is
+                    behind the Sun.
+                </p>
+                <p>
+                    using the Julian year as an orbital period, which is the obvious mistake given it is the
+                    one sitting in most constants files, is 0.0064 days out. that is 9 minutes, and over a
+                    thousand-year integration it is 6.4 days of accumulated phase error from a unit confusion
+                    rather than any numerical problem at all.
+                </p>
+
+                <hr>
+
+                <h2>five things I got wrong</h2>
+
+                <p>the maths above is the part that was supposed to be hard. these are the parts that actually cost me
+                    time.</p>
+
+                <h3>1. vcpkg was quietly linking a scripting language into my binaries</h3>
+
+                <p>the first successful build printed, four times:</p>
+
+                <pre><code>'pwsh.exe' is not recognized as an internal or external command</code></pre>
+
+                <p>exit code 0. nothing failed. easy to ignore, and I nearly did.</p>
+                <p>
+                    there is a vcpkg on this machine with <code>vcpkg integrate install</code> active, which
+                    installs a machine-wide MSBuild hook that injects itself into <strong>every</strong>
+                    MSBuild C++ project on the system. from my link line:
+                </p>
+
+                <pre><code>/LIBPATH:"C:\Users\...\vcpkg\installed\x64-windows\lib"
+"C:\Users\...\vcpkg\installed\x64-windows\lib\*.lib"</code></pre>
+
+                <p>
+                    that is a <strong>wildcard</strong>. whatever happens to be installed in vcpkg gets handed
+                    to my linker. in my case <code>lua.lib</code>. so my "zero dependencies" core library was
+                    linking against a scripting language I never asked for, and the build's inputs depended on
+                    the state of an unrelated directory elsewhere on the machine.
+                </p>
+                <p>
+                    the pwsh error was just vcpkg reaching for PowerShell 7, not installed, before falling back
+                    to Windows PowerShell 5.1. cosmetic. the wildcard was the bug.
+                </p>
+
+                <pre><code>set(CMAKE_VS_GLOBALS "VcpkgEnabled=false")</code></pre>
+
+                <p>project-local, does not disturb the machine-wide integration.</p>
+                <p>
+                    <strong>the lesson:</strong> a build that exits 0 is not the same as a build that did what
+                    you think it did. I only found this because I went and read a non-fatal message.
+                </p>
+
+                <h3>2. my solar mass was 0.026% too high, and it cost 68 minutes of year</h3>
+
+                <p>this is the good one.</p>
+                <p>
+                    the first thing I did in the last step was compute the orbital period properly. I got
+                    <strong>365.209506 days</strong> against a real sidereal year of 365.256363.
+                </p>
+                <p><strong>68 minutes out.</strong> over one orbit. that is not rounding, and I spent a while doubting
+                    my force law.</p>
+                <p>
+                    it was the constants. and the way it was wrong is exactly the thing I had written down two
+                    steps earlier and then not acted on:
+                </p>
+
+                <blockquote>
+                    G is the worst-measured fundamental constant we have, with a relative uncertainty around
+                    $2.2 \times 10^{-5}$. except it matters less than it sounds, because nobody actually
+                    measures the Sun's mass in kilograms. what astronomers measure is the <em>product</em>
+                    $GM$, and that is known to about ten significant figures.
+                </blockquote>
+
+                <p>
+                    I wrote that, called it a note for later, and left <code>kSolarMass = 1.98892e30</code> in
+                    the file, copied off a reference table. work out what that mass implies:
+                </p>
+
+                $$
+                \begin{aligned}
+                G \cdot \text{kSolarMass} &= 1.3274648756 \times 10^{20} \\
+                \text{measured } GM_\odot &= 1.3271244002 \times 10^{20} \quad \text{(IAU 2009 / JPL DE430)} \\
+                &\text{high by } 0.0257\%
+                \end{aligned}
+                $$
+
+                <p>
+                    and since $T \propto 1/\sqrt{GM}$, being 0.026% high on $GM$ makes the year 0.013% short,
+                    which on 365 days is 68 minutes. the arithmetic closes exactly.
+                </p>
+                <p>so I turned the constants file inside out. <strong>GM is primary, masses are derived:</strong></p>
+
+                <pre><code>inline constexpr double kSunGM   = 1.32712440018e20;
+inline constexpr double kEarthGM = 3.986004418e14;
+
+inline constexpr double kSolarMass = kSunGM   / kGravitationalConstant;
+inline constexpr double kEarthMass = kEarthGM / kGravitationalConstant;</code></pre>
+
+                <p>
+                    which gives a computed period of 365.256350 days against the real 365.256363.
+                    <strong>1.1 seconds over a year.</strong> a relative error of $3.5 \times 10^{-8}$.
+                </p>
+                <p>
+                    <strong>why GM beats mass</strong> is genuinely counterintuitive. you would think mass is
+                    fundamental and $GM$ is a derived convenience. for <em>measurement</em> it is the other way
+                    round: watch a planet orbit and you directly observe $T^2 = 4\pi^2 a^3 / GM$, pinning down
+                    the product to about ten significant figures. to get a mass out you must divide by $G$,
+                    which is known to five. <strong>converting $GM$ to a mass throws away five digits of
+                        accuracy.</strong> this is why JPL publishes $GM$ values rather than masses.
+                </p>
+                <p>
+                    <strong>the meta-lesson, which stings more than the physics one:</strong> writing an insight
+                    into your notes is not the same as acting on it. I identified the precise failure mode two
+                    steps early, described why it would matter, and left the wrong number in the file because
+                    nothing was measuring it yet.
+                </p>
+
+                <h3>3. I kept writing tests that could not fail</h3>
+
+                <p>
+                    I mutation-test anything numerical: deliberately break the code, confirm the suite notices.
+                    three steps running, it found a test that was structurally incapable of failing.
+                </p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>step</th>
+                            <th>the test that looked fine</th>
+                            <th>why it was blind</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Vec3</td>
+                            <td><code>cross(ex, ey) == ez</code></td>
+                            <td>basis vectors zero out the broken term</td>
+                        </tr>
+                        <tr>
+                            <td>System</td>
+                            <td>two equal masses balance at the midpoint</td>
+                            <td>equal masses make weighted and plain means agree</td>
+                        </tr>
+                        <tr>
+                            <td>gravity</td>
+                            <td>acceleration ratio equals mass ratio</td>
+                            <td>magnitudes are unchanged by a sign flip</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    the pattern is the same every time. <strong>I test a derived scalar</strong> (a ratio, a
+                    mean, a magnitude) <strong>when the bug lives in something that scalar throws away</strong>
+                    (a sign, a weighting, a direction).
+                </p>
+                <p>
+                    the cross-product one is the clearest. flip a sign in <code>cross</code> and check
+                    <code>cross(ex, ey) == ez</code>: it passes, because with basis vectors one term in every
+                    component is multiplied by zero, so $a_y b_z - a_z b_y$ and $a_y b_z + a_z b_y$ agree. what
+                    caught it were tests on general vectors: anticommutativity, cross-with-self, orthogonality,
+                    and the BAC-CAB identity $\vec a \times (\vec b \times \vec c) = \vec b (\vec a \cdot \vec c) - \vec
+                    c (\vec a \cdot \vec b)$.
+                </p>
+                <p>
+                    so the tests that earn their place use ugly asymmetric numbers: 1 kg and 2 kg balancing at
+                    x = 2 rather than x = 1.5, and the Sun-Earth barycentre with its 333,000:1 mass ratio.
+                </p>
+
+                <h3>4. a failing test that was wrong about itself</h3>
+
+                <p>
+                    my symplectic-envelope test compared the radius bounds after 1 orbit against 10, and failed
+                    by $2.5 \times 10^{-7}$. my first instinct was that the error really does grow slowly and
+                    my claim was overstated.
+                </p>
+                <p>
+                    it does not. 365 steps of one day is 365.0 days against a period of 365.21, so the sampling
+                    phase creeps forward each revolution and more orbits simply land nearer the true extremum.
+                    <strong>the measurement was still converging, not the error growing.</strong> comparing 10
+                    orbits against 50 shows the bound stops moving entirely.
+                </p>
+                <p>
+                    the uncomfortable part: if I had just loosened the tolerance until it went green, the test
+                    would still pass and would have quietly stopped meaning anything.
+                    <strong>loosening a tolerance without understanding why it needed loosening is how a test
+                        stops being a test.</strong>
+                </p>
+
+                <h3>5. I reported a number with no scale</h3>
+
+                <p>the first run of the finished CLI printed momentum drift as an absolute value:</p>
+
+                <pre><code>  forward-euler          |dp| = 5.278e+13
+  semi-implicit-euler    |dp| = 7.662e+12</code></pre>
+
+                <p>which briefly looked like momentum conservation had collapsed, contradicting everything two earlier
+                    steps had established.</p>
+                <p>
+                    it had not. Earth alone carries $m_\oplus \cdot v = 1.8 \times 10^{29}$ kg m/s, so a drift
+                    of $5.3 \times 10^{13}$ is a relative error of $3 \times 10^{-16}$. machine precision,
+                    exactly as expected.
+                </p>
+                <p>
+                    I had even written a comment justifying the absolute figure: the barycentric scenario
+                    starts at zero total momentum, so dividing by the initial value would divide by nothing.
+                    that part was right and the conclusion was wrong. normalising against the largest
+                    <em>individual</em> momentum gives $3.3 \times 10^{-16}$ and $4.3 \times 10^{-17}$.
+                </p>
+                <p>
+                    <strong>a number without a scale is not a measurement.</strong> I got away with it because
+                    I knew what the answer should be. at 100,000 bodies I would not have.
+                </p>
+
+                <hr>
+
+                <h2>where 0.1.0 landed</h2>
+
+                <ul>
+                    <li>Earth returns to within <strong>0.001319 AU</strong> of its start after one sidereal year, on a
+                        940 million km path. 0.02% of the distance travelled.</li>
+                    <li>forward Euler, identical cost and identical physics, ends up <strong>0.887 AU</strong> away and
+                        20% further out. the drift is bad and I know exactly how bad and why.</li>
+                    <li>momentum holds to machine precision under both.</li>
+                    <li>the computed year is within <strong>1.1 seconds</strong> of the real sidereal year.</li>
+                    <li>78 test cases, 269 assertions, zero warnings in Debug and Release.</li>
+                </ul>
+
+                <p>six steps: a build skeleton, a vector, a body, a force law, an integrator, an orbit.</p>
+
+                <h2>what is next</h2>
+
+                <p>
+                    milestone 0.2.0 is the live 3D viewer, and I moved it ahead of the serious integrator work
+                    on purpose. staring at printed floats for three more milestones would be miserable and I
+                    would never catch a bug that way. after that: velocity Verlet and adaptive RKF45, then a
+                    Barnes-Hut octree to get from $O(n^2)$ to $O(n \log n)$, then a binary trajectory format.
+                </p>
+                <p>
+                    the constraint that survives all of it is the one from day one. raylib links into the
+                    viewer only. the moment it touches the physics library, the headless benchmarks are dead.
+                </p>
+
+            </article>
+
+            <div class="post-tags">
+                <span class="contribution-tag">C++20</span>
+                <span class="contribution-tag">Physics Simulation</span>
+                <span class="contribution-tag">Numerical Methods</span>
+                <span class="contribution-tag">Floating Point</span>
+                <span class="contribution-tag">CMake</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="post-footer-nav">
+        <div class="post-container">
+            <a href="../" class="post-back-link">&larr; Back to blog</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>2026 &copy; <span data-site="name"></span> // <span data-site="city"></span>, <span
+                data-site="country"></span></p>
+    </footer>
+</body>
+
+</html>
