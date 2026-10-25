@@ -1,9 +1,9 @@
 /**
  * site.js : single source of truth for identity fields, the site navigation, and
- * the main page's view switcher.
+ * the main page's copy-email button.
  *
- * loaded by every page. the view switcher only applies to index.html, the only
- * page carrying those elements, so it is gated on their presence.
+ * loaded by every page. the copy-email button only exists on index.html, so its
+ * wiring is gated on the element's presence.
  */
 (function () {
     var SITE = {
@@ -25,7 +25,6 @@
         { label: 'Experience',    href: '#experience' },
         { label: 'Projects',      href: '#projects' },
         { label: 'Education',     href: '#education' },
-        { label: 'Contributions', href: '#contributions', id: 'contributionsNav' },
         { label: 'Blog',          href: 'blog/' },
         { label: 'Contact',       href: '#contact' }
     ];
@@ -45,9 +44,6 @@
             .map(function () { return '../'; }).join('');
     }
 
-    // runs during site.js's deferred execution, which is after the document has
-    // been parsed but before DOMContentLoaded -- so the inline script on
-    // index.html can still find these links from its DOMContentLoaded handler
     function buildNav() {
         var list = document.querySelector('.nav-links');
         if (!list) return null;
@@ -61,7 +57,6 @@
             a.className = 'nav-item';
             a.href = item.root ? (prefix || './') : prefix + item.href;
             a.textContent = item.label;
-            if (item.id) a.id = item.id;
 
             li.appendChild(a);
             list.appendChild(li);
@@ -142,119 +137,10 @@
         });
     }
 
-    // main page only: blog pages load this file and have none of these elements
-    function initViews() {
-        // View Management
-        //
-        // views are described in one table, so adding one is an entry here
-        // rather than another near-duplicate switch function.
-        const VIEWS = {
-            portfolio: {
-                el: document.getElementById('portfolioView'),
-                hash: '#',
-                toggle: 'Contributions',
-            },
-            contributions: {
-                el: document.getElementById('contributionsView'),
-                hash: '#contributions',
-                toggle: 'Profile',
-            },
-        };
-        const viewToggleBtn = document.getElementById('viewToggleBtn');
-        let currentView = 'portfolio';
-
-        function viewForHash(hash) {
-            return Object.keys(VIEWS).find(name => VIEWS[name].hash === hash) || null;
-        }
-
-        // bring a view on screen; onShown runs once it is displayed, which is
-        // what a caller needs before scrolling to something inside it
-        function renderView(name, onShown) {
-            if (name === currentView) {
-                if (onShown) onShown(); else window.scrollTo(0, 0);
-                return;
-            }
-            const from = VIEWS[currentView].el;
-            const to = VIEWS[name].el;
-            from.style.display = 'none';
-            from.classList.remove('fade-in');
-            to.style.display = 'block';
-            to.classList.remove('fade-in');
-            void to.offsetWidth;        // force reflow so fadeInUp replays
-            to.classList.add('fade-in');
-            currentView = name;
-            viewToggleBtn.textContent = VIEWS[name].toggle;
-            if (onShown) onShown(); else window.scrollTo(0, 0);
-        }
-
-        function goToView(name) {
-            renderView(name);
-            history.pushState({ view: name }, '', VIEWS[name].hash);
-        }
-
-        // the section anchors point inside #portfolioView, so following one from
-        // another view has to bring the portfolio back first -- otherwise the
-        // target sits in a display:none container and nothing appears to happen
-        function goToSection(id) {
-            renderView('portfolio', function () {
-                const el = document.getElementById(id);
-                if (el) el.scrollIntoView();
-            });
-            history.pushState({ view: 'portfolio', section: id }, '', '#' + id);
-        }
-
-        function syncFromHash() {
-            const name = viewForHash(window.location.hash);
-            if (name) {
-                renderView(name);
-                return;
-            }
-            const id = window.location.hash.slice(1);
-            if (id && document.getElementById(id)) {
-                renderView('portfolio', function () {
-                    document.getElementById(id).scrollIntoView();
-                });
-                return;
-            }
-            renderView('portfolio');
-        }
-
-        viewToggleBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            goToView(currentView === 'portfolio' ? 'contributions' : 'portfolio');
-        });
-
-        // the nav is injected earlier in this same deferred script, so the links
-        // already exist by the time this runs
-        function wireNav() {
-            document.getElementById('contributionsNav').addEventListener('click', function (e) {
-                e.preventDefault();
-                goToView('contributions');
-            });
-
-            // nav hash links are either a view (wired above) or a section of the
-            // portfolio view, which has to be brought back on screen first
-            document.querySelectorAll('.nav-links a[href^="#"]').forEach(function (link) {
-                const id = link.getAttribute('href').slice(1);
-                if (!id || viewForHash('#' + id)) return;
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    goToSection(id);
-                });
-            });
-        }
-
-        wireNav();
-
-        window.addEventListener('popstate', syncFromHash);
-        window.addEventListener('hashchange', syncFromHash);
-
-        syncFromHash();
-
-        // Email Copy
+    // main page only: blog pages load this file and have no copy button
+    function initEmailCopy(copyEmailBtn) {
         const emailParts = ['azpijr', 'gmail', 'com'];
         const emailAddress = emailParts[0] + '@' + emailParts[1] + '.' + emailParts[2];
-        const copyEmailBtn = document.getElementById('copyEmail');
         const emailCopied = document.getElementById('emailCopied');
 
         copyEmailBtn.addEventListener('click', function () {
@@ -267,35 +153,13 @@
                 }, 2000);
             });
         });
-
-        // Filtering Logic
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        // scoped to the contributions view: a future view could hold
-        // .contribution-item nodes too, and a global selector would let
-        // these buttons hide them, with no way to bring them back
-        const contributionItems =
-            VIEWS.contributions.el.querySelectorAll('.contribution-item');
-
-        filterButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                const filter = this.dataset.filter;
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-
-                contributionItems.forEach(item => {
-                    if (filter === 'all' || item.dataset.project === filter) {
-                        item.style.display = 'block';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            });
-        });
     }
 
     function init() {
         run();
-        if (document.getElementById('portfolioView')) initViews();
+
+        const copyEmailBtn = document.getElementById('copyEmail');
+        if (copyEmailBtn) initEmailCopy(copyEmailBtn);
     }
 
     if (document.readyState === 'loading') {

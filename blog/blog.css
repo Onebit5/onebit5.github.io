@@ -1,11 +1,11 @@
 /* ==========================================================================
    blog.css : additive layer on top of styles.css
-   Reuses existing tokens (--bg-*, --accent-*, --font-mono/sans) and the
-   established timeline/card language from the Contributions section.
+   Reuses existing tokens (--bg-*, --accent-*, --font-mono/sans), the card
+   language of the home page and its .contribution-tag chips.
    Nothing here overrides styles.css; it only adds blog-specific classes.
    ========================================================================== */
 
-/* Section header, mirrors .contributions-section-header */
+/* Section header */
 .blog-header {
     text-align: center;
     padding: clamp(6.5rem, 14vw, 8rem) var(--space-md) clamp(2rem, 5vw, 2.5rem);

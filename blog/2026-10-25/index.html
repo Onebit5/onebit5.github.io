@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annotating a Deliberate Data Race in percpu_counter · {{name}}</title>
+    <link rel="icon" sizes="32x32" href="/favicon-32.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="description"
+        content="Syzbot flagged a lockless read in percpu_counter_limited_add(). The read was intentional; the annotation was missing. What KCSAN actually checks, and why data_race(READ_ONCE()) is the right answer.">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+    <script src="../../site.js" defer></script>
+</head>
+
+<body>
+    <header id="mainHeader">
+        <nav>
+            <ul class="nav-links"></ul>
+        </nav>
+    </header>
+
+    <section class="post-hero">
+        <div class="post-container">
+            <div class="post-breadcrumb">
+                <span class="prompt-sym">~/</span>blog/2026-10-25/<span class="prompt-sym"> $</span> cat
+                post.md<span class="cursor-blink"></span>
+            </div>
+            <h1 class="post-title">annotating a deliberate data race in percpu_counter</h1>
+            <p class="post-subtitle">syzbot flagged a lockless read in percpu_counter_limited_add(). the read was on
+                purpose; the annotation was missing. here is what KCSAN actually checks, and why READ_ONCE() alone does
+                not silence it.</p>
+            <div class="post-meta">
+                <span>2026 October 25</span>
+                <span>·</span>
+                <span>16 min read</span>
+                <span>·</span>
+                <span class="accent">kernel deep dive</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="post-body-section">
+        <div class="post-container">
+            <article class="post-body">
+
+                <p>
+                    the patch is small: one line, plus a comment. it changes no logic, and it is upstream now. the
+                    interesting part is not the line. it is the three wrong answers I had to throw away before it.
+                </p>
+                <p>
+                    this is the story of a KCSAN report that looked like a missing lock, turned out to be a deliberate
+                    lockless read, and still needed fixing - because "we did it on purpose" is not something a
+                    data-race detector can infer from the source.
+                </p>
+
+                <h2>what syzbot reported</h2>
+
+                <p>
+                    on 2026 june 19, syzbot filed a report titled:
+                </p>
+
+                <pre><code>BUG: KCSAN: data-race in __percpu_counter_limited_add / percpu_counter_add_batch</code></pre>
+
+                <p>
+                    the object is an <code>s64</code>: <code>sbinfo-&gt;used_blocks</code>, a per-CPU counter on a
+                    tmpfs superblock. two plain accesses hit the same 8 bytes, with no common lock between them:
+                </p>
+
+                <pre><code>write to 0xffff88812a80e9d0 of 8 bytes by task 11484 on cpu 0:
+ percpu_counter_add_batch+0x101/0x120      lib/percpu_counter.c:107
+ percpu_counter_sub                        include/linux/percpu_counter.h:277
+ shmem_inode_unacct_blocks                  mm/shmem.c:263
+ shmem_recalc_inode+0x143/0x1f0            mm/shmem.c:466
+ shmem_undo_range+0xb20/0xb60              mm/shmem.c:1272
+ shmem_evict_inode / evict / iput / filename_unlinkat / __x64_sys_unlink
+
+read to 0xffff88812a80e9d0 of 8 bytes by task 16836 on cpu 1:
+ __percpu_counter_limited_add+0xc4/0x3f0
+ percpu_counter_limited_add               include/linux/percpu_counter.h:77
+ shmem_inode_acct_blocks+0xf4/0x230        mm/shmem.c:232
+ shmem_get_folio_gfp+0x5d3/0xd90           mm/shmem.c:2502
+ shmem_write_begin+0xfc/0x1f0              mm/shmem.c:3239
+ generic_perform_write / shmem_file_write_iter / __kernel_write_iter</code></pre>
+
+                <p>
+                    the write is on tmpfs's free path: truncate or unlink, through
+                    <code>shmem_recalc_inode()</code> and <code>shmem_inode_unacct_blocks()</code>, into
+                    <code>percpu_counter_sub()</code>. the read is on the allocation path: writing into a file,
+                    through <code>shmem_get_folio()</code> and <code>shmem_inode_acct_blocks()</code>, into
+                    <code>percpu_counter_limited_add()</code>. same superblock, same counter, one side under
+                    <code>fbc-&gt;lock</code> and the other side not.
+                </p>
+                <p>
+                    the two lines in question, in <code>lib/percpu_counter.c</code>:
+                </p>
+
+                <pre><code>fbc-&gt;count += count + amount;      /* under fbc-&gt;lock */
+...
+if (abs(count + amount) &lt;= batch &amp;&amp;
+    ((amount &gt; 0 &amp;&amp; fbc-&gt;count + unknown &lt;= limit) ||   /* no lock */
+     (amount &lt; 0 &amp;&amp; fbc-&gt;count - unknown &gt;= limit))) {</code></pre>
+
+                <p>
+                    syzbot had no reproducer, just the splat. that is usually a hint that the path is a little
+                    unusual.
+                </p>
+
+                <h2>what KCSAN actually detects</h2>
+
+                <p>
+                    KCSAN is a dynamic data-race detector built on compiler instrumentation. it is not a static
+                    analyzer, and it is not KASAN. in fact <code>KCSAN</code> depends on <code>!KASAN</code>; you pick
+                    one sanitizer for a given build. KASAN would never see this report anyway, because nothing here is
+                    out of bounds - it is an 8-byte load racing an 8-byte store on the same address.
+                </p>
+                <p>
+                    the mechanism matters for everything that follows. for each <em>plain</em> access it instruments,
+                    KCSAN runs a short state machine:
+                </p>
+                <ol>
+                    <li><strong>check.</strong> is there a watchpoint on this address? if there is, and at least one
+                        side is a write, report. this is the common case, and it is where this report came from.</li>
+                    <li><strong>setup.</strong> otherwise, with a low probability, arm a watchpoint on the address and
+                        remember the current value. most accesses are never sampled at all - that is the
+                        "watchpoint-based sampling" part, and it is why a real race can take a while to surface.</li>
+                    <li><strong>delay.</strong> if a watchpoint was armed, stall for a short random time, to widen the
+                        window in which the other CPU can touch the address.</li>
+                    <li><strong>re-check.</strong> read the value again; if it changed under us, report a race of
+                        unknown origin.</li>
+                </ol>
+                <p>
+                    how often step 2 fires and how long step 3 stalls are tunable at runtime, which is the first thing
+                    to reach for when a report is rare:
+                </p>
+
+                <pre><code>/sys/module/kcsan/parameters/skip_watch   # accesses to skip before arming another watchpoint
+/sys/module/kcsan/parameters/udelay_task  # microseconds to stall after arming one
+/sys/kernel/debug/kcsan                   # "on" / "off": the whole detector, if built in but disabled</code></pre>
+
+                <p>
+                    it also explains the two report shapes. a normal report prints both stacks, because both sides
+                    were instrumented. the other shape - "race at unknown origin" - is printed when the watchpoint saw
+                    the value change but the conflicting access was not instrumented at all, so there is no second
+                    stack to show.
+                </p>
+                <p>
+                    marked atomic accesses - <code>READ_ONCE()</code>, <code>WRITE_ONCE()</code>,
+                    <code>atomic_*</code>, and friends - are instrumented too, but only to <em>check</em> for a
+                    watchpoint. they never set one.
+                </p>
+                <p>
+                    that asymmetry is the whole trap. annotating one side of a race with <code>READ_ONCE()</code> does
+                    not silence KCSAN: the plain access still sets a watchpoint, and the marked access still walks
+                    into it and reports. and it is not wrong to report it - the two accesses really are unordered.
+                </p>
+
+                <h2>why the race initially looks suspicious</h2>
+
+                <p>
+                    two threads touching an <code>s64</code> without a common lock is the textbook definition of a data
+                    race, and it is easy to stop reading there and go hunting for the missing lock. worse, the value is
+                    used to enforce a limit:
+                </p>
+
+                <pre><code>if (... fbc-&gt;count + unknown &lt;= limit)</code></pre>
+
+                <p>
+                    a tmpfs mount can carry a <code>size=</code> limit, which becomes <code>sbinfo-&gt;max_blocks</code>.
+                    if a stale read lets a page allocation through, could a tmpfs exceed the size the user asked for?
+                    that sounds like a real bug, not a false positive.
+                </p>
+                <p>
+                    so the question is not "which lock did someone forget". it is "is this read allowed to be
+                    approximate, and by how much". that requires reading the counter's design, not just the backtrace.
+                </p>
+
+                <h2>how percpu_counter works</h2>
+
+                <p>
+                    the structure is a compromise between accuracy and cache-line contention:
+                </p>
+
+                <pre><code>struct percpu_counter {
+    raw_spinlock_t lock;
+    s64 count;              /* the global part */
+    s32 __percpu *counters; /* one s32 per CPU */
+};</code></pre>
+
+                <ul>
+                    <li><code>percpu_counter_add_batch()</code> adds to this CPU's local <code>s32</code>. when the
+                        local value would reach <code>batch</code>, it takes <code>fbc-&gt;lock</code>, folds the local
+                        amount into the global <code>count</code>, and zeroes the local slot.</li>
+                    <li><code>percpu_counter_sum()</code> takes the lock and adds the global <code>count</code> plus
+                        every CPU's local slot.</li>
+                    <li>plain reads are deliberately cheap and approximate: <code>percpu_counter_read()</code> just
+                        loads the global <code>count</code>, with no lock at all.</li>
+                </ul>
+
+                <p>
+                    so the global <code>count</code> lags the true total by whatever is parked in the per-CPU slots.
+                    each slot is bounded by <code>batch</code>, so the total in flight is bounded by
+                    <code>unknown = batch * num_online_cpus()</code>. that is the slack term.
+                </p>
+                <p>
+                    <code>percpu_counter_limited_add(limit, amount)</code> is the interesting one: it adds
+                    <code>amount</code> only if the resulting total is still within <code>limit</code>. it is a
+                    three-stage fallback, each stage more accurate and more expensive than the last:
+                </p>
+                <ol>
+                    <li><strong>fast path, no lock.</strong> if this CPU's slot stays within <code>batch</code>
+                        <em>and</em> the global count plus the slack is clearly inside the limit, add to the local
+                        slot and return. this is the path the report hits.</li>
+                    <li><strong>locked estimate.</strong> otherwise take <code>fbc-&gt;lock</code> and re-test the
+                        limit against the global count, again with the <code>unknown</code> slack. if the answer is
+                        unambiguous either way, stop here - no per-CPU summation needed.</li>
+                    <li><strong>exact sum.</strong> only if the slack straddles the limit does it walk the CPUs
+                        (<code>for_each_cpu_or(cpu, cpu_online_mask, cpu_dying_mask)</code>), add every slot, and
+                        decide on the true total.</li>
+                </ol>
+
+                <pre><code>/* stage 1: skip taking the lock when safe */
+if (abs(count + amount) &lt;= batch &amp;&amp;
+    ((amount &gt; 0 &amp;&amp; gcount + unknown &lt;= limit) ||
+     (amount &lt; 0 &amp;&amp; gcount - unknown &gt;= limit))) {
+    this_cpu_add(*fbc-&gt;counters, amount);
+    return true;
+}
+
+/* stage 2: take the lock; skip the full sum when the slack does not straddle the limit */
+raw_spin_lock(&amp;fbc-&gt;lock);
+count = fbc-&gt;count + amount;
+...
+
+/* stage 3: still ambiguous - sum every CPU's slot and decide on the exact total */</code></pre>
+
+                <p>
+                    that shape is what makes the lockless read defensible as an approximation rather than a guess: the
+                    fast path may only skip the lock when the answer is unambiguous even after the worst-case slack is
+                    added in, so the error it can introduce is bounded by <code>unknown</code> and nothing more.
+                </p>
+
+                <h2>why the read is intentionally lockless</h2>
+
+                <p>
+                    <code>used_blocks</code> is touched on every tmpfs page allocation and free. taking
+                    <code>fbc-&gt;lock</code> on each one would serialize allocation against free, which is exactly what
+                    per-CPU counters exist to avoid. so the fast path reads <code>fbc-&gt;count</code> without the lock,
+                    on purpose.
+                </p>
+                <p>
+                    is that read "safe because it is conservative"? no. my first version of the comment said something
+                    like that, and it was wrong. the honest statement is narrower:
+                </p>
+                <ul>
+                    <li>a concurrent <em>flush</em> moves value between the global count and a per-CPU slot;</li>
+                    <li>but other CPUs' locked slow paths also add to the global count while the fast path adds to a
+                        slot;</li>
+                    <li>so a stale <em>low</em> read is not a lower bound on anything. it can let the fast path proceed
+                        where the locked slow path would have refused.</li>
+                </ul>
+                <p>
+                    what limits the damage is the per-CPU slack. the <code>abs(count + amount) &lt;= batch</code> guard
+                    keeps this CPU's slot within <code>batch</code> across the update, and every other slot is bounded
+                    by <code>batch</code> too, so the total cannot run ahead by more than <code>unknown</code>. the
+                    read is a cheap approximation used to skip the lock when there is clearly room, not a hard
+                    guarantee.
+                </p>
+                <p>
+                    that is the part a quick read of the diff gets wrong, and it is worth writing down in the code so
+                    the next person does not "fix" the read by taking the lock:
+                </p>
+
+                <pre><code>/*
+ * Lockless on purpose: gcount may be stale, so this is only an
+ * approximation, bounded by the per-cpu slack ("unknown").
+ */
+gcount = data_race(READ_ONCE(fbc-&gt;count));</code></pre>
+
+                <p>
+                    the local is named <code>gcount</code>, not <code>total</code>, because it is the global part -
+                    <code>total</code> already means the summed value including the per-CPU slots everywhere else in
+                    this file. naming matters when the whole point is not to mislead the next reader.
+                </p>
+
+                <h2>why READ_ONCE() isn't enough for KCSAN</h2>
+
+                <p>
+                    this is the trap that cost me the most time. <code>READ_ONCE(fbc-&gt;count)</code> looks like the
+                    fix: it tells the compiler this is a single, deliberate load. but to KCSAN it is a <em>marked
+                    atomic access</em>, and marked accesses only ever check watchpoints, they never create them. so:
+                </p>
+                <ul>
+                    <li>the plain compound store <code>fbc-&gt;count += ...</code> sets a watchpoint and stalls inside
+                        its critical section;</li>
+                    <li>the <code>READ_ONCE()</code> read on the other CPU looks for a watchpoint, finds it, and
+                        reports.</li>
+                </ul>
+                <p>
+                    if anything, the <code>READ_ONCE()</code> made the code look more careful without silencing
+                    anything. the tool is not asking "did you tell the compiler"; it is asking "do you acknowledge
+                    this race as intended".
+                </p>
+                <p>
+                    there is a second trap: <code>READ_ONCE()</code> on an <code>s64</code> is not a 64-bit atomic
+                    load on 32-bit. it compiles to a single volatile access of that type, and on a 32-bit target that
+                    can still be two loads. it stops the compiler from refetching or caching the value, which is what
+                    <code>percpu_counter_read_positive()</code> already relied on, but it does not give you atomicity -
+                    that is what <code>atomic64_t</code> is for.
+                </p>
+
+                <h2>why data_race(READ_ONCE()) is the correct annotation</h2>
+
+                <p>
+                    <code>data_race()</code> is the only thing that actually removes an access from KCSAN's view: it
+                    disables instrumentation around the expression, so the access neither sets nor consumes a
+                    watchpoint. and <code>include/linux/compiler.h</code> documents exactly this shape:
+                </p>
+                <ul>
+                    <li>accesses to a lock-protected variable stay plain;</li>
+                    <li>deliberate lockless accesses to that same variable use <code>data_race()</code>;</li>
+                    <li>if the access must also be atomic, use <code>data_race(READ_ONCE(x))</code>.</li>
+                </ul>
+                <p>
+                    keeping the <em>writers</em> plain matters. if you sprinkle <code>WRITE_ONCE()</code> on the locked
+                    writes, you make them marked, and a future genuinely-buggy lockless write - the kind you actually
+                    want KCSAN to catch - gets harder to see. annotate the one intentional side, leave the rest
+                    visible.
+                </p>
+                <p>
+                    the final hunk:
+                </p>
+
+                <pre><code>count = __this_cpu_read(*fbc-&gt;counters);
+/*
+ * Lockless on purpose: gcount may be stale, so this is only an
+ * approximation, bounded by the per-cpu slack ("unknown").
+ */
+gcount = data_race(READ_ONCE(fbc-&gt;count));
+
+/* Skip taking the lock when safe */
+if (abs(count + amount) &lt;= batch &amp;&amp;
+    ((amount &gt; 0 &amp;&amp; gcount + unknown &lt;= limit) ||
+     (amount &lt; 0 &amp;&amp; gcount - unknown &gt;= limit))) {</code></pre>
+
+                <p>
+                    no logic change. the syzbot report was a claim about the C memory model, and the claim was true;
+                    the race simply was not a bug. what was missing was saying so in a way the tool understands.
+                </p>
+
+                <h2>testing and verification</h2>
+
+                <p>
+                    two separate things need evidence: that the code does not change, and that KCSAN goes quiet for
+                    this pair.
+                </p>
+                <p>
+                    <strong>object code.</strong> a defconfig build, gcc 16.2.1, before and after, comparing the
+                    disassembly of one function with <code>objdump -d</code> - same compiler, same config, so the patch
+                    is the only variable. <code>__percpu_counter_limited_add()</code> keeps the same size
+                    (<code>0x23b</code>), still contains the same four <code>fbc-&gt;count</code> loads, and has
+                    identical branch targets. the <code>.text</code> differs in 45 of 2171 bytes, all of it register
+                    allocation and compare-operand order. as a control, a comment-only rebuild is byte-identical - so
+                    "no functional change intended" is not just a phrase.
+                </p>
+                <p>
+                    <strong>KCSAN A/B.</strong> build one kernel with <code>CONFIG_KCSAN=y</code> and
+                    <code>CONFIG_KASAN=n</code> (the two sanitizers are mutually exclusive - you pick one per build),
+                    but leave KCSAN <em>off at boot</em> and switch it on from init by writing <code>on</code> to
+                    <code>/sys/kernel/debug/kcsan</code>. the first attempt used <code>KCSAN_STRICT</code> +
+                    <code>KCSAN_WEAK_MEMORY</code> + early enable and never finished booting in 420 s under KVM;
+                    deferring it keeps boot sane, and the stall knob (<code>udelay_task</code>) is what widens the
+                    window enough for a 120 s run to mean something.
+                </p>
+                <p>
+                    the workload is a 120 s stress on one <code>size=64M</code> tmpfs in an 8 vCPU QEMU/KVM guest:
+                    threads doing <code>write()</code> and <code>unlink()</code>/<code>ftruncate()</code>
+                    concurrently, which is exactly <code>shmem_inode_acct_blocks</code> against
+                    <code>shmem_inode_unacct_blocks</code>. the base kernel produces the report almost immediately:
+                </p>
+
+                <pre><code>BUG: KCSAN: data-race in __percpu_counter_limited_add / percpu_counter_add_batch
+
+write to ... by percpu_counter_add_batch+0xcc/0x150
+ shmem_inode_unacct_blocks / shmem_recalc_inode / shmem_undo_range
+ shmem_setattr / do_ftruncate / __x64_sys_ftruncate
+
+read to ... by __percpu_counter_limited_add+0x8a/0x2e0
+ shmem_inode_acct_blocks / shmem_get_folio_gfp / shmem_write_begin
+ generic_perform_write / shmem_file_write_iter / vfs_write</code></pre>
+
+                <p>
+                    base: 38 reports of that exact title, the first one 0.3 s after the workers started. with the
+                    annotation: 0 percpu_counter reports in the same 120 s. unrelated races
+                    (<code>d_make_discardable</code>/<code>dentry_kill</code>, <code>osq_lock</code>) still appear,
+                    which is a useful control - the detector was definitely awake, it just had nothing to say about
+                    this pair.
+                </p>
+                <p>
+                    KCSAN is sampling, so "0 reports" is strong evidence, not proof. but 38 hits in a third of a
+                    second on one side, and nothing in two minutes on the other, is about as clean as a reproduction
+                    gets.
+                </p>
+
+                <h2>tag choices in the commit message</h2>
+
+                <p>
+                    the patch went to akpm and linux-mm, cc Hugh Dickins - who wrote the original
+                    <code>_limited_add()</code> - and Baolin Wang. two tag choices are worth calling out:
+                </p>
+                <ul>
+                    <li><code>Reported-by:</code> carries the syzbot address, and checkpatch wants
+                        <code>Closes:</code> immediately after it with the bug URL, so the report is linked rather
+                        than just thanked.</li>
+                    <li>there is deliberately <strong>no <code>Fixes:</code> tag</strong>. this annotates an
+                        intentional race; it is not a regression and it does not fix a crash. a <code>Fixes:</code> tag
+                        invites <code>stable</code>/<code>AUTOSEL</code> backports and frames the change as a bug fix,
+                        which is the wrong frame. checkpatch does warn "perhaps it also needs a 'Fixes:' tag" - that
+                        warning is expected and was left in on purpose. if a maintainer wants the tag, they will
+                        ask.</li>
+                </ul>
+
+                <h2>takeaways</h2>
+
+                <ul>
+                    <li>a KCSAN splat is a statement about the C memory model, not automatically a bug. some races are
+                        intentional.</li>
+                    <li>intentional means "annotate", not "ignore": the next reader deserves to know why, and the tool
+                        needs to be told.</li>
+                    <li><code>READ_ONCE()</code>/<code>WRITE_ONCE()</code> do not silence KCSAN;
+                        <code>data_race()</code> does. use <code>data_race(READ_ONCE(x))</code> when you need both.</li>
+                    <li>annotate narrowly. keep the locked accesses plain so real lockless bugs stay visible.</li>
+                    <li>be precise about lockless approximations. "conservative" was wrong; "bounded by the per-CPU
+                        slack" is right.</li>
+                </ul>
+
+            </article>
+
+            <div class="post-tags">
+                <span class="contribution-tag">Linux Kernel</span>
+                <span class="contribution-tag">KCSAN</span>
+                <span class="contribution-tag">Concurrency</span>
+                <span class="contribution-tag">percpu_counter</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="post-footer-nav">
+        <div class="post-container">
+            <a href="../index.html" class="post-back-link">&larr; Back to blog</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>2026 &copy; <span data-site="name"></span> // <span data-site="city"></span>, <span
+                data-site="country"></span></p>
+    </footer>
+</body>
+
+</html>

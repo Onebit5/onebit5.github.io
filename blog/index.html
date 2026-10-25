@@ -28,6 +28,22 @@
 
     <section class="blog-list">
         <div class="container">
+            <a href="2026-10-25/" class="blog-entry">
+                <div class="blog-entry-path"><span class="prompt-sym">~/</span>blog/2026-10-25/</div>
+                <h2 class="blog-entry-title">Annotating a Deliberate Data Race in percpu_counter</h2>
+                <div class="blog-entry-date">2026 October 25 · 16 min read</div>
+                <p class="blog-entry-summary">
+                    Syzbot flagged a lockless read in percpu_counter_limited_add(). The read was intentional; the
+                    annotation was missing. What KCSAN actually checks, why READ_ONCE() alone does not silence it,
+                    and why data_race(READ_ONCE()) is the right answer.
+                </p>
+                <div class="blog-entry-tags">
+                    <span class="contribution-tag">Linux Kernel</span>
+                    <span class="contribution-tag">KCSAN</span>
+                    <span class="contribution-tag">Concurrency</span>
+                </div>
+            </a>
+
             <a href="2026-09-19/" class="blog-entry">
                 <div class="blog-entry-path"><span class="prompt-sym">~/</span>blog/2026-09-19/</div>
                 <h2 class="blog-entry-title">Orbitalis-3D is Slowing Down, on Purpose</h2>
